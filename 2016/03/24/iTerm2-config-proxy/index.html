@@ -57,22 +57,18 @@
 
 
 
-<meta name="description" content="Today, I use shadowscoks to accelerate iTerm2 with global mode. But I found that iTerm2 not use shadowsocks either. So I found some method may help you to solve this problems.
-
-socks proxy1export htt">
+<meta name="description" content="Today, I use shadowscoks to accelerate iTerm2 with global mode. But I found that iTerm2 not use shadowsocks either. So I found some method may help you to solve this problems.  socks proxy1export htt">
+<meta name="keywords" content="iTerm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="iTerm2 configure proxy">
 <meta property="og:url" content="http://skyacer.github.io/2016/03/24/iTerm2-config-proxy/index.html">
-<meta property="og:site_name" content="SkyAcer's blog">
-<meta property="og:description" content="Today, I use shadowscoks to accelerate iTerm2 with global mode. But I found that iTerm2 not use shadowsocks either. So I found some method may help you to solve this problems.
-
-socks proxy1export htt">
+<meta property="og:site_name" content="SkyAcer&#39;s blog">
+<meta property="og:description" content="Today, I use shadowscoks to accelerate iTerm2 with global mode. But I found that iTerm2 not use shadowsocks either. So I found some method may help you to solve this problems.  socks proxy1export htt">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:updated_time" content="2016-04-23T03:29:10.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iTerm2 configure proxy">
-<meta name="twitter:description" content="Today, I use shadowscoks to accelerate iTerm2 with global mode. But I found that iTerm2 not use shadowsocks either. So I found some method may help you to solve this problems.
-
-socks proxy1export htt">
+<meta name="twitter:description" content="Today, I use shadowscoks to accelerate iTerm2 with global mode. But I found that iTerm2 not use shadowsocks either. So I found some method may help you to solve this problems.  socks proxy1export htt">
 
 
 
@@ -279,9 +275,9 @@ socks proxy1export htt">
         <blockquote>
 <p>Today, I use shadowscoks to accelerate iTerm2 with global mode. But I found that iTerm2 not use shadowsocks either. So I found some method may help you to solve this problems.</p>
 </blockquote>
-<h2 id="socks-proxy"><a href="#socks-proxy" class="headerlink" title="socks proxy"></a>socks proxy</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy=socks5://127.0.0.1:1080</span><br></pre></td></tr></table></figure>
-<h2 id="http-proxy"><a href="#http-proxy" class="headerlink" title="http proxy"></a>http proxy</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http_proxy=http://localhost:8035/</span><br></pre></td></tr></table></figure>
-<h2 id="https-proxy"><a href="#https-proxy" class="headerlink" title="https proxy"></a>https proxy</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https_proxy=http://localhost:8035/</span><br></pre></td></tr></table></figure>
+<h2 id="socks-proxy"><a href="#socks-proxy" class="headerlink" title="socks proxy"></a>socks proxy</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy=socks5://127.0.0.1:1080</span><br></pre></td></tr></table></figure>
+<h2 id="http-proxy"><a href="#http-proxy" class="headerlink" title="http proxy"></a>http proxy</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http_proxy=http://localhost:8035/</span><br></pre></td></tr></table></figure>
+<h2 id="https-proxy"><a href="#https-proxy" class="headerlink" title="https proxy"></a>https proxy</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https_proxy=http://localhost:8035/</span><br></pre></td></tr></table></figure>
 <p>Now, after you configure these proxy, you can judge it by<code>curl ifconfig.me</code>. If it shows your proxy’s ip, and it means that you are success.</p>
 
       

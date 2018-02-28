@@ -41,7 +41,7 @@
 <link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Android," />
+  <meta name="keywords" content="Hexo, NexT" />
 
 
 
@@ -57,18 +57,17 @@
 
 
 
-<meta name="description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
-<meta name="keywords" content="Android">
+<meta name="description" content="Little And More.">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android Disable Emoji in Edittext">
-<meta property="og:url" content="http://skyacer.github.io/2016/03/24/Android-Disable-Emoji-in-Edittext/index.html">
+<meta property="og:title" content="我们该如何做好Code-Review?">
+<meta property="og:url" content="http://skyacer.github.io/2018/02/28/我们该如何做好Code-Review-1/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
-<meta property="og:description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
+<meta property="og:description" content="Little And More.">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2016-04-23T03:27:52.000Z">
+<meta property="og:updated_time" content="2018-02-28T02:24:12.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Android Disable Emoji in Edittext">
-<meta name="twitter:description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
+<meta name="twitter:title" content="我们该如何做好Code-Review?">
+<meta name="twitter:description" content="Little And More.">
 
 
 
@@ -86,7 +85,7 @@
   };
 </script>
 
-  <title> Android Disable Emoji in Edittext | SkyAcer's blog </title>
+  <title> 我们该如何做好Code-Review? | SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -214,7 +213,7 @@
             
             
               
-                Android Disable Emoji in Edittext
+                我们该如何做好Code-Review?
               
             
           </h1>
@@ -226,30 +225,11 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-03-24T16:22:25+08:00" content="2016-03-24">
-              2016-03-24
+            <time itemprop="dateCreated" datetime="2018-02-28T10:24:11+08:00" content="2018-02-28">
+              2018-02-28
             </time>
           </span>
 
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
           
 
           
@@ -272,19 +252,7 @@
       
 
       
-        <blockquote>
-<p>If you have same requirement in development, this article may help you.</p>
-</blockquote>
-<p>Let’s how to do it in code:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> InputFilter EMOJI_FILTER = <span class="keyword">new</span> InputFilter() &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CharSequence <span class="title">filter</span><span class="params">(CharSequence source, <span class="keyword">int</span> start, <span class="keyword">int</span> end, Spanned dest, <span class="keyword">int</span> dstart, <span class="keyword">int</span> dend)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> index = start; index &lt; end; index++) &#123;</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">int</span> type = Character.getType(source.charAt(index));</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">if</span> (type == Character.SURROGATE) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>And you also need to set this filter in the edittext you want to disable Emoji.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">editText.setFilters(<span class="keyword">new</span> InputFilter[]&#123;EMOJI_FILTER&#125;);</span><br></pre></td></tr></table></figure>
-<h2 id="Why-it-can-disable-Emoji"><a href="#Why-it-can-disable-Emoji" class="headerlink" title="Why it can disable Emoji."></a>Why it can disable Emoji.</h2><blockquote>
-<p>Unicode is a computing industry standard for the consistent encoding, representation, and handling of text expressed in most of the world’s writing systems.</p>
-</blockquote>
-<p>Emoji use area of Unicode with a range of code points from U+1F604 to U+1F539.<br>And <code>Character.SURROGATE</code>reserved the range is over the Emoji’s.</p>
-<p>If you find a better method, you also can <a href="mailto:skyacer.me@gmail.com" target="_blank" rel="noopener">contact with me</a></p>
-
+        
       
     </div>
 
@@ -296,24 +264,18 @@
 
     <footer class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/tags/Android/" rel="tag">#Android</a>
-          
-        </div>
-      
 
       
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
+              <a href="/2016/04/21/解决Android-Studio-HTTP网络代理错误提示/" rel="next" title="解决Android-Studio-HTTP网络代理错误提示">
+                <i class="fa fa-chevron-left"></i> 解决Android-Studio-HTTP网络代理错误提示
+              </a>
+            
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/03/24/iTerm2-config-proxy/" rel="prev" title="iTerm2 configure proxy">
-                iTerm2 configure proxy <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -431,7 +393,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-it-can-disable-Emoji"><span class="nav-number">1.</span> <span class="nav-text">Why it can disable Emoji.</span></a></li></ol></div>
+              <p class="post-toc-empty">此文章未包含目录</p>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">

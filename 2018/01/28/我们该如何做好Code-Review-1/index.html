@@ -57,16 +57,21 @@
 
 
 
-<meta name="description" content="Little And More.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="SkyAcer&#39;s blog">
-<meta property="og:url" content="http://skyacer.github.io/index.html">
+<meta name="description" content="引言午后的阳光，静静地照在你的脸上。这时候配上一杯82年的java，脑子一片灵光闪过，呃……上午刚写完需求，下午好像没什么事了,不如看看自己写的代码？至此，一场Code Review也就拉开序幕了。  前言Code Review，即代码审查，是指对计算机源代码系统化地审查，常用软件同行评审的方式进行，其目的是在找出及修正在软件开发初期未发现的错误，提升软件质量及开发者的技术。代码审查以不同的形式进">
+<meta property="og:type" content="article">
+<meta property="og:title" content="我们该如何做好Code-Review?">
+<meta property="og:url" content="http://skyacer.github.io/2018/01/28/我们该如何做好Code-Review-1/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
-<meta property="og:description" content="Little And More.">
+<meta property="og:description" content="引言午后的阳光，静静地照在你的脸上。这时候配上一杯82年的java，脑子一片灵光闪过，呃……上午刚写完需求，下午好像没什么事了,不如看看自己写的代码？至此，一场Code Review也就拉开序幕了。  前言Code Review，即代码审查，是指对计算机源代码系统化地审查，常用软件同行评审的方式进行，其目的是在找出及修正在软件开发初期未发现的错误，提升软件质量及开发者的技术。代码审查以不同的形式进">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-cba08e33759dcf5b?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-b6c6728c8770b552?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-d0163f696434d750?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-02-28T02:26:40.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="SkyAcer&#39;s blog">
-<meta name="twitter:description" content="Little And More.">
+<meta name="twitter:title" content="我们该如何做好Code-Review?">
+<meta name="twitter:description" content="引言午后的阳光，静静地照在你的脸上。这时候配上一杯82年的java，脑子一片灵光闪过，呃……上午刚写完需求，下午好像没什么事了,不如看看自己写的代码？至此，一场Code Review也就拉开序幕了。  前言Code Review，即代码审查，是指对计算机源代码系统化地审查，常用软件同行评审的方式进行，其目的是在找出及修正在软件开发初期未发现的错误，提升软件质量及开发者的技术。代码审查以不同的形式进">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/4287000-cba08e33759dcf5b?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 
 
 
@@ -84,7 +89,7 @@
   };
 </script>
 
-  <title> SkyAcer's blog </title>
+  <title> 我们该如何做好Code-Review? | SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -103,9 +108,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -192,9 +195,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -214,10 +217,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2018/01/28/我们该如何做好Code-Review-1/" itemprop="url">
-                  我们该如何做好Code-Review?
-                </a>
+                我们该如何做好Code-Review?
               
             
           </h1>
@@ -256,9 +256,7 @@
       
 
       
-        
-          
-            <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>午后的阳光，静静地照在你的脸上。这时候配上一杯82年的java，脑子一片灵光闪过，呃……上午刚写完需求，下午好像没什么事了,不如看看自己写的代码？至此，一场Code Review也就拉开序幕了。</p>
+        <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>午后的阳光，静静地照在你的脸上。这时候配上一杯82年的java，脑子一片灵光闪过，呃……上午刚写完需求，下午好像没什么事了,不如看看自己写的代码？至此，一场Code Review也就拉开序幕了。</p>
 <p><img src="http://upload-images.jianshu.io/upload_images/4287000-cba08e33759dcf5b?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Code Review，即代码审查，是指对计算机源代码系统化地审查，常用软件同行评审的方式进行，其目的是在找出及修正在软件开发初期未发现的错误，提升软件质量及开发者的技术。代码审查以不同的形式进行，例如结对编程、非正式的看过整个代码，或是正式的软件检查。<sup>[1]</sup></p>
 <h3 id="配对review-Mutual-Review"><a href="#配对review-Mutual-Review" class="headerlink" title="配对review(Mutual Review)"></a>配对review(Mutual Review)</h3><p>在我们项目组的code review中，制定了A童鞋与B童鞋的一对一review关系，“配对”成功后，这两位童鞋的代码负责相互review对方的代码，这样也形成了责任关系，可能这里有些人会表示并不赞同这种“强制”的责任制，更喜欢随意的工作方式。但是我们在实际中发现，如果不采取一对一的这种方式，很容易造成漏掉review某些童鞋代码。当然，在相互review之后，还可以继续对其他同事代码进行review，这样既确保了完备性，也保证了多样性。</p>
@@ -300,12 +298,12 @@
 <li>Kolawa, Adam; Huizinga, Dorota. <a href="http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470042125.html" target="_blank" rel="noopener">Automated Defect Prevention: Best Practices in Software Management</a>. Wiley-IEEE Computer Society Press. 2007: 260/426. <a href="https://zh.wikipedia.org/wiki/Special:%E7%BD%91%E7%BB%9C%E4%B9%A6%E6%BA%90/0-470-04212-5" target="_blank" rel="noopener">ISBN 0-470-04212-5</a>.</li>
 </ol>
 
-          
-        
       
     </div>
 
     <div>
+      
+        
       
     </div>
 
@@ -313,365 +311,32 @@
       
 
       
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
             
+              <a href="/2016/04/21/解决Android-Studio-HTTP网络代理错误提示/" rel="next" title="解决Android-Studio-HTTP网络代理错误提示">
+                <i class="fa fa-chevron-left"></i> 解决Android-Studio-HTTP网络代理错误提示
+              </a>
             
-              
-                
-                <a class="post-title-link" href="/2016/04/21/解决Android-Studio-HTTP网络代理错误提示/" itemprop="url">
-                  解决Android-Studio-HTTP网络代理错误提示
-                </a>
-              
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
             
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-04-21T16:01:05+08:00" content="2016-04-21">
-              2016-04-21
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
+          </div>
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <h2 id="Warning"><a href="#Warning" class="headerlink" title="Warning"></a>Warning</h2><p>今天在设置Android Studio的时候看到这个大大的Warning，强迫症的我简直不能忍啊，然后Google了一些方法，在Stackoverflow上普遍都是要修改虚拟机参数的代理设置，但是我并没有改过。</p>
-<p><img src="images/2016-4-23-http-proxy-error-1.jpg" alt="创建repo"></p>
-<h2 id="mac下设置"><a href="#mac下设置" class="headerlink" title="mac下设置"></a>mac下设置</h2><p>想着去把http代理的参数改回来发现mac下的java路径下并不好找，最终干脆在图形界面的java里设置。</p>
-<p><img src="images/2016-4-23-http-proxy-error-2.png" alt="创建repo"></p>
-<p><img src="images/2016-4-23-http-proxy-error-3.png" alt="创建repo"></p>
-<h2 id="修复"><a href="#修复" class="headerlink" title="修复"></a>修复</h2><p><img src="images/2016-4-23-http-proxy-error-4.jpg" alt="创建repo"></p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
-      
 
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/03/24/iTerm2-config-proxy/" itemprop="url">
-                  iTerm2 configure proxy
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-03-24T16:27:18+08:00" content="2016-03-24">
-              2016-03-24
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/setting/" itemprop="url" rel="index">
-                    <span itemprop="name">配置</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <blockquote>
-<p>Today, I use shadowscoks to accelerate iTerm2 with global mode. But I found that iTerm2 not use shadowsocks either. So I found some method may help you to solve this problems.</p>
-</blockquote>
-<h2 id="socks-proxy"><a href="#socks-proxy" class="headerlink" title="socks proxy"></a>socks proxy</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy=socks5://127.0.0.1:1080</span><br></pre></td></tr></table></figure>
-<h2 id="http-proxy"><a href="#http-proxy" class="headerlink" title="http proxy"></a>http proxy</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http_proxy=http://localhost:8035/</span><br></pre></td></tr></table></figure>
-<h2 id="https-proxy"><a href="#https-proxy" class="headerlink" title="https proxy"></a>https proxy</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https_proxy=http://localhost:8035/</span><br></pre></td></tr></table></figure>
-<p>Now, after you configure these proxy, you can judge it by<code>curl ifconfig.me</code>. If it shows your proxy’s ip, and it means that you are success.</p>
-
-          
-        
+    <div class="post-spread">
       
     </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/03/24/Android-Disable-Emoji-in-Edittext/" itemprop="url">
-                  Android Disable Emoji in Edittext
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-03-24T16:22:25+08:00" content="2016-03-24">
-              2016-03-24
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <blockquote>
-<p>If you have same requirement in development, this article may help you.</p>
-</blockquote>
-<p>Let’s how to do it in code:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> InputFilter EMOJI_FILTER = <span class="keyword">new</span> InputFilter() &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CharSequence <span class="title">filter</span><span class="params">(CharSequence source, <span class="keyword">int</span> start, <span class="keyword">int</span> end, Spanned dest, <span class="keyword">int</span> dstart, <span class="keyword">int</span> dend)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> index = start; index &lt; end; index++) &#123;</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">int</span> type = Character.getType(source.charAt(index));</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">if</span> (type == Character.SURROGATE) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>And you also need to set this filter in the edittext you want to disable Emoji.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">editText.setFilters(<span class="keyword">new</span> InputFilter[]&#123;EMOJI_FILTER&#125;);</span><br></pre></td></tr></table></figure>
-<h2 id="Why-it-can-disable-Emoji"><a href="#Why-it-can-disable-Emoji" class="headerlink" title="Why it can disable Emoji."></a>Why it can disable Emoji.</h2><blockquote>
-<p>Unicode is a computing industry standard for the consistent encoding, representation, and handling of text expressed in most of the world’s writing systems.</p>
-</blockquote>
-<p>Emoji use area of Unicode with a range of code points from U+1F604 to U+1F539.<br>And <code>Character.SURROGATE</code>reserved the range is over the Emoji’s.</p>
-<p>If you find a better method, you also can <a href="mailto:skyacer.me@gmail.com" target="_blank" rel="noopener">contact with me</a></p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-  </section>
-
-  
+  </div>
 
 
           </div>
@@ -679,6 +344,10 @@
 
 
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
         
@@ -698,8 +367,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.jpg"
@@ -750,6 +428,23 @@
 
       </section>
 
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">2.</span> <span class="nav-text">前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配对review-Mutual-Review"><span class="nav-number">2.1.</span> <span class="nav-text">配对review(Mutual Review)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码评审会议-Review-Meeting"><span class="nav-number">2.2.</span> <span class="nav-text">代码评审会议(Review Meeting)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结语"><span class="nav-number">3.</span> <span class="nav-text">结语</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
       
 
     </div>
@@ -841,6 +536,167 @@
 
 
   
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
 
   
 

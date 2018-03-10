@@ -1,0 +1,754 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Java," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="前言今天看AndFix实现时，核心方法之ReplaceMethod方法是一个native方法，之前并没有遇到过，所以在此整理记录。 native的作用总而言之：native是与C++联合开发的时候用的！使用native关键字说明这个方法是原生函数，也就是这个方法是用C/C++语言实现的，并且被编译成了DLL，由java去调用。  native 是用做java 和其他语言（如c++）进行协作时使用的">
+<meta name="keywords" content="Java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java native方法及JNI实例">
+<meta property="og:url" content="http://skyacer.github.io/2018/03/10/Java-native方法及JNI实例/index.html">
+<meta property="og:site_name" content="SkyAcer&#39;s blog">
+<meta property="og:description" content="前言今天看AndFix实现时，核心方法之ReplaceMethod方法是一个native方法，之前并没有遇到过，所以在此整理记录。 native的作用总而言之：native是与C++联合开发的时候用的！使用native关键字说明这个方法是原生函数，也就是这个方法是用C/C++语言实现的，并且被编译成了DLL，由java去调用。  native 是用做java 和其他语言（如c++）进行协作时使用的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB59723036fe56880a06afd5acd74d278a?method=download&shareKey=67d287341bf076f243683e75262c4a10">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBc1c5ddbec73d7e3e30cd3c4e4d8990cc?method=download&shareKey=3635b55ce1dd7d9d9effa6280e68eb08">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB2800ec370c93a88b866f1005aca0422a?method=download&shareKey=687169bc4d1b1e546652eed6b11a2aec">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB823e888a2c766f094f126aab67b0f039?method=download&shareKey=a3c76b783e2a041cdc7ea1a2dfac63f0">
+<meta property="og:updated_time" content="2018-03-10T08:00:39.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java native方法及JNI实例">
+<meta name="twitter:description" content="前言今天看AndFix实现时，核心方法之ReplaceMethod方法是一个native方法，之前并没有遇到过，所以在此整理记录。 native的作用总而言之：native是与C++联合开发的时候用的！使用native关键字说明这个方法是原生函数，也就是这个方法是用C/C++语言实现的，并且被编译成了DLL，由java去调用。  native 是用做java 和其他语言（如c++）进行协作时使用的">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB59723036fe56880a06afd5acd74d278a?method=download&shareKey=67d287341bf076f243683e75262c4a10">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Java native方法及JNI实例 | SkyAcer's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SkyAcer's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Hacking,Thoughts.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-heartbeat fa-fw"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Java native方法及JNI实例
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-10T15:59:36+08:00" content="2018-03-10">
+              2018-03-10
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index">
+                    <span itemprop="name">编程</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>今天看AndFix实现时，核心方法之ReplaceMethod方法是一个native方法，之前并没有遇到过，所以在此整理记录。</p>
+<h3 id="native的作用"><a href="#native的作用" class="headerlink" title="native的作用"></a>native的作用</h3><p>总而言之：native是与C++联合开发的时候用的！使用native关键字说明这个方法是原生函数，也就是这个方法是用C/C++语言实现的，并且被编译成了DLL，由java去调用。</p>
+<ol>
+<li>native 是用做java 和其他语言（如c++）进行协作时使用的，也就是native 后的函数的实现不是用java写的。</li>
+<li>既然都不是java，那就别管它的源代码了，我们只需要知道这个方法已经被实现即可。</li>
+<li>native的意思就是通知操作系统， 这个函数你必须给我实现，因为我要使用。 所以native关键字的函数都是操作系统实现的， java只能调用。</li>
+<li>java是跨平台的语言，既然是跨了平台，所付出的代价就是牺牲一些对底层的控制，而java要实现对底层的控制，就需要一些其他语言的帮助，这个就是native的作用了</li>
+</ol>
+<h2 id="JNI简介"><a href="#JNI简介" class="headerlink" title="JNI简介"></a>JNI简介</h2><p>native方法是通过java中的JNI实现的。JNI是Java Native Interface的 缩写。从Java 1.1开始，Java Native Interface (JNI)标准成为java平台的一部分，它允许Java代码和其他语言写的代码进行交互。</p>
+<p>JNI一开始是为了本地已编译语言，尤其是C和C++而设计 的，但是它并不妨碍你使用其他语言，只要调用约定受支持就可以了。</p>
+<p>目前java与dll交互的技术主要有3种：jni，jawin和jacob。</p>
+<p>目前功能性而言：jni &gt;&gt; jawin &gt; jacob，其大致的结构如下图：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB59723036fe56880a06afd5acd74d278a?method=download&amp;shareKey=67d287341bf076f243683e75262c4a10" alt="jni_jawin_jacob"></p>
+<p>windows，基于native的PE结构，windows的jvm基于native结构，Java的应用体系构建于jvm之上。jvm通过加载此jni程序间接调用目标原生函数。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBc1c5ddbec73d7e3e30cd3c4e4d8990cc?method=download&amp;shareKey=3635b55ce1dd7d9d9effa6280e68eb08" alt=""></p>
+<h3 id="JNI的生成步骤——Mac版"><a href="#JNI的生成步骤——Mac版" class="headerlink" title="JNI的生成步骤——Mac版"></a>JNI的生成步骤——Mac版</h3><ol>
+<li>编写带有native声明的方法的java类，生成.java文件</li>
+<li>使用javac命令编译所编写的java类，生成.class文件</li>
+<li>使用javah -jni java类名生成扩展名为h的头文件，也即生成.h文件</li>
+<li>使用C/C++（或者其他编程想语言）实现本地方法，创建.h文件的实现，也就是创建.cpp文件实现.h文件中的方法</li>
+<li>将C/C++编写的文件生成动态连接库，生成jnilib文件</li>
+</ol>
+<h2 id="JNI实例"><a href="#JNI实例" class="headerlink" title="JNI实例"></a>JNI实例</h2><p>接下来我们按照上述步骤一个一个来生成JNI实例</p>
+<h3 id="1-编写带有native声明的java类，HelloWorld-java"><a href="#1-编写带有native声明的java类，HelloWorld-java" class="headerlink" title="1.编写带有native声明的java类，HelloWorld.java"></a>1.编写带有native声明的java类，HelloWorld.java</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class HelloWorld &#123;</span><br><span class="line">    public native void sayHelloWorld(); //申明一个native方法</span><br><span class="line"></span><br><span class="line">    static&#123;</span><br><span class="line">        System.loadLibrary(&quot;HelloWorldImpl&quot;); //装入动态链接库,&quot;HelloWorldImpl&quot;是装入动态链接库的名称</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args)&#123;</span><br><span class="line">        HelloWorld helloWorld = new HelloWorld();</span><br><span class="line">        helloWorld.sayHelloWorld();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2-使用javac生成HelloWorld-class"><a href="#2-使用javac生成HelloWorld-class" class="headerlink" title="2.使用javac生成HelloWorld.class"></a>2.使用javac生成HelloWorld.class</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac HelloWorld.java</span><br></pre></td></tr></table></figure>
+<h3 id="3-使用javah-jni-java类生成扩展名为h的头文件"><a href="#3-使用javah-jni-java类生成扩展名为h的头文件" class="headerlink" title="3.使用javah -jni java类生成扩展名为h的头文件"></a>3.使用javah -jni java类生成扩展名为h的头文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javah -jni HelloWorld</span><br></pre></td></tr></table></figure>
+<p><strong>此处需要注意的是，我们应该在包名的根目录下执行，因为生成的文件的文件名需要引用包目录。不然就会报找不到类文件的错误</strong></p>
+<p>生成com_think_jni_HelloWorld.h文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">/* DO NOT EDIT THIS FILE - it is machine generated */</span><br><span class="line">#include &lt;jni.h&gt;</span><br><span class="line">/* Header for class com_think_jni_HelloWorld */</span><br><span class="line"></span><br><span class="line">#ifndef _Included_com_think_jni_HelloWorld</span><br><span class="line">#define _Included_com_think_jni_HelloWorld</span><br><span class="line">#ifdef __cplusplus</span><br><span class="line">extern &quot;C&quot; &#123;</span><br><span class="line">#endif</span><br><span class="line">/*</span><br><span class="line"> * Class:     com_think_jni_HelloWorld</span><br><span class="line"> * Method:    displayHelloWorld</span><br><span class="line"> * Signature: ()V</span><br><span class="line"> */</span><br><span class="line">JNIEXPORT void JNICALL Java_com_think_jni_HelloWorld_displayHelloWorld</span><br><span class="line">  (JNIEnv *, jobject);</span><br><span class="line"></span><br><span class="line">#ifdef __cplusplus</span><br><span class="line">&#125;</span><br><span class="line">#endif</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
+<p>这里我们可以这样理解：这个h文件相当于我们在java里面的接口，这里声明了一个 Java_HelloWorld_displayHelloWorld (JNIEnv *, jobject);方法，然后在我们的本地方法里面实现这个方法，也就是说我们在编写C/C++程序的时候所使用的方法名必须和这里的一致</p>
+<h3 id="4使用C-C-实现本地方法"><a href="#4使用C-C-实现本地方法" class="headerlink" title="4使用C/C++实现本地方法"></a>4使用C/C++实现本地方法</h3><p>创建HelloWorldImpl.cpp，代码如下所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;jni.h&quot;</span><br><span class="line">#include &quot;com_think_jni_HelloWorld.h&quot;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">JNIEXPORT void JNICALL Java_com_think_jni_HelloWorld_displayHelloWorld(JNIEnv *env,jobject obj)&#123;</span><br><span class="line">    printf(&quot;Hello World!\n&quot;);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="5-将本地方法编写的文件生成动态链接库"><a href="#5-将本地方法编写的文件生成动态链接库" class="headerlink" title="5 将本地方法编写的文件生成动态链接库"></a>5 将本地方法编写的文件生成动态链接库</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -I/Library/Java/JavaVirtualMachines/[根据装的jdk版本来定]/Contents/Home/include/ -dynamiclib HelloWorldImpl.cpp -o libhell.jnilib</span><br></pre></td></tr></table></figure>
+<p>但是会出现运行这个命令报错</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB2800ec370c93a88b866f1005aca0422a?method=download&amp;shareKey=687169bc4d1b1e546652eed6b11a2aec" alt="file not found"></p>
+<p>我们找到这个文件在</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/Library/Java/JavaVirtualMachines/[根据安装的jdk版本来定]/Contents/Home/include/darwin/</span><br></pre></td></tr></table></figure>
+<p>这个目录下，所以我们再链接该目录到以上命令中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gcc -I/Library/Java/JavaVirtualMachines/jdk1.8.0_71.jdk/Contents/Home/include/ -I/Library/Java/JavaVirtualMachines/jdk1.8.0_71</span><br><span class="line"></span><br><span class="line">.jdk/Contents/Home/include/darwin/ -dynamiclib HelloWorldImpl.cpp -o libhell.jnilib</span><br></pre></td></tr></table></figure>
+<p>最终成功生成libhell.jnilib</p>
+<h3 id="6-运行可执行文件"><a href="#6-运行可执行文件" class="headerlink" title="6 运行可执行文件"></a>6 运行可执行文件</h3><p>把上述文件放在同一个文件夹后，执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java HelloWorld</span><br></pre></td></tr></table></figure>
+<p>即可看到</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB823e888a2c766f094f126aab67b0f039?method=download&amp;shareKey=a3c76b783e2a041cdc7ea1a2dfac63f0" alt=""></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag">#Java</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/28/直播技术点之编解码基础（一）——-硬编码之MediaCodec/" rel="next" title="直播技术点之编解码基础（一）—— 硬编码之MediaCodec">
+                <i class="fa fa-chevron-left"></i> 直播技术点之编解码基础（一）—— 硬编码之MediaCodec
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="SkyAcer" />
+          <p class="site-author-name" itemprop="name">SkyAcer</p>
+          <p class="site-description motion-element" itemprop="description">Little And More.</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">9</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">分类</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#native的作用"><span class="nav-number">1.1.</span> <span class="nav-text">native的作用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JNI简介"><span class="nav-number">2.</span> <span class="nav-text">JNI简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JNI的生成步骤——Mac版"><span class="nav-number">2.1.</span> <span class="nav-text">JNI的生成步骤——Mac版</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JNI实例"><span class="nav-number">3.</span> <span class="nav-text">JNI实例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-编写带有native声明的java类，HelloWorld-java"><span class="nav-number">3.1.</span> <span class="nav-text">1.编写带有native声明的java类，HelloWorld.java</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-使用javac生成HelloWorld-class"><span class="nav-number">3.2.</span> <span class="nav-text">2.使用javac生成HelloWorld.class</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-使用javah-jni-java类生成扩展名为h的头文件"><span class="nav-number">3.3.</span> <span class="nav-text">3.使用javah -jni java类生成扩展名为h的头文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4使用C-C-实现本地方法"><span class="nav-number">3.4.</span> <span class="nav-text">4使用C/C++实现本地方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-将本地方法编写的文件生成动态链接库"><span class="nav-number">3.5.</span> <span class="nav-text">5 将本地方法编写的文件生成动态链接库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-运行可执行文件"><span class="nav-number">3.6.</span> <span class="nav-text">6 运行可执行文件</span></a></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">SkyAcer</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=0.5.0"></script>
+
+
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+
+  
+
+
+</body>
+</html>

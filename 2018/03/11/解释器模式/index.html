@@ -41,7 +41,7 @@
 <link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Android," />
+  <meta name="keywords" content="设计模式," />
 
 
 
@@ -57,18 +57,21 @@
 
 
 
-<meta name="description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
-<meta name="keywords" content="Android">
+<meta name="description" content="解释器模式 今天在看虚拟机相关实现代码时，遇到了解释器模式，由于之前没用过，特地搞清楚了这种设计模式。  背景在银行、证券类项目里，经常会有一些模型的计算，通常是加、减、乘、除四则运算，当然不止这四种运算，还有更加复杂的运算公式，但是归根结底，框架都是一样的，只是实现的算法不同而已，我们来设计一个运算框架，来看看解释器模式在里面的运用。 初步设计 这样的设计一看就很清楚，通过抽象类Expressi">
+<meta name="keywords" content="设计模式">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android Disable Emoji in Edittext">
-<meta property="og:url" content="http://skyacer.github.io/2017/09/12/Android-Disable-Emoji-in-Edittext/index.html">
+<meta property="og:title" content="解释器模式">
+<meta property="og:url" content="http://skyacer.github.io/2018/03/11/解释器模式/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
-<meta property="og:description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
+<meta property="og:description" content="解释器模式 今天在看虚拟机相关实现代码时，遇到了解释器模式，由于之前没用过，特地搞清楚了这种设计模式。  背景在银行、证券类项目里，经常会有一些模型的计算，通常是加、减、乘、除四则运算，当然不止这四种运算，还有更加复杂的运算公式，但是归根结底，框架都是一样的，只是实现的算法不同而已，我们来设计一个运算框架，来看看解释器模式在里面的运用。 初步设计 这样的设计一看就很清楚，通过抽象类Expressi">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-02-28T02:29:55.000Z">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB47cf9f80b0189913c094a14cd4da71d0?method=download&shareKey=0f83c3f3fdd3602afee5cf1baf118424">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB98d78601105b7ab51a517bcfe819af4b?method=download&shareKey=c47517d824b9d1db6e6f8274bad8d4f5">
+<meta property="og:updated_time" content="2018-03-11T09:41:15.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Android Disable Emoji in Edittext">
-<meta name="twitter:description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
+<meta name="twitter:title" content="解释器模式">
+<meta name="twitter:description" content="解释器模式 今天在看虚拟机相关实现代码时，遇到了解释器模式，由于之前没用过，特地搞清楚了这种设计模式。  背景在银行、证券类项目里，经常会有一些模型的计算，通常是加、减、乘、除四则运算，当然不止这四种运算，还有更加复杂的运算公式，但是归根结底，框架都是一样的，只是实现的算法不同而已，我们来设计一个运算框架，来看看解释器模式在里面的运用。 初步设计 这样的设计一看就很清楚，通过抽象类Expressi">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB47cf9f80b0189913c094a14cd4da71d0?method=download&shareKey=0f83c3f3fdd3602afee5cf1baf118424">
 
 
 
@@ -86,7 +89,7 @@
   };
 </script>
 
-  <title> Android Disable Emoji in Edittext | SkyAcer's blog </title>
+  <title> 解释器模式 | SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -214,7 +217,7 @@
             
             
               
-                Android Disable Emoji in Edittext
+                解释器模式
               
             
           </h1>
@@ -226,8 +229,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2017-09-12T09:35:18+08:00" content="2017-09-12">
-              2017-09-12
+            <time itemprop="dateCreated" datetime="2018-03-11T17:39:05+08:00" content="2018-03-11">
+              2018-03-11
             </time>
           </span>
 
@@ -272,18 +275,28 @@
       
 
       
-        <blockquote>
-<p>If you have same requirement in development, this article may help you.</p>
+        <h1 id="解释器模式"><a href="#解释器模式" class="headerlink" title="解释器模式"></a>解释器模式</h1><blockquote>
+<p>今天在看虚拟机相关实现代码时，遇到了解释器模式，由于之前没用过，特地搞清楚了这种设计模式。</p>
 </blockquote>
-<p>Let’s how to do it in code:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> InputFilter EMOJI_FILTER = <span class="keyword">new</span> InputFilter() &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CharSequence <span class="title">filter</span><span class="params">(CharSequence source, <span class="keyword">int</span> start, <span class="keyword">int</span> end, Spanned dest, <span class="keyword">int</span> dstart, <span class="keyword">int</span> dend)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> index = start; index &lt; end; index++) &#123;</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">int</span> type = Character.getType(source.charAt(index));</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">if</span> (type == Character.SURROGATE) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>And you also need to set this filter in the edittext you want to disable Emoji.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">editText.setFilters(<span class="keyword">new</span> InputFilter[]&#123;EMOJI_FILTER&#125;);</span><br></pre></td></tr></table></figure>
-<h2 id="Why-it-can-disable-Emoji"><a href="#Why-it-can-disable-Emoji" class="headerlink" title="Why it can disable Emoji."></a>Why it can disable Emoji.</h2><blockquote>
-<p>Unicode is a computing industry standard for the consistent encoding, representation, and handling of text expressed in most of the world’s writing systems.</p>
-</blockquote>
-<p>Emoji use area of Unicode with a range of code points from U+1F604 to U+1F539.<br>And <code>Character.SURROGATE</code>reserved the range is over the Emoji’s.</p>
-<p>If you find a better method, you also can <a href="mailto:skyacer.me@gmail.com" target="_blank" rel="noopener">contact with me</a></p>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>在银行、证券类项目里，经常会有一些模型的计算，通常是加、减、乘、除四则运算，当然不止这四种运算，还有更加复杂的运算公式，但是归根结底，框架都是一样的，只是实现的算法不同而已，我们来设计一个运算框架，来看看解释器模式在里面的运用。</p>
+<h2 id="初步设计"><a href="#初步设计" class="headerlink" title="初步设计"></a>初步设计</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB47cf9f80b0189913c094a14cd4da71d0?method=download&amp;shareKey=0f83c3f3fdd3602afee5cf1baf118424" alt="初步设计"></p>
+<p>这样的设计一看就很清楚，通过抽象类Expression，各个具体实现的子类，比如负责加法运算，负责减法运算的类等等都需要继承这个抽象类。</p>
+<h2 id="优化设计"><a href="#优化设计" class="headerlink" title="优化设计"></a>优化设计</h2><p><img src="" alt="优化设计"></p>
+<p>根据<a href="[迪米特法则_百度百科](https://baike.baidu.com/item/%E8%BF%AA%E7%B1%B3%E7%89%B9%E6%B3%95%E5%88%99">迪米特法则</a>)，再通过Client类只与直接的朋友Calculator交流，与其他的类没关系。</p>
+<h2 id="解释器模式-1"><a href="#解释器模式-1" class="headerlink" title="解释器模式"></a>解释器模式</h2><p>解释器模式（Interpreter Pattern）是一种按照规定语法进行解析的方案，在现在项目中使用较少，其定义如下：给定一门语言，定义它的文法的一种表示，并定义一个解释器，该解释器使用该表示来解释语言中的句子。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB98d78601105b7ab51a517bcfe819af4b?method=download&amp;shareKey=c47517d824b9d1db6e6f8274bad8d4f5" alt="解释器模式通用类图"></p>
+<ul>
+<li>AbstractExpression——抽象解释器，具体的解释任务由各个实现类完成，具体的解释器分别由TerminalExpression和NonTerminalExpression完成。</li>
+<li>TerminalExpression终结符表达式，实现与文法中的元素相关联的解释操作，通常一个解释器模式中只有一个终结符表达式，但有多个实例，具体例子中是</li>
+<li>NonterminalExpression——非终结符表达式，具体到我们的例子就是加减法规则分别对应AddExpression和SubExpression两个类。</li>
+<li>Context——环境角色，具体到例子里是采用HashMap代替。</li>
+</ul>
+<h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><p>解释器是一个简单的语法分析工具，最显著的特定就是扩展性，如果需要扩展语法，增加非终结符就可以了。</p>
+<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><ol>
+<li>解释器会引起类膨胀</li>
+<li>采用递归调用方法</li>
+<li>效率问题</li>
+</ol>
 
       
     </div>
@@ -298,7 +311,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Android/" rel="tag">#Android</a>
+            <a href="/tags/设计模式/" rel="tag">#设计模式</a>
           
         </div>
       
@@ -307,17 +320,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/08/21/iTerm2-config-proxy/" rel="next" title="iTerm2 configure proxy">
-                <i class="fa fa-chevron-left"></i> iTerm2 configure proxy
+              <a href="/2018/03/10/Java-native方法及JNI实例/" rel="next" title="Java native方法及JNI实例">
+                <i class="fa fa-chevron-left"></i> Java native方法及JNI实例
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/10/24/我们该如何做好Code-Review/" rel="prev" title="我们该如何做好Code-Review?">
-                我们该如何做好Code-Review? <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -435,7 +444,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-it-can-disable-Emoji"><span class="nav-number">1.</span> <span class="nav-text">Why it can disable Emoji.</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#解释器模式"><span class="nav-number">1.</span> <span class="nav-text">解释器模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#初步设计"><span class="nav-number">1.2.</span> <span class="nav-text">初步设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优化设计"><span class="nav-number">1.3.</span> <span class="nav-text">优化设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解释器模式-1"><span class="nav-number">1.4.</span> <span class="nav-text">解释器模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优点"><span class="nav-number">1.5.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缺点"><span class="nav-number">1.6.</span> <span class="nav-text">缺点</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">

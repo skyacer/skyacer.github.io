@@ -215,6 +215,120 @@
             
               
                 
+                <a class="post-title-link" href="/2017/08/21/iTerm2-config-proxy/" itemprop="url">
+                  iTerm2 configure proxy
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-08-21T16:01:05+08:00" content="2017-08-21">
+              2017-08-21
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/setting/" itemprop="url" rel="index">
+                    <span itemprop="name">配置</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <blockquote>
+<p>Today, I use shadowscoks to accelerate iTerm2 with global mode. But I found that iTerm2 not use shadowsocks either. So I found some method may help you to solve this problems.</p>
+</blockquote>
+<h2 id="socks-proxy"><a href="#socks-proxy" class="headerlink" title="socks proxy"></a>socks proxy</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy=socks5://127.0.0.1:1080</span><br></pre></td></tr></table></figure>
+<h2 id="http-proxy"><a href="#http-proxy" class="headerlink" title="http proxy"></a>http proxy</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http_proxy=http://localhost:8035/</span><br></pre></td></tr></table></figure>
+<h2 id="https-proxy"><a href="#https-proxy" class="headerlink" title="https proxy"></a>https proxy</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https_proxy=http://localhost:8035/</span><br></pre></td></tr></table></figure>
+<p>Now, after you configure these proxy, you can judge it by<code>curl ifconfig.me</code>. If it shows your proxy’s ip, and it means that you are success.</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2017/07/21/解决Android-Studio-HTTP网络代理错误提示/" itemprop="url">
                   解决Android-Studio-HTTP网络代理错误提示
                 </a>
@@ -352,7 +466,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">11</span>
+              <span class="site-state-item-count">12</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -360,7 +474,7 @@
           
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>

@@ -57,18 +57,23 @@
 
 
 
-<meta name="description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
+<meta name="description" content="Smali浅析及dex,java互转 今天在看热修复时，文中多次提到smali文件，索性一次性将其搞明白。  Smali文件是什么？Android程序员用Java语言开发APP，编译工具会将Java源文件（.java）编译成Dalvik可执行文件（.dex）。Android系统中Dalvik Virtual Machine 会执行该文件。smali/baksmali则是Dalvik VM可执行文件">
 <meta name="keywords" content="Android">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android Disable Emoji in Edittext">
-<meta property="og:url" content="http://skyacer.github.io/2017/09/12/Android-Disable-Emoji-in-Edittext/index.html">
+<meta property="og:title" content="Smali浅析及dex,java互转">
+<meta property="og:url" content="http://skyacer.github.io/2018/03/15/Smali浅析及dex-java互转/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
-<meta property="og:description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
+<meta property="og:description" content="Smali浅析及dex,java互转 今天在看热修复时，文中多次提到smali文件，索性一次性将其搞明白。  Smali文件是什么？Android程序员用Java语言开发APP，编译工具会将Java源文件（.java）编译成Dalvik可执行文件（.dex）。Android系统中Dalvik Virtual Machine 会执行该文件。smali/baksmali则是Dalvik VM可执行文件">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-02-28T02:29:55.000Z">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBf7bc5c52f9ae48bd1139a2c9aa1e0a84?method=download&shareKey=3d0688dddd774b00c561d9e0cdc6e39d">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBd87465c39d4be8a079d281efd9d97fba?method=download&shareKey=bfe9017215668d1a772dc7dacedfc784">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBcb9c9ac545a9642e39ead74cb6a23870?method=download&shareKey=b4f104247e03390ad5eb8585e0b64905">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB6bbc9762fc4093c4739c74c92e06e34f?method=download&shareKey=6b4cd1db87da67bf55f14e2c4ced021d">
+<meta property="og:updated_time" content="2018-03-15T07:26:59.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Android Disable Emoji in Edittext">
-<meta name="twitter:description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
+<meta name="twitter:title" content="Smali浅析及dex,java互转">
+<meta name="twitter:description" content="Smali浅析及dex,java互转 今天在看热修复时，文中多次提到smali文件，索性一次性将其搞明白。  Smali文件是什么？Android程序员用Java语言开发APP，编译工具会将Java源文件（.java）编译成Dalvik可执行文件（.dex）。Android系统中Dalvik Virtual Machine 会执行该文件。smali/baksmali则是Dalvik VM可执行文件">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEBf7bc5c52f9ae48bd1139a2c9aa1e0a84?method=download&shareKey=3d0688dddd774b00c561d9e0cdc6e39d">
 
 
 
@@ -86,7 +91,7 @@
   };
 </script>
 
-  <title> Android Disable Emoji in Edittext | SkyAcer's blog </title>
+  <title> Smali浅析及dex,java互转 | SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -214,7 +219,7 @@
             
             
               
-                Android Disable Emoji in Edittext
+                Smali浅析及dex,java互转
               
             
           </h1>
@@ -226,8 +231,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2017-09-12T09:35:18+08:00" content="2017-09-12">
-              2017-09-12
+            <time itemprop="dateCreated" datetime="2018-03-15T15:25:33+08:00" content="2018-03-15">
+              2018-03-15
             </time>
           </span>
 
@@ -240,8 +245,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
+                  <a href="/categories/虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">虚拟机</span>
                   </a>
                 </span>
 
@@ -272,18 +277,23 @@
       
 
       
-        <blockquote>
-<p>If you have same requirement in development, this article may help you.</p>
+        <h1 id="Smali浅析及dex-java互转"><a href="#Smali浅析及dex-java互转" class="headerlink" title="Smali浅析及dex,java互转"></a>Smali浅析及dex,java互转</h1><blockquote>
+<p>今天在看热修复时，文中多次提到smali文件，索性一次性将其搞明白。</p>
 </blockquote>
-<p>Let’s how to do it in code:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> InputFilter EMOJI_FILTER = <span class="keyword">new</span> InputFilter() &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CharSequence <span class="title">filter</span><span class="params">(CharSequence source, <span class="keyword">int</span> start, <span class="keyword">int</span> end, Spanned dest, <span class="keyword">int</span> dstart, <span class="keyword">int</span> dend)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> index = start; index &lt; end; index++) &#123;</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">int</span> type = Character.getType(source.charAt(index));</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">if</span> (type == Character.SURROGATE) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>And you also need to set this filter in the edittext you want to disable Emoji.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">editText.setFilters(<span class="keyword">new</span> InputFilter[]&#123;EMOJI_FILTER&#125;);</span><br></pre></td></tr></table></figure>
-<h2 id="Why-it-can-disable-Emoji"><a href="#Why-it-can-disable-Emoji" class="headerlink" title="Why it can disable Emoji."></a>Why it can disable Emoji.</h2><blockquote>
-<p>Unicode is a computing industry standard for the consistent encoding, representation, and handling of text expressed in most of the world’s writing systems.</p>
-</blockquote>
-<p>Emoji use area of Unicode with a range of code points from U+1F604 to U+1F539.<br>And <code>Character.SURROGATE</code>reserved the range is over the Emoji’s.</p>
-<p>If you find a better method, you also can <a href="mailto:skyacer.me@gmail.com" target="_blank" rel="noopener">contact with me</a></p>
+<h2 id="Smali文件是什么？"><a href="#Smali文件是什么？" class="headerlink" title="Smali文件是什么？"></a>Smali文件是什么？</h2><p>Android程序员用Java语言开发APP，编译工具会将Java源文件（.java）编译成Dalvik可执行文件（.dex）。Android系统中Dalvik Virtual Machine 会执行该文件。smali/baksmali则是Dalvik VM可执行文件的汇编器/反汇编器。反汇编Dalvik可执行文件（.dex）后，将会得到.smali后缀文件。smali代码拥有特定的语法。<br>相比于.dex文件，smali文件的语法更容易理解些。下面是.dex文件、.smali文件、.java文件三者之间的转化关系。 </p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBf7bc5c52f9ae48bd1139a2c9aa1e0a84?method=download&amp;shareKey=3d0688dddd774b00c561d9e0cdc6e39d" alt=""></p>
+<h2 id="为什么要学会smali"><a href="#为什么要学会smali" class="headerlink" title="为什么要学会smali"></a>为什么要学会smali</h2><p>当我们反编译之后得到jar或者smali文件，android采用java语言开发，但是android系统使用自己的dalvik虚拟机，代码编译最终不是采用java的class，而是使用smali。因此我们反编译得到的代码，jar的话很多地方无法正确的解释出来，如果我们反编译的是smali则可以正确的理解程序的意思，因此学会smali十分有必要</p>
+<h2 id="将-java文件转化成-dex文件，在Dalvik-VM中来执行-dex文件"><a href="#将-java文件转化成-dex文件，在Dalvik-VM中来执行-dex文件" class="headerlink" title="将.java文件转化成.dex文件，在Dalvik VM中来执行.dex文件"></a>将.java文件转化成.dex文件，在Dalvik VM中来执行.dex文件</h2><h3 id="创建java文件"><a href="#创建java文件" class="headerlink" title="创建java文件"></a>创建java文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class Foo&#123;</span><br><span class="line">    public static void main(String [] args)&#123;</span><br><span class="line">            System.out.println(&quot;Hello, world!haha&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="将-java转换成-class文件"><a href="#将-java转换成-class文件" class="headerlink" title="将.java转换成.class文件"></a>将.java转换成.class文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac Foo.java</span><br></pre></td></tr></table></figure>
+<h3 id="将-class转换成-dex文件，由于需要安装到设备，直接转成-apk文件"><a href="#将-class转换成-dex文件，由于需要安装到设备，直接转成-apk文件" class="headerlink" title="将.class转换成.dex文件，由于需要安装到设备，直接转成.apk文件"></a>将.class转换成.dex文件，由于需要安装到设备，直接转成.apk文件</h3><p>这里需要用到sdk/build-tool/ 的dx工具</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dx --dex --output=foo.apk Foo.class</span><br></pre></td></tr></table></figure>
+<h3 id="安装到设备上"><a href="#安装到设备上" class="headerlink" title="安装到设备上"></a>安装到设备上</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push foo.apk /sdcard/</span><br></pre></td></tr></table></figure>
+<h3 id="调用Dalvik-VM执行foo-apk"><a href="#调用Dalvik-VM执行foo-apk" class="headerlink" title="调用Dalvik VM执行foo.apk"></a>调用Dalvik VM执行foo.apk</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line"></span><br><span class="line">dalvikvm -cp /sdcard/foo.apk Foo</span><br></pre></td></tr></table></figure>
+<p>显示如下结果：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBd87465c39d4be8a079d281efd9d97fba?method=download&amp;shareKey=bfe9017215668d1a772dc7dacedfc784" alt="执行foo.apk"></p>
+<h2 id="dex文件转换成-smali文件"><a href="#dex文件转换成-smali文件" class="headerlink" title=".dex文件转换成.smali文件"></a>.dex文件转换成.smali文件</h2><p>这里我们要用到一个工具smali.jar，<a href="https://bitbucket.org/JesusFreke/smali/downloads/" target="_blank" rel="noopener">点此下载</a></p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBcb9c9ac545a9642e39ead74cb6a23870?method=download&amp;shareKey=b4f104247e03390ad5eb8585e0b64905" alt="转换.smali文件"></p>
+<h2 id="smali文件转换成-dex文件"><a href="#smali文件转换成-dex文件" class="headerlink" title=".smali文件转换成.dex文件"></a>.smali文件转换成.dex文件</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6bbc9762fc4093c4739c74c92e06e34f?method=download&amp;shareKey=6b4cd1db87da67bf55f14e2c4ced021d" alt="转换.smali文件"></p>
 
       
     </div>
@@ -307,17 +317,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/08/21/iTerm2-config-proxy/" rel="next" title="iTerm2 configure proxy">
-                <i class="fa fa-chevron-left"></i> iTerm2 configure proxy
+              <a href="/2018/03/14/《Head-first-HTML与CSS》读书笔记/" rel="next" title="《Head first HTML与CSS》读书笔记">
+                <i class="fa fa-chevron-left"></i> 《Head first HTML与CSS》读书笔记
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/10/24/我们该如何做好Code-Review/" rel="prev" title="我们该如何做好Code-Review?">
-                我们该如何做好Code-Review? <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -435,7 +441,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-it-can-disable-Emoji"><span class="nav-number">1.</span> <span class="nav-text">Why it can disable Emoji.</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Smali浅析及dex-java互转"><span class="nav-number">1.</span> <span class="nav-text">Smali浅析及dex,java互转</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Smali文件是什么？"><span class="nav-number">1.1.</span> <span class="nav-text">Smali文件是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要学会smali"><span class="nav-number">1.2.</span> <span class="nav-text">为什么要学会smali</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将-java文件转化成-dex文件，在Dalvik-VM中来执行-dex文件"><span class="nav-number">1.3.</span> <span class="nav-text">将.java文件转化成.dex文件，在Dalvik VM中来执行.dex文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建java文件"><span class="nav-number">1.3.1.</span> <span class="nav-text">创建java文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#将-java转换成-class文件"><span class="nav-number">1.3.2.</span> <span class="nav-text">将.java转换成.class文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#将-class转换成-dex文件，由于需要安装到设备，直接转成-apk文件"><span class="nav-number">1.3.3.</span> <span class="nav-text">将.class转换成.dex文件，由于需要安装到设备，直接转成.apk文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装到设备上"><span class="nav-number">1.3.4.</span> <span class="nav-text">安装到设备上</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#调用Dalvik-VM执行foo-apk"><span class="nav-number">1.3.5.</span> <span class="nav-text">调用Dalvik VM执行foo.apk</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dex文件转换成-smali文件"><span class="nav-number">1.4.</span> <span class="nav-text">.dex文件转换成.smali文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#smali文件转换成-dex文件"><span class="nav-number">1.5.</span> <span class="nav-text">.smali文件转换成.dex文件</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">

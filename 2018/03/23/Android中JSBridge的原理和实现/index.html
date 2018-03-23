@@ -57,23 +57,21 @@
 
 
 
-<meta name="description" content="Smali浅析及dex,java互转 今天在看热修复时，文中多次提到smali文件，索性一次性将其搞明白。  Smali文件是什么？Android程序员用Java语言开发APP，编译工具会将Java源文件（.java）编译成Dalvik可执行文件（.dex）。Android系统中Dalvik Virtual Machine 会执行该文件。smali/baksmali则是Dalvik VM可执行文件">
+<meta name="description" content="Android中JSBridge的原理和实现Java如何调用JavaScript？通过Webview的loadUrl实现，格式为 1WebView.loadUrl(&amp;quot;javascript:function()&amp;quot;); JavaScript如何调用Java？在JavaScript中，当调用window对象的prompt方法时，会触发Java中的WebChromeClient对象的o">
 <meta name="keywords" content="Android">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Smali浅析及dex,java互转">
-<meta property="og:url" content="http://skyacer.github.io/2018/03/15/Smali浅析及dex-java互转/index.html">
+<meta property="og:title" content="Android中JSBridge的原理和实现">
+<meta property="og:url" content="http://skyacer.github.io/2018/03/23/Android中JSBridge的原理和实现/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
-<meta property="og:description" content="Smali浅析及dex,java互转 今天在看热修复时，文中多次提到smali文件，索性一次性将其搞明白。  Smali文件是什么？Android程序员用Java语言开发APP，编译工具会将Java源文件（.java）编译成Dalvik可执行文件（.dex）。Android系统中Dalvik Virtual Machine 会执行该文件。smali/baksmali则是Dalvik VM可执行文件">
+<meta property="og:description" content="Android中JSBridge的原理和实现Java如何调用JavaScript？通过Webview的loadUrl实现，格式为 1WebView.loadUrl(&amp;quot;javascript:function()&amp;quot;); JavaScript如何调用Java？在JavaScript中，当调用window对象的prompt方法时，会触发Java中的WebChromeClient对象的o">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBf7bc5c52f9ae48bd1139a2c9aa1e0a84?method=download&shareKey=3d0688dddd774b00c561d9e0cdc6e39d">
-<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBd87465c39d4be8a079d281efd9d97fba?method=download&shareKey=bfe9017215668d1a772dc7dacedfc784">
-<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBcb9c9ac545a9642e39ead74cb6a23870?method=download&shareKey=b4f104247e03390ad5eb8585e0b64905">
-<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB6bbc9762fc4093c4739c74c92e06e34f?method=download&shareKey=6b4cd1db87da67bf55f14e2c4ced021d">
-<meta property="og:updated_time" content="2018-03-15T07:28:08.000Z">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBa8108b16603bdc5383f216303cf9bece?method=download&shareKey=f009640af1cc59eeaac1d9d162e096b3">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBcc5446892fa809c8caafe4425dda21a0?method=download&shareKey=b1376e3c24fa9aa44b836cc1f261ea07">
+<meta property="og:updated_time" content="2018-03-23T07:49:35.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Smali浅析及dex,java互转">
-<meta name="twitter:description" content="Smali浅析及dex,java互转 今天在看热修复时，文中多次提到smali文件，索性一次性将其搞明白。  Smali文件是什么？Android程序员用Java语言开发APP，编译工具会将Java源文件（.java）编译成Dalvik可执行文件（.dex）。Android系统中Dalvik Virtual Machine 会执行该文件。smali/baksmali则是Dalvik VM可执行文件">
-<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEBf7bc5c52f9ae48bd1139a2c9aa1e0a84?method=download&shareKey=3d0688dddd774b00c561d9e0cdc6e39d">
+<meta name="twitter:title" content="Android中JSBridge的原理和实现">
+<meta name="twitter:description" content="Android中JSBridge的原理和实现Java如何调用JavaScript？通过Webview的loadUrl实现，格式为 1WebView.loadUrl(&amp;quot;javascript:function()&amp;quot;); JavaScript如何调用Java？在JavaScript中，当调用window对象的prompt方法时，会触发Java中的WebChromeClient对象的o">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEBa8108b16603bdc5383f216303cf9bece?method=download&shareKey=f009640af1cc59eeaac1d9d162e096b3">
 
 
 
@@ -91,7 +89,7 @@
   };
 </script>
 
-  <title> Smali浅析及dex,java互转 | SkyAcer's blog </title>
+  <title> Android中JSBridge的原理和实现 | SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -219,7 +217,7 @@
             
             
               
-                Smali浅析及dex,java互转
+                Android中JSBridge的原理和实现
               
             
           </h1>
@@ -231,8 +229,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-15T15:25:33+08:00" content="2018-03-15">
-              2018-03-15
+            <time itemprop="dateCreated" datetime="2018-03-23T15:49:11+08:00" content="2018-03-23">
+              2018-03-23
             </time>
           </span>
 
@@ -245,8 +243,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/虚拟机/" itemprop="url" rel="index">
-                    <span itemprop="name">虚拟机</span>
+                  <a href="/categories/hybrid/" itemprop="url" rel="index">
+                    <span itemprop="name">hybrid</span>
                   </a>
                 </span>
 
@@ -277,23 +275,19 @@
       
 
       
-        <h1 id="Smali浅析及dex-java互转"><a href="#Smali浅析及dex-java互转" class="headerlink" title="Smali浅析及dex,java互转"></a>Smali浅析及dex,java互转</h1><blockquote>
-<p>今天在看热修复时，文中多次提到smali文件，索性一次性将其搞明白。</p>
-</blockquote>
-<h2 id="Smali文件是什么？"><a href="#Smali文件是什么？" class="headerlink" title="Smali文件是什么？"></a>Smali文件是什么？</h2><p>Android程序员用Java语言开发APP，编译工具会将Java源文件（.java）编译成Dalvik可执行文件（.dex）。Android系统中Dalvik Virtual Machine 会执行该文件。smali/baksmali则是Dalvik VM可执行文件的汇编器/反汇编器。反汇编Dalvik可执行文件（.dex）后，将会得到.smali后缀文件。smali代码拥有特定的语法。<br>相比于.dex文件，smali文件的语法更容易理解些。下面是.dex文件、.smali文件、.java文件三者之间的转化关系。 </p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBf7bc5c52f9ae48bd1139a2c9aa1e0a84?method=download&amp;shareKey=3d0688dddd774b00c561d9e0cdc6e39d" alt=""></p>
-<h2 id="为什么要学会smali"><a href="#为什么要学会smali" class="headerlink" title="为什么要学会smali"></a>为什么要学会smali</h2><p>当我们反编译之后得到jar或者smali文件，android采用java语言开发，但是android系统使用自己的dalvik虚拟机，代码编译最终不是采用java的class，而是使用smali。因此我们反编译得到的代码，jar的话很多地方无法正确的解释出来，如果我们反编译的是smali则可以正确的理解程序的意思，因此学会smali十分有必要</p>
-<h2 id="将-java文件转化成-dex文件，在Dalvik-VM中来执行-dex文件"><a href="#将-java文件转化成-dex文件，在Dalvik-VM中来执行-dex文件" class="headerlink" title="将.java文件转化成.dex文件，在Dalvik VM中来执行.dex文件"></a>将.java文件转化成.dex文件，在Dalvik VM中来执行.dex文件</h2><h3 id="创建java文件"><a href="#创建java文件" class="headerlink" title="创建java文件"></a>创建java文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class Foo&#123;</span><br><span class="line">    public static void main(String [] args)&#123;</span><br><span class="line">            System.out.println(&quot;Hello, world!haha&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="将-java转换成-class文件"><a href="#将-java转换成-class文件" class="headerlink" title="将.java转换成.class文件"></a>将.java转换成.class文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac Foo.java</span><br></pre></td></tr></table></figure>
-<h3 id="将-class转换成-dex文件，由于需要安装到设备，直接转成-apk文件"><a href="#将-class转换成-dex文件，由于需要安装到设备，直接转成-apk文件" class="headerlink" title="将.class转换成.dex文件，由于需要安装到设备，直接转成.apk文件"></a>将.class转换成.dex文件，由于需要安装到设备，直接转成.apk文件</h3><p>这里需要用到sdk/build-tool/ 的dx工具</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dx --dex --output=foo.apk Foo.class</span><br></pre></td></tr></table></figure>
-<h3 id="安装到设备上"><a href="#安装到设备上" class="headerlink" title="安装到设备上"></a>安装到设备上</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push foo.apk /sdcard/</span><br></pre></td></tr></table></figure>
-<h3 id="调用Dalvik-VM执行foo-apk"><a href="#调用Dalvik-VM执行foo-apk" class="headerlink" title="调用Dalvik VM执行foo.apk"></a>调用Dalvik VM执行foo.apk</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line"></span><br><span class="line">dalvikvm -cp /sdcard/foo.apk Foo</span><br></pre></td></tr></table></figure>
-<p>显示如下结果：</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBd87465c39d4be8a079d281efd9d97fba?method=download&amp;shareKey=bfe9017215668d1a772dc7dacedfc784" alt="执行foo.apk"></p>
-<h2 id="dex文件转换成-smali文件"><a href="#dex文件转换成-smali文件" class="headerlink" title=".dex文件转换成.smali文件"></a>.dex文件转换成.smali文件</h2><p>这里我们要用到一个工具smali.jar，<a href="https://bitbucket.org/JesusFreke/smali/downloads/" target="_blank" rel="noopener">点此下载</a></p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBcb9c9ac545a9642e39ead74cb6a23870?method=download&amp;shareKey=b4f104247e03390ad5eb8585e0b64905" alt="转换.smali文件"></p>
-<h2 id="smali文件转换成-dex文件"><a href="#smali文件转换成-dex文件" class="headerlink" title=".smali文件转换成.dex文件"></a>.smali文件转换成.dex文件</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6bbc9762fc4093c4739c74c92e06e34f?method=download&amp;shareKey=6b4cd1db87da67bf55f14e2c4ced021d" alt="转换.smali文件"></p>
+        <h1 id="Android中JSBridge的原理和实现"><a href="#Android中JSBridge的原理和实现" class="headerlink" title="Android中JSBridge的原理和实现"></a>Android中JSBridge的原理和实现</h1><h2 id="Java如何调用JavaScript？"><a href="#Java如何调用JavaScript？" class="headerlink" title="Java如何调用JavaScript？"></a>Java如何调用JavaScript？</h2><p>通过Webview的loadUrl实现，格式为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WebView.loadUrl(&quot;javascript:function()&quot;);</span><br></pre></td></tr></table></figure>
+<h2 id="JavaScript如何调用Java？"><a href="#JavaScript如何调用Java？" class="headerlink" title="JavaScript如何调用Java？"></a>JavaScript如何调用Java？</h2><p>在JavaScript中，当调用window对象的prompt方法时，会触发Java中的WebChromeClient对象的onJsPrompt方法，可以利用这个机制来实现js调用native的代码。</p>
+<h2 id="通信的数据格式是什么样的？"><a href="#通信的数据格式是什么样的？" class="headerlink" title="通信的数据格式是什么样的？"></a>通信的数据格式是什么样的？</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jsbridge://className:port/methodName?jsonObj</span><br></pre></td></tr></table></figure>
+<p>当js调用native的某个方法时，需要className类名，port值是当native需要将操作结果返回给js时，在js中定义的一个callback，并且将这个callback存储在指定的位置上，这个port就是定义了callback的存储位置。</p>
+<h2 id="JSBridge的流程是什么样的？"><a href="#JSBridge的流程是什么样的？" class="headerlink" title="JSBridge的流程是什么样的？"></a>JSBridge的流程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBa8108b16603bdc5383f216303cf9bece?method=download&amp;shareKey=f009640af1cc59eeaac1d9d162e096b3" alt="JSBridge流程图"></p>
+<p>H5-&gt;通过某种方式触发一个url-&gt;Native捕获到url,进行分析-&gt;原生做处理-&gt;Native调用H5的JSBridge对象传递回调</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBcc5446892fa809c8caafe4425dda21a0?method=download&amp;shareKey=b1376e3c24fa9aa44b836cc1f261ea07" alt="h5与原生页面交互流程"></p>
+<h2 id="JSBridge使用过程中的兼容性问题？"><a href="#JSBridge使用过程中的兼容性问题？" class="headerlink" title="JSBridge使用过程中的兼容性问题？"></a>JSBridge使用过程中的兼容性问题？</h2><ol>
+<li>字符串转义抛出异常，在jsbridge传递数据的时候，必须以json形式传递，不能直接传递string，bool等基础类型，这样才能应用固定的转义规则。</li>
+<li>Javascript调用原生方法会偶现失败。失败的时机是在webView调用onPageFinished前后。解决方式如下：1) js自己刷新两次 2）先调用一个空方法，然后settimeout 20ms来进行主要业务的调用，避开onPageFinished时间点。</li>
+<li>webview要执行js代码必须在主线程，如果在子线程会出现js收不到native的传值。</li>
+</ol>
 
       
     </div>
@@ -317,17 +311,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/03/14/《Head-first-HTML与CSS》读书笔记/" rel="next" title="《Head first HTML与CSS》读书笔记">
-                <i class="fa fa-chevron-left"></i> 《Head first HTML与CSS》读书笔记
+              <a href="/2018/03/23/Android主流视频播放及缓存实现原理调研/" rel="next" title="Android主流视频播放及缓存实现原理调研">
+                <i class="fa fa-chevron-left"></i> Android主流视频播放及缓存实现原理调研
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/03/16/责任链模式/" rel="prev" title="责任链模式">
-                责任链模式 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -445,7 +435,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Smali浅析及dex-java互转"><span class="nav-number">1.</span> <span class="nav-text">Smali浅析及dex,java互转</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Smali文件是什么？"><span class="nav-number">1.1.</span> <span class="nav-text">Smali文件是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要学会smali"><span class="nav-number">1.2.</span> <span class="nav-text">为什么要学会smali</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将-java文件转化成-dex文件，在Dalvik-VM中来执行-dex文件"><span class="nav-number">1.3.</span> <span class="nav-text">将.java文件转化成.dex文件，在Dalvik VM中来执行.dex文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建java文件"><span class="nav-number">1.3.1.</span> <span class="nav-text">创建java文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#将-java转换成-class文件"><span class="nav-number">1.3.2.</span> <span class="nav-text">将.java转换成.class文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#将-class转换成-dex文件，由于需要安装到设备，直接转成-apk文件"><span class="nav-number">1.3.3.</span> <span class="nav-text">将.class转换成.dex文件，由于需要安装到设备，直接转成.apk文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装到设备上"><span class="nav-number">1.3.4.</span> <span class="nav-text">安装到设备上</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#调用Dalvik-VM执行foo-apk"><span class="nav-number">1.3.5.</span> <span class="nav-text">调用Dalvik VM执行foo.apk</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dex文件转换成-smali文件"><span class="nav-number">1.4.</span> <span class="nav-text">.dex文件转换成.smali文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#smali文件转换成-dex文件"><span class="nav-number">1.5.</span> <span class="nav-text">.smali文件转换成.dex文件</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android中JSBridge的原理和实现"><span class="nav-number">1.</span> <span class="nav-text">Android中JSBridge的原理和实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Java如何调用JavaScript？"><span class="nav-number">1.1.</span> <span class="nav-text">Java如何调用JavaScript？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JavaScript如何调用Java？"><span class="nav-number">1.2.</span> <span class="nav-text">JavaScript如何调用Java？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通信的数据格式是什么样的？"><span class="nav-number">1.3.</span> <span class="nav-text">通信的数据格式是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JSBridge的流程是什么样的？"><span class="nav-number">1.4.</span> <span class="nav-text">JSBridge的流程是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JSBridge使用过程中的兼容性问题？"><span class="nav-number">1.5.</span> <span class="nav-text">JSBridge使用过程中的兼容性问题？</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">

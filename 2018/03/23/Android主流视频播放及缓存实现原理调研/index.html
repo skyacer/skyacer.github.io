@@ -1,0 +1,767 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="Android主流视频播放及缓存实现原理调研前言本文针对视频播放及缓存方案进行调研，对于Android端常用的视频播放器的缓存策略介绍及实现原理。 播放器直连 流程图 优点实现简单，逻辑易懂。 缺点 用户播放视频的时候等待时间较长，起播慢 需要大量的控制视频播放的逻辑来进行辅助，与播放器代码耦合严重 每次seek（用户拖动进度条的行为）切源耗时，seek后会切换到从网络上读取状态，体验较慢。  A">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android主流视频播放及缓存实现原理调研">
+<meta property="og:url" content="http://skyacer.github.io/2018/03/23/Android主流视频播放及缓存实现原理调研/index.html">
+<meta property="og:site_name" content="SkyAcer&#39;s blog">
+<meta property="og:description" content="Android主流视频播放及缓存实现原理调研前言本文针对视频播放及缓存方案进行调研，对于Android端常用的视频播放器的缓存策略介绍及实现原理。 播放器直连 流程图 优点实现简单，逻辑易懂。 缺点 用户播放视频的时候等待时间较长，起播慢 需要大量的控制视频播放的逻辑来进行辅助，与播放器代码耦合严重 每次seek（用户拖动进度条的行为）切源耗时，seek后会切换到从网络上读取状态，体验较慢。  A">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-c0cae65b29463412?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-30cc16c3c746929a?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-791115737d78b9e4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-c1022646e5511912?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-5fbb7cc98446550f?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-d0c87097a0f7c5da?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-a93d9ccb81ab73ed?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-38ff3551de7372b4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-b7a8d82c97132297?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-85bfdbf9a702e12e?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-b77c6b39f7ba0e5d?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-caa54a2250d75023?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-97cd002ecde5a9b4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4287000-a29eba87469059f1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-03-23T07:48:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android主流视频播放及缓存实现原理调研">
+<meta name="twitter:description" content="Android主流视频播放及缓存实现原理调研前言本文针对视频播放及缓存方案进行调研，对于Android端常用的视频播放器的缓存策略介绍及实现原理。 播放器直连 流程图 优点实现简单，逻辑易懂。 缺点 用户播放视频的时候等待时间较长，起播慢 需要大量的控制视频播放的逻辑来进行辅助，与播放器代码耦合严重 每次seek（用户拖动进度条的行为）切源耗时，seek后会切换到从网络上读取状态，体验较慢。  A">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/4287000-c0cae65b29463412?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Android主流视频播放及缓存实现原理调研 | SkyAcer's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SkyAcer's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Hacking,Thoughts.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-heartbeat fa-fw"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android主流视频播放及缓存实现原理调研
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-23T15:42:36+08:00" content="2018-03-23">
+              2018-03-23
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/视频方案/" itemprop="url" rel="index">
+                    <span itemprop="name">视频方案</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Android主流视频播放及缓存实现原理调研"><a href="#Android主流视频播放及缓存实现原理调研" class="headerlink" title="Android主流视频播放及缓存实现原理调研"></a>Android主流视频播放及缓存实现原理调研</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文针对视频播放及缓存方案进行调研，对于Android端常用的视频播放器的缓存策略介绍及实现原理。</p>
+<h2 id="播放器直连"><a href="#播放器直连" class="headerlink" title="播放器直连"></a>播放器直连</h2><p><img src="http://upload-images.jianshu.io/upload_images/4287000-c0cae65b29463412?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="本地存储形式缓存"></p>
+<h3 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h3><p><img src="http://upload-images.jianshu.io/upload_images/4287000-30cc16c3c746929a?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><p>实现简单，逻辑易懂。</p>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
+<li>用户播放视频的时候等待时间较长，起播慢</li>
+<li>需要大量的控制视频播放的逻辑来进行辅助，与播放器代码耦合严重</li>
+<li>每次seek（用户拖动进度条的行为）切源耗时，seek后会切换到从网络上读取状态，体验较慢。</li>
+</ol>
+<h2 id="AndroidVideoCache"><a href="#AndroidVideoCache" class="headerlink" title="AndroidVideoCache"></a>AndroidVideoCache</h2><p>在播放器与视频源服务器之间加了一层代理服务器，截取视频播放器发送的请求，根据截取的请求，向网络服务器请求数据，然后写到本地。本地代理服务器从文件中读取数据并发送给播放器进行播放。</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4287000-791115737d78b9e4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidVideoCache实现原理"></p>
+<h3 id="流程图-1"><a href="#流程图-1" class="headerlink" title="流程图"></a>流程图</h3><p><img src="http://upload-images.jianshu.io/upload_images/4287000-c1022646e5511912?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidVideCache流程图"></p>
+<h3 id="Seek过程解析"><a href="#Seek过程解析" class="headerlink" title="Seek过程解析"></a>Seek过程解析</h3><h4 id="Seek阶段"><a href="#Seek阶段" class="headerlink" title="Seek阶段"></a>Seek阶段</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-5fbb7cc98446550f?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Seek阶段总流程图"></p>
+<h4 id="Seek开始"><a href="#Seek开始" class="headerlink" title="Seek开始"></a>Seek开始</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-d0c87097a0f7c5da?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h4 id="Seek1"><a href="#Seek1" class="headerlink" title="Seek1"></a>Seek1</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-a93d9ccb81ab73ed?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h4 id="Seek2"><a href="#Seek2" class="headerlink" title="Seek2"></a>Seek2</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-38ff3551de7372b4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h4 id="补洞阶段"><a href="#补洞阶段" class="headerlink" title="补洞阶段"></a>补洞阶段</h4><blockquote>
+<p>补洞阶段是对于Seek阶段遗留下来的，片段小于20kb的下载长度进行补充到片段数组的过程。</p>
+</blockquote>
+<p>在第二次播放时，如果文件中有空洞，无论片段再小，也会保存到片段中，最后当配置数组为{0, length}的时候，length为视频长度大小，也会存到片段中。</p>
+<h3 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h3><ol>
+<li>数据流是本地代理控制，方便加入缓存、预加载、防盗链等业务逻辑。提高了视频下载的成功率，减少了视频缓冲时间，提升用户体验。</li>
+<li>与播放器逻辑完全解耦，对于播放器只是一个地址。</li>
+</ol>
+<h2 id="Qzon"><a href="#Qzon" class="headerlink" title="Qzon"></a>Qzon</h2><p>Qzone的日均视频播放量破十亿，其中Android端的总播放量占比超过70%。所以Qzone的实现方案对我们来说很有借鉴意义。</p>
+<h3 id="最初的传统的本地代理方案"><a href="#最初的传统的本地代理方案" class="headerlink" title="最初的传统的本地代理方案"></a>最初的传统的本地代理方案</h3><p><img src="http://upload-images.jianshu.io/upload_images/4287000-b7a8d82c97132297?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QZon"></p>
+<h4 id="带来的问题"><a href="#带来的问题" class="headerlink" title="带来的问题"></a>带来的问题</h4><ol>
+<li>视频下载和播放的业务逻辑复杂，过多的逻辑和下载本身耦合。</li>
+<li>不容易接入第三方下载器和对下载过程进行监控。</li>
+</ol>
+<h3 id="优化过程"><a href="#优化过程" class="headerlink" title="优化过程"></a>优化过程</h3><p>优化主要从如下几个方面入手：</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4287000-85bfdbf9a702e12e?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="视频优化过程"></p>
+<h4 id="防盗链预拉取"><a href="#防盗链预拉取" class="headerlink" title="防盗链预拉取"></a>防盗链预拉取</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-b77c6b39f7ba0e5d?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="防盗链预拉取"></p>
+<h4 id="缓存分片"><a href="#缓存分片" class="headerlink" title="缓存分片"></a>缓存分片</h4><p>这里主要解决的问题是，之前单个的顺序存储方式无法对于播放空洞（非顺序播放场景，例如拖动、续播等）进行缓存，降低了缓存率和命中率。</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4287000-caa54a2250d75023?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="缓存分片"></p>
+<h4 id="私有通道方案"><a href="#私有通道方案" class="headerlink" title="私有通道方案"></a>私有通道方案</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-97cd002ecde5a9b4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="私有通道方案"></p>
+<h4 id="流量控制"><a href="#流量控制" class="headerlink" title="流量控制"></a>流量控制</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-a29eba87469059f1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="流量控制"></p>
+<h4 id="H265编码"><a href="#H265编码" class="headerlink" title="H265编码"></a>H265编码</h4><p>H265是新一代视频编码标准，相比原有使用H264编码的视频，具有更高的压缩比，在画质近似的前提下，H265编码的视频文件体积只有H264的一半甚至更少，因此，播放H265编码的视频能极大减少带宽消耗。</p>
+<p>具体编码相关内容，请看<a href="https://www.jianshu.com/p/f116b6f81ab3" target="_blank" rel="noopener">直播技术点之编解码基础（一）</a></p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><ol>
+<li><a href="https://juejin.im/entry/59b09fcff265da24754db224" target="_blank" rel="noopener">一种边播变下的播放策略</a></li>
+<li><a href="http://www.10tiao.com/html/222/201612/2649796895/1.html" target="_blank" rel="noopener">Qzone视频下载如何做到多快好省？</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/16/责任链模式/" rel="next" title="责任链模式">
+                <i class="fa fa-chevron-left"></i> 责任链模式
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/23/Android中JSBridge的原理和实现/" rel="prev" title="Android中JSBridge的原理和实现">
+                Android中JSBridge的原理和实现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="SkyAcer" />
+          <p class="site-author-name" itemprop="name">SkyAcer</p>
+          <p class="site-description motion-element" itemprop="description">Little And More.</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">15</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">分类</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android主流视频播放及缓存实现原理调研"><span class="nav-number">1.</span> <span class="nav-text">Android主流视频播放及缓存实现原理调研</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#播放器直连"><span class="nav-number">1.2.</span> <span class="nav-text">播放器直连</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#流程图"><span class="nav-number">1.2.1.</span> <span class="nav-text">流程图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优点"><span class="nav-number">1.2.2.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缺点"><span class="nav-number">1.2.3.</span> <span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AndroidVideoCache"><span class="nav-number">1.3.</span> <span class="nav-text">AndroidVideoCache</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#流程图-1"><span class="nav-number">1.3.1.</span> <span class="nav-text">流程图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Seek过程解析"><span class="nav-number">1.3.2.</span> <span class="nav-text">Seek过程解析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Seek阶段"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">Seek阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Seek开始"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">Seek开始</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Seek1"><span class="nav-number">1.3.2.3.</span> <span class="nav-text">Seek1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Seek2"><span class="nav-number">1.3.2.4.</span> <span class="nav-text">Seek2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#补洞阶段"><span class="nav-number">1.3.2.5.</span> <span class="nav-text">补洞阶段</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优势"><span class="nav-number">1.3.3.</span> <span class="nav-text">优势</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Qzon"><span class="nav-number">1.4.</span> <span class="nav-text">Qzon</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#最初的传统的本地代理方案"><span class="nav-number">1.4.1.</span> <span class="nav-text">最初的传统的本地代理方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#带来的问题"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">带来的问题</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化过程"><span class="nav-number">1.4.2.</span> <span class="nav-text">优化过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#防盗链预拉取"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">防盗链预拉取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存分片"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">缓存分片</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#私有通道方案"><span class="nav-number">1.4.2.3.</span> <span class="nav-text">私有通道方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#流量控制"><span class="nav-number">1.4.2.4.</span> <span class="nav-text">流量控制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#H265编码"><span class="nav-number">1.4.2.5.</span> <span class="nav-text">H265编码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#引用"><span class="nav-number">1.5.</span> <span class="nav-text">引用</span></a></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">SkyAcer</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=0.5.0"></script>
+
+
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+
+  
+
+
+</body>
+</html>

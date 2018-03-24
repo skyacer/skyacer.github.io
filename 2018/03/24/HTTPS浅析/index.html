@@ -41,7 +41,7 @@
 <link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Android," />
+  <meta name="keywords" content="HTTP/HTTPS," />
 
 
 
@@ -57,18 +57,22 @@
 
 
 
-<meta name="description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
-<meta name="keywords" content="Android">
+<meta name="description" content="HTTPS浅析HTTPS建立过程是什么样的？ 注意几点：  只有在连接阶段才会使用非对称加密，后续传输过程都是使用对称加密，因为非对称加密的效率要比对称加密慢很多，差值将近1000倍。 证书是解决中间人是否替换密钥的问题的，因为中间人可以将自己的非对称加密的公钥传给客户端，然后用私钥解密后，再用服务端给的公钥加密，传输给服务端，这样既可以做到两边都不自知，而得知报文内容。  HTTPS中证书是什么">
+<meta name="keywords" content="HTTP&#x2F;HTTPS">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android Disable Emoji in Edittext">
-<meta property="og:url" content="http://skyacer.github.io/2017/09/12/Android-Disable-Emoji-in-Edittext/index.html">
+<meta property="og:title" content="HTTPS浅析">
+<meta property="og:url" content="http://skyacer.github.io/2018/03/24/HTTPS浅析/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
-<meta property="og:description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
+<meta property="og:description" content="HTTPS浅析HTTPS建立过程是什么样的？ 注意几点：  只有在连接阶段才会使用非对称加密，后续传输过程都是使用对称加密，因为非对称加密的效率要比对称加密慢很多，差值将近1000倍。 证书是解决中间人是否替换密钥的问题的，因为中间人可以将自己的非对称加密的公钥传给客户端，然后用私钥解密后，再用服务端给的公钥加密，传输给服务端，这样既可以做到两边都不自知，而得知报文内容。  HTTPS中证书是什么">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-02-28T02:29:55.000Z">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB3f3ee5f2823f79209d4b0585ae8d2632?method=download&shareKey=3e4c3f2ff983df9a0f22b5ab2082c44e">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB6ba0e1a1bf4a5575ffdcfa87bad111d2?method=download&shareKey=3bc686e3b4978e9bb12ea520de315b23">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB6cf10f69316dba45102e9eca3e756690?method=download&shareKey=cfd068ef014e4495a009aa223d469594">
+<meta property="og:updated_time" content="2018-03-24T02:39:30.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Android Disable Emoji in Edittext">
-<meta name="twitter:description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
+<meta name="twitter:title" content="HTTPS浅析">
+<meta name="twitter:description" content="HTTPS浅析HTTPS建立过程是什么样的？ 注意几点：  只有在连接阶段才会使用非对称加密，后续传输过程都是使用对称加密，因为非对称加密的效率要比对称加密慢很多，差值将近1000倍。 证书是解决中间人是否替换密钥的问题的，因为中间人可以将自己的非对称加密的公钥传给客户端，然后用私钥解密后，再用服务端给的公钥加密，传输给服务端，这样既可以做到两边都不自知，而得知报文内容。  HTTPS中证书是什么">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB3f3ee5f2823f79209d4b0585ae8d2632?method=download&shareKey=3e4c3f2ff983df9a0f22b5ab2082c44e">
 
 
 
@@ -86,7 +90,7 @@
   };
 </script>
 
-  <title> Android Disable Emoji in Edittext | SkyAcer's blog </title>
+  <title> HTTPS浅析 | SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -214,7 +218,7 @@
             
             
               
-                Android Disable Emoji in Edittext
+                HTTPS浅析
               
             
           </h1>
@@ -226,8 +230,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2017-09-12T09:35:18+08:00" content="2017-09-12">
-              2017-09-12
+            <time itemprop="dateCreated" datetime="2018-03-24T10:36:44+08:00" content="2018-03-24">
+              2018-03-24
             </time>
           </span>
 
@@ -240,8 +244,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
+                  <a href="/categories/网络/" itemprop="url" rel="index">
+                    <span itemprop="name">网络</span>
                   </a>
                 </span>
 
@@ -272,18 +276,16 @@
       
 
       
-        <blockquote>
-<p>If you have same requirement in development, this article may help you.</p>
-</blockquote>
-<p>Let’s how to do it in code:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> InputFilter EMOJI_FILTER = <span class="keyword">new</span> InputFilter() &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CharSequence <span class="title">filter</span><span class="params">(CharSequence source, <span class="keyword">int</span> start, <span class="keyword">int</span> end, Spanned dest, <span class="keyword">int</span> dstart, <span class="keyword">int</span> dend)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> index = start; index &lt; end; index++) &#123;</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">int</span> type = Character.getType(source.charAt(index));</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">if</span> (type == Character.SURROGATE) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>And you also need to set this filter in the edittext you want to disable Emoji.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">editText.setFilters(<span class="keyword">new</span> InputFilter[]&#123;EMOJI_FILTER&#125;);</span><br></pre></td></tr></table></figure>
-<h2 id="Why-it-can-disable-Emoji"><a href="#Why-it-can-disable-Emoji" class="headerlink" title="Why it can disable Emoji."></a>Why it can disable Emoji.</h2><blockquote>
-<p>Unicode is a computing industry standard for the consistent encoding, representation, and handling of text expressed in most of the world’s writing systems.</p>
-</blockquote>
-<p>Emoji use area of Unicode with a range of code points from U+1F604 to U+1F539.<br>And <code>Character.SURROGATE</code>reserved the range is over the Emoji’s.</p>
-<p>If you find a better method, you also can <a href="mailto:skyacer.me@gmail.com" target="_blank" rel="noopener">contact with me</a></p>
+        <h1 id="HTTPS浅析"><a href="#HTTPS浅析" class="headerlink" title="HTTPS浅析"></a>HTTPS浅析</h1><h2 id="HTTPS建立过程是什么样的？"><a href="#HTTPS建立过程是什么样的？" class="headerlink" title="HTTPS建立过程是什么样的？"></a>HTTPS建立过程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB3f3ee5f2823f79209d4b0585ae8d2632?method=download&amp;shareKey=3e4c3f2ff983df9a0f22b5ab2082c44e" alt="HTTPS建立过程"></p>
+<p>注意几点：</p>
+<ol>
+<li>只有在连接阶段才会使用非对称加密，后续传输过程都是使用对称加密，因为非对称加密的效率要比对称加密慢很多，差值将近1000倍。</li>
+<li>证书是解决中间人是否替换密钥的问题的，因为中间人可以将自己的非对称加密的公钥传给客户端，然后用私钥解密后，再用服务端给的公钥加密，传输给服务端，这样既可以做到两边都不自知，而得知报文内容。</li>
+</ol>
+<h2 id="HTTPS中证书是什么？有什么作用？"><a href="#HTTPS中证书是什么？有什么作用？" class="headerlink" title="HTTPS中证书是什么？有什么作用？"></a>HTTPS中证书是什么？有什么作用？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6ba0e1a1bf4a5575ffdcfa87bad111d2?method=download&amp;shareKey=3bc686e3b4978e9bb12ea520de315b23" alt="数字证书"></p>
+<h2 id="客户端使用证书机构的公钥来验证服务端的数字证书，但如果客户端和服务端使用的证书认证中心（CA）不同怎么办呢？"><a href="#客户端使用证书机构的公钥来验证服务端的数字证书，但如果客户端和服务端使用的证书认证中心（CA）不同怎么办呢？" class="headerlink" title="客户端使用证书机构的公钥来验证服务端的数字证书，但如果客户端和服务端使用的证书认证中心（CA）不同怎么办呢？"></a>客户端使用证书机构的公钥来验证服务端的数字证书，但如果客户端和服务端使用的证书认证中心（CA）不同怎么办呢？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6cf10f69316dba45102e9eca3e756690?method=download&amp;shareKey=cfd068ef014e4495a009aa223d469594" alt=""></p>
+<p>从底层CA往上层CA查询，一直到找到共同的信任CA为止。</p>
+<h2 id="HTTPS设计上还有没有什么问题？"><a href="#HTTPS设计上还有没有什么问题？" class="headerlink" title="HTTPS设计上还有没有什么问题？"></a>HTTPS设计上还有没有什么问题？</h2><p>证书设计上太中心化，因为权威的根证书颁发机构就几个，一旦他们内部出了问题，那么全世界很多用HTTPS的公司和个人的信息安全就得不到保证。可以考虑用区块链来解决信任问题。</p>
 
       
     </div>
@@ -298,7 +300,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Android/" rel="tag">#Android</a>
+            <a href="/tags/HTTP-HTTPS/" rel="tag">#HTTP/HTTPS</a>
           
         </div>
       
@@ -307,17 +309,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/08/21/iTerm2-config-proxy/" rel="next" title="iTerm2 configure proxy">
-                <i class="fa fa-chevron-left"></i> iTerm2 configure proxy
+              <a href="/2018/03/23/Android中JSBridge的原理和实现/" rel="next" title="Android中JSBridge的原理和实现">
+                <i class="fa fa-chevron-left"></i> Android中JSBridge的原理和实现
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/10/24/我们该如何做好Code-Review/" rel="prev" title="我们该如何做好Code-Review?">
-                我们该如何做好Code-Review? <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -435,7 +433,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-it-can-disable-Emoji"><span class="nav-number">1.</span> <span class="nav-text">Why it can disable Emoji.</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTPS浅析"><span class="nav-number">1.</span> <span class="nav-text">HTTPS浅析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTPS建立过程是什么样的？"><span class="nav-number">1.1.</span> <span class="nav-text">HTTPS建立过程是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTPS中证书是什么？有什么作用？"><span class="nav-number">1.2.</span> <span class="nav-text">HTTPS中证书是什么？有什么作用？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#客户端使用证书机构的公钥来验证服务端的数字证书，但如果客户端和服务端使用的证书认证中心（CA）不同怎么办呢？"><span class="nav-number">1.3.</span> <span class="nav-text">客户端使用证书机构的公钥来验证服务端的数字证书，但如果客户端和服务端使用的证书认证中心（CA）不同怎么办呢？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTPS设计上还有没有什么问题？"><span class="nav-number">1.4.</span> <span class="nav-text">HTTPS设计上还有没有什么问题？</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">

@@ -41,7 +41,7 @@
 <link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Android," />
+  <meta name="keywords" content="FrameWork," />
 
 
 
@@ -57,18 +57,22 @@
 
 
 
-<meta name="description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
-<meta name="keywords" content="Android">
+<meta name="description" content="说说你对Binder的理解 在Android开发中，涉及到多进程的通信底层都是依赖Binder IPC机制，所以Binder是Android开发绕不过去的一个知识点。这里我们具体来看一下Binder的实现原理。  为什么要使用Binder？ 性能方面 安全方面  性能方面Binder相对于传统的Socket方式，更加高效。Binder数据拷贝只需要一次，相对于传统的管道、消息队列、Socket都需">
+<meta name="keywords" content="FrameWork">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android Disable Emoji in Edittext">
-<meta property="og:url" content="http://skyacer.github.io/2017/09/12/Android-Disable-Emoji-in-Edittext/index.html">
+<meta property="og:title" content="说说你对Binder的理解">
+<meta property="og:url" content="http://skyacer.github.io/2018/03/27/说说你对Binder的理解/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
-<meta property="og:description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
+<meta property="og:description" content="说说你对Binder的理解 在Android开发中，涉及到多进程的通信底层都是依赖Binder IPC机制，所以Binder是Android开发绕不过去的一个知识点。这里我们具体来看一下Binder的实现原理。  为什么要使用Binder？ 性能方面 安全方面  性能方面Binder相对于传统的Socket方式，更加高效。Binder数据拷贝只需要一次，相对于传统的管道、消息队列、Socket都需">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-02-28T02:29:55.000Z">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBd52e4b3cc4142e562801a0dd2b7da289?method=download&shareKey=049460ad939a62f133f58a26abed2003">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBccd772d903351df07869c79d55e9c5ee?method=download&shareKey=4a9ac174e0dac55ca001ec995a58ef53">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBa872146e4e5ec332a071e0f1062506f6?method=download&shareKey=1c8253f5e16081b11ee16b16866d5bb2">
+<meta property="og:updated_time" content="2018-03-27T07:31:11.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Android Disable Emoji in Edittext">
-<meta name="twitter:description" content="If you have same requirement in development, this article may help you.  Let’s how to do it in code: 123456789101112131415public static InputFilter EMOJI_FILTER = new InputFilter() &amp;#123;     @Overri">
+<meta name="twitter:title" content="说说你对Binder的理解">
+<meta name="twitter:description" content="说说你对Binder的理解 在Android开发中，涉及到多进程的通信底层都是依赖Binder IPC机制，所以Binder是Android开发绕不过去的一个知识点。这里我们具体来看一下Binder的实现原理。  为什么要使用Binder？ 性能方面 安全方面  性能方面Binder相对于传统的Socket方式，更加高效。Binder数据拷贝只需要一次，相对于传统的管道、消息队列、Socket都需">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEBd52e4b3cc4142e562801a0dd2b7da289?method=download&shareKey=049460ad939a62f133f58a26abed2003">
 
 
 
@@ -86,7 +90,7 @@
   };
 </script>
 
-  <title> Android Disable Emoji in Edittext | SkyAcer's blog </title>
+  <title> 说说你对Binder的理解 | SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -214,7 +218,7 @@
             
             
               
-                Android Disable Emoji in Edittext
+                说说你对Binder的理解
               
             
           </h1>
@@ -226,8 +230,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2017-09-12T09:35:18+08:00" content="2017-09-12">
-              2017-09-12
+            <time itemprop="dateCreated" datetime="2018-03-27T15:26:17+08:00" content="2018-03-27">
+              2018-03-27
             </time>
           </span>
 
@@ -240,8 +244,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
+                  <a href="/categories/源码/" itemprop="url" rel="index">
+                    <span itemprop="name">源码</span>
                   </a>
                 </span>
 
@@ -272,18 +276,51 @@
       
 
       
-        <blockquote>
-<p>If you have same requirement in development, this article may help you.</p>
+        <h1 id="说说你对Binder的理解"><a href="#说说你对Binder的理解" class="headerlink" title="说说你对Binder的理解"></a>说说你对Binder的理解</h1><blockquote>
+<p>在Android开发中，涉及到多进程的通信底层都是依赖Binder IPC机制，所以Binder是Android开发绕不过去的一个知识点。这里我们具体来看一下Binder的实现原理。</p>
 </blockquote>
-<p>Let’s how to do it in code:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> InputFilter EMOJI_FILTER = <span class="keyword">new</span> InputFilter() &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CharSequence <span class="title">filter</span><span class="params">(CharSequence source, <span class="keyword">int</span> start, <span class="keyword">int</span> end, Spanned dest, <span class="keyword">int</span> dstart, <span class="keyword">int</span> dend)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> index = start; index &lt; end; index++) &#123;</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">int</span> type = Character.getType(source.charAt(index));</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">if</span> (type == Character.SURROGATE) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>And you also need to set this filter in the edittext you want to disable Emoji.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">editText.setFilters(<span class="keyword">new</span> InputFilter[]&#123;EMOJI_FILTER&#125;);</span><br></pre></td></tr></table></figure>
-<h2 id="Why-it-can-disable-Emoji"><a href="#Why-it-can-disable-Emoji" class="headerlink" title="Why it can disable Emoji."></a>Why it can disable Emoji.</h2><blockquote>
-<p>Unicode is a computing industry standard for the consistent encoding, representation, and handling of text expressed in most of the world’s writing systems.</p>
-</blockquote>
-<p>Emoji use area of Unicode with a range of code points from U+1F604 to U+1F539.<br>And <code>Character.SURROGATE</code>reserved the range is over the Emoji’s.</p>
-<p>If you find a better method, you also can <a href="mailto:skyacer.me@gmail.com" target="_blank" rel="noopener">contact with me</a></p>
+<h2 id="为什么要使用Binder？"><a href="#为什么要使用Binder？" class="headerlink" title="为什么要使用Binder？"></a>为什么要使用Binder？</h2><ol>
+<li>性能方面</li>
+<li>安全方面</li>
+</ol>
+<h3 id="性能方面"><a href="#性能方面" class="headerlink" title="性能方面"></a>性能方面</h3><p>Binder相对于传统的Socket方式，更加高效。Binder数据拷贝只需要一次，相对于传统的管道、消息队列、Socket都需要两次，效率更高，仅次于共享内存方式（一次也不需要）。</p>
+<h3 id="安全性方面"><a href="#安全性方面" class="headerlink" title="安全性方面"></a>安全性方面</h3><p>这才是真正使用Binder原因的重中之重，因为传统的通信对于双发的身份并没有做出严格的验证，Socket通信地址是客户端手动填入，很容易伪造，而Binder机制从协议本身就支持通信双方做身份校验，大大提升了安全性。</p>
+<h2 id="Socket拷贝两次是哪两次？"><a href="#Socket拷贝两次是哪两次？" class="headerlink" title="Socket拷贝两次是哪两次？"></a>Socket拷贝两次是哪两次？</h2><p>当应用程序向一个socket传输数据之后，该socket将创建相应的套接字缓存，并将用户数据拷贝到缓存中。当报文在各协议层传达输的过程中，每一导的报文头将插入到用户数据之前。skb为报文头申请了足够的空间，所以避免了由于插入报文头而对报文进行多次拷贝。用户数据只拷贝了两次：一是从用户空间拷贝到内核；二是报文数据从内核拷贝到网络适配器。</p>
+<h2 id="Android里的IPC原理是什么？"><a href="#Android里的IPC原理是什么？" class="headerlink" title="Android里的IPC原理是什么？"></a>Android里的IPC原理是什么？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBd52e4b3cc4142e562801a0dd2b7da289?method=download&amp;shareKey=049460ad939a62f133f58a26abed2003" alt="Android IPC"></p>
+<ol>
+<li>每个Android进程，只能运行在自己进程所拥有的虚拟地址空间。对应一个4GB（这个可以配置）的虚拟地址控件，3GB为用户空间，1GB是内核空间。</li>
+<li>用户空间不可共享，内核空间可共享。</li>
+<li>通信时恰恰是利用可共享的内核内存空间完成底层通信的。</li>
+</ol>
+<h2 id="Binder通信流程是什么样的？"><a href="#Binder通信流程是什么样的？" class="headerlink" title="Binder通信流程是什么样的？"></a>Binder通信流程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBccd772d903351df07869c79d55e9c5ee?method=download&amp;shareKey=4a9ac174e0dac55ca001ec995a58ef53" alt="Binder架构"></p>
+<ul>
+<li><strong>Client进程</strong>：使用服务的进程</li>
+<li><strong>Server进程</strong>：提供服务的进程</li>
+<li><strong>ServiceManager进程</strong>：ServiceManager的作用是将字符串形式的Binder名字转化为对该Binder的引用，使得Client能够通过Binder名字获得对Server中Binder实体的引用。</li>
+<li><strong>Binder驱动</strong>：驱动负责进程之间Binder通信的简历，Binder在进程之间的传递，Binder引用计数管理，数据包在进程之间传递和交互等一系列底层支持。</li>
+</ul>
+<ol>
+<li>注册服务（addService）：Server进程要先注册Service到ServiceManager。该过程：Server是客户端，ServiceManager是服务端。</li>
+<li>获取服务（getService）：Client进程</li>
+<li>使用服务：client根据得到的Service建立与Service所在的Server进程通信的通路，然后可以直接与Service交互。该过程：client是客户端，server是服务端。</li>
+</ol>
+<p>注意：上述不是彼此之间直接交互的，都是通过Binder驱动进行交互的。<strong>Binder驱动位于内核空间，而Client，Server，Service Manager位于用户空间。</strong> 对于开发者来说，Binder驱动和Service Manager可以看做是Android平台的基础架构，只需要自定义实现client、Server端，借助Android平台架构可以直接进行IPC通信。</p>
+<h2 id="举一个Binder运行的例子？"><a href="#举一个Binder运行的例子？" class="headerlink" title="举一个Binder运行的例子？"></a>举一个Binder运行的例子？</h2><p>如下是实现浮动窗口的部分代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//获取WindowManager服务引用</span><br><span class="line">WindowManager wm = (WindowManager)getSystemService(getApplication().WINDOW_SERVICE);  </span><br><span class="line">//布局参数layoutParams相关设置略...</span><br><span class="line">View view=LayoutInflater.from(getApplication()).inflate(R.layout.float_layout, null);  </span><br><span class="line">//添加view</span><br><span class="line">wm.addView(view, layoutParams);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>注册服务（addService）：在Android开机启动过程中，Android系统会初始化各种Service，并将这些Service向ServiceManager注册，这一步是系统管理的。</li>
+<li>获取服务（getService）：通过context中的方法拿到Service的代理对象，然后拿到wm的WindowManager对象的引用</li>
+<li>使用服务：通过这个引用向具体的服务端发送请求，服务端执行完毕后返回。调用WindowManager的addView函数，触发的是远程调用，调用时运行在systemServer进程的WindowManager的addView方法。</li>
+</ul>
+<h2 id="使用服务的具体执行过程是什么样的？"><a href="#使用服务的具体执行过程是什么样的？" class="headerlink" title="使用服务的具体执行过程是什么样的？"></a>使用服务的具体执行过程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBa872146e4e5ec332a071e0f1062506f6?method=download&amp;shareKey=1c8253f5e16081b11ee16b16866d5bb2" alt="具体执行过程"></p>
+<ol>
+<li>client通过获得一个server的代理接口，对server进行调用。</li>
+<li>代理接口中定义的方法与server中定义的方法时一一对应的。</li>
+<li>client调用某个代理接口中的方法时，代理接口的方法会将client传递的参数打包成Parcel对象。</li>
+<li>代理接口将Parcel发送给内核中的binder driver。</li>
+<li>server会读取binder driver中的请求数据，如果是发送给自己的，解包Parcel对象，处理并将结果返回。</li>
+<li>整个的调用过程是一个同步过程，在server处理的时候，client会block住。因此client调用过程不应在主线程。</li>
+</ol>
 
       
     </div>
@@ -298,7 +335,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Android/" rel="tag">#Android</a>
+            <a href="/tags/FrameWork/" rel="tag">#FrameWork</a>
           
         </div>
       
@@ -307,17 +344,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/08/21/iTerm2-config-proxy/" rel="next" title="iTerm2 configure proxy">
-                <i class="fa fa-chevron-left"></i> iTerm2 configure proxy
+              <a href="/2018/03/24/HTTPS浅析/" rel="next" title="HTTPS浅析">
+                <i class="fa fa-chevron-left"></i> HTTPS浅析
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/10/24/我们该如何做好Code-Review/" rel="prev" title="我们该如何做好Code-Review?">
-                我们该如何做好Code-Review? <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -435,7 +468,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-it-can-disable-Emoji"><span class="nav-number">1.</span> <span class="nav-text">Why it can disable Emoji.</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#说说你对Binder的理解"><span class="nav-number">1.</span> <span class="nav-text">说说你对Binder的理解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要使用Binder？"><span class="nav-number">1.1.</span> <span class="nav-text">为什么要使用Binder？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#性能方面"><span class="nav-number">1.1.1.</span> <span class="nav-text">性能方面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安全性方面"><span class="nav-number">1.1.2.</span> <span class="nav-text">安全性方面</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Socket拷贝两次是哪两次？"><span class="nav-number">1.2.</span> <span class="nav-text">Socket拷贝两次是哪两次？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android里的IPC原理是什么？"><span class="nav-number">1.3.</span> <span class="nav-text">Android里的IPC原理是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Binder通信流程是什么样的？"><span class="nav-number">1.4.</span> <span class="nav-text">Binder通信流程是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#举一个Binder运行的例子？"><span class="nav-number">1.5.</span> <span class="nav-text">举一个Binder运行的例子？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用服务的具体执行过程是什么样的？"><span class="nav-number">1.6.</span> <span class="nav-text">使用服务的具体执行过程是什么样的？</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">

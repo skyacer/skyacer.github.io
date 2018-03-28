@@ -41,7 +41,7 @@
 <link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="设计模式," />
+  <meta name="keywords" content="View," />
 
 
 
@@ -57,20 +57,22 @@
 
 
 
-<meta name="description" content="责任链模式什么是责任链模式？责任链模式（Chain of Responsibility）是一种对象的行为模式。在责任链模式里，很多对象由每一个对象对其下家的引用而连接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。发出这个请求的客户端并不知道链上的哪一个对象最终处理这个请求，这使得系统可以在不影响客户端的情况下动态地重新组织和分配责任。 类图 Handler接口123456">
-<meta name="keywords" content="设计模式">
+<meta name="description" content="SurfaceView及TextureView对比SurfaceView是什么？它继承自类View，因此它本质上是一个View。但与普通View不同的是，它有自己的Surface。有自己的Surface，在WMS中有对应的WindowState，在SurfaceFlinger中有Layer。我们知道，一般的Activity包含的多个View会组成View hierachy的树形结构，只有最顶层的D">
+<meta name="keywords" content="View">
 <meta property="og:type" content="article">
-<meta property="og:title" content="责任链模式">
-<meta property="og:url" content="http://skyacer.github.io/2018/03/16/责任链模式/index.html">
+<meta property="og:title" content="SurfaceView和TextureView对比">
+<meta property="og:url" content="http://skyacer.github.io/2018/03/28/SurfaceView和TextureView对比/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
-<meta property="og:description" content="责任链模式什么是责任链模式？责任链模式（Chain of Responsibility）是一种对象的行为模式。在责任链模式里，很多对象由每一个对象对其下家的引用而连接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。发出这个请求的客户端并不知道链上的哪一个对象最终处理这个请求，这使得系统可以在不影响客户端的情况下动态地重新组织和分配责任。 类图 Handler接口123456">
+<meta property="og:description" content="SurfaceView及TextureView对比SurfaceView是什么？它继承自类View，因此它本质上是一个View。但与普通View不同的是，它有自己的Surface。有自己的Surface，在WMS中有对应的WindowState，在SurfaceFlinger中有Layer。我们知道，一般的Activity包含的多个View会组成View hierachy的树形结构，只有最顶层的D">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB2f74e00f1f1a7694b473eaf7ecbc01e6?method=download&shareKey=b998dd209a69d50e3ee4e5f4c884d60b">
-<meta property="og:updated_time" content="2018-03-16T11:42:44.000Z">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB683a92bd2aaadb2aa9eb3a9312c787d0?method=download&shareKey=e3be2c2ca348fa888942b849536dd92c">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB870926aec79c9b78404e61e7674605cf?method=download&shareKey=73fb3846d2744ca54f31f516067f4a39">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB7529fdd04d9cf09323a2d83303427b22?method=download&shareKey=5c37edeaf1c1d09ee6d5f42631733ebd">
+<meta property="og:updated_time" content="2018-03-28T05:54:19.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="责任链模式">
-<meta name="twitter:description" content="责任链模式什么是责任链模式？责任链模式（Chain of Responsibility）是一种对象的行为模式。在责任链模式里，很多对象由每一个对象对其下家的引用而连接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。发出这个请求的客户端并不知道链上的哪一个对象最终处理这个请求，这使得系统可以在不影响客户端的情况下动态地重新组织和分配责任。 类图 Handler接口123456">
-<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB2f74e00f1f1a7694b473eaf7ecbc01e6?method=download&shareKey=b998dd209a69d50e3ee4e5f4c884d60b">
+<meta name="twitter:title" content="SurfaceView和TextureView对比">
+<meta name="twitter:description" content="SurfaceView及TextureView对比SurfaceView是什么？它继承自类View，因此它本质上是一个View。但与普通View不同的是，它有自己的Surface。有自己的Surface，在WMS中有对应的WindowState，在SurfaceFlinger中有Layer。我们知道，一般的Activity包含的多个View会组成View hierachy的树形结构，只有最顶层的D">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB683a92bd2aaadb2aa9eb3a9312c787d0?method=download&shareKey=e3be2c2ca348fa888942b849536dd92c">
 
 
 
@@ -88,7 +90,7 @@
   };
 </script>
 
-  <title> 责任链模式 | SkyAcer's blog </title>
+  <title> SurfaceView和TextureView对比 | SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -216,7 +218,7 @@
             
             
               
-                责任链模式
+                SurfaceView和TextureView对比
               
             
           </h1>
@@ -228,8 +230,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-16T19:34:14+08:00" content="2018-03-16">
-              2018-03-16
+            <time itemprop="dateCreated" datetime="2018-03-28T13:52:58+08:00" content="2018-03-28">
+              2018-03-28
             </time>
           </span>
 
@@ -242,8 +244,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/设计模式/" itemprop="url" rel="index">
-                    <span itemprop="name">设计模式</span>
+                  <a href="/categories/视频/" itemprop="url" rel="index">
+                    <span itemprop="name">视频</span>
                   </a>
                 </span>
 
@@ -274,11 +276,44 @@
       
 
       
-        <h1 id="责任链模式"><a href="#责任链模式" class="headerlink" title="责任链模式"></a>责任链模式</h1><h2 id="什么是责任链模式？"><a href="#什么是责任链模式？" class="headerlink" title="什么是责任链模式？"></a>什么是责任链模式？</h2><p>责任链模式（Chain of Responsibility）是一种对象的行为模式。在责任链模式里，很多对象由每一个对象对其下家的引用而连接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。发出这个请求的客户端并不知道链上的哪一个对象最终处理这个请求，这使得系统可以在不影响客户端的情况下动态地重新组织和分配责任。</p>
-<h2 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB2f74e00f1f1a7694b473eaf7ecbc01e6?method=download&amp;shareKey=b998dd209a69d50e3ee4e5f4c884d60b" alt="责任链模式类图"></p>
-<h2 id="Handler接口"><a href="#Handler接口" class="headerlink" title="Handler接口"></a>Handler接口</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public abstract class Handler &#123;</span><br><span class="line">    protected Handler nextHandler;</span><br><span class="line">    public void setHandler(Handler nextHandler)&#123;</span><br><span class="line">        this.nextHandler = nextHandler;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public abstract void handle(int request);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="ConcreteHandler实现类"><a href="#ConcreteHandler实现类" class="headerlink" title="ConcreteHandler实现类"></a>ConcreteHandler实现类</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class ConcreteHandler1 extends Handler &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void handle(int request) &#123;</span><br><span class="line">        if (request&lt;10)&#123;</span><br><span class="line">            System.out.println(&quot;handler1 receive:&quot;+request);</span><br><span class="line">        &#125;else &#123;</span><br><span class="line">            nextHandler.handle(request);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="Client调用类"><a href="#Client调用类" class="headerlink" title="Client调用类"></a>Client调用类</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class Client &#123;</span><br><span class="line">    public static void main(String[] args)&#123;</span><br><span class="line">        Handler handler1 = new ConcreteHandler1();</span><br><span class="line">        Handler handler2 = new ConcreteHandler2();</span><br><span class="line">        Handler handler3 = new ConcreteHandler3();</span><br><span class="line"></span><br><span class="line">        handler1.setHandler(handler2);</span><br><span class="line">        handler2.setHandler(handler3);</span><br><span class="line"></span><br><span class="line">        int[] n=&#123;1,23,4,5,6,12,15,16,18,21,25,32,36&#125;;</span><br><span class="line"></span><br><span class="line">        for (int i=0;i&lt;n.length;i++)&#123;</span><br><span class="line">            handler1.handle(n[i]);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <h1 id="SurfaceView及TextureView对比"><a href="#SurfaceView及TextureView对比" class="headerlink" title="SurfaceView及TextureView对比"></a>SurfaceView及TextureView对比</h1><h2 id="SurfaceView是什么？"><a href="#SurfaceView是什么？" class="headerlink" title="SurfaceView是什么？"></a>SurfaceView是什么？</h2><p>它继承自类View，因此它本质上是一个View。但与普通View不同的是，它有自己的Surface。有自己的Surface，在WMS中有对应的WindowState，在SurfaceFlinger中有Layer。我们知道，一般的Activity包含的多个View会组成View hierachy的树形结构，只有最顶层的DecorView，也就是根结点视图，才是对WMS可见的。这个DecorView在WMS中有一个对应的WindowState。相应地，在SF中对应的Layer。而SurfaceView自带一个Surface，这个Surface在WMS中有自己对应的WindowState，在SF中也会有自己的Layer。虽然在App端它仍在View hierachy中，但在Server端（WMS和SF）中，它与宿主窗口是分离的。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB683a92bd2aaadb2aa9eb3a9312c787d0?method=download&amp;shareKey=e3be2c2ca348fa888942b849536dd92c" alt="SurfaceView结构"></p>
+<h2 id="SurfaceView这样设计的优势和缺陷是什么？"><a href="#SurfaceView这样设计的优势和缺陷是什么？" class="headerlink" title="SurfaceView这样设计的优势和缺陷是什么？"></a>SurfaceView这样设计的优势和缺陷是什么？</h2><h3 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h3><p>这样的好处是对这个Surface的渲染可以放到单独线程去做，渲染时可以有自己的GL context。这对于一些游戏、视频等性能相关的应用非常有益，因为它不会影响主线程对事件的响应。</p>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><p>因为这个Surface不在View hierachy中，它的显示也不受View的属性控制，所以不能进行平移，缩放等变换，也不能放在其它ViewGroup中，一些View中的特性也无法使用。</p>
+<h2 id="SurfaceView双缓冲是什么？"><a href="#SurfaceView双缓冲是什么？" class="headerlink" title="SurfaceView双缓冲是什么？"></a>SurfaceView双缓冲是什么？</h2><blockquote>
+<p>通俗来讲就是有两个缓冲区，一个后台缓冲区和一个前台缓冲区，每次后台缓冲区接受数据，当填充完整后交换给前台缓冲，这样就保证了前台缓冲里的数据都是完整的。</p>
+</blockquote>
+<p>双缓冲：SurfaceView在更新视图时用到了两张Canvas：</p>
+<ol>
+<li>frontCanvas：实际显示的canvas</li>
+<li>backCanvas：存储的是上一次更改前的canvas</li>
+</ol>
+<p>流程如下：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB870926aec79c9b78404e61e7674605cf?method=download&amp;shareKey=73fb3846d2744ca54f31f516067f4a39" alt="双缓冲流程"></p>
+<h3 id="好处是什么？"><a href="#好处是什么？" class="headerlink" title="好处是什么？"></a>好处是什么？</h3><ol>
+<li>提高渲染效率</li>
+<li>可以避免刷新频率过高而出现的闪烁现象</li>
+</ol>
+<h2 id="TextureView是什么？"><a href="#TextureView是什么？" class="headerlink" title="TextureView是什么？"></a>TextureView是什么？</h2><blockquote>
+<p>在Android4.0(API level 14)中引入，与SurfaceView一样继承View，它可以将内容流直接投影到View中，它可以将内容流直接投影到View中，可以用于实现Live preview等功能。</p>
+</blockquote>
+<ol>
+<li>和SurfaceView不同，不在WMS中单独创建窗口，而是作为View  hierachy中的一个普通view，因此可以合其他普通View一样进行移动，旋转，缩放，动画等变化。</li>
+<li>和SurfaceView不同，TextureView必须在硬件加速的窗口中。</li>
+<li>它显示的内容流数据可以来自App进程或是远端进程。</li>
+<li>TextureView继承自View，它与其它的View一样在View hierachy中管理与绘制。TextureView重载了draw()方法，其中主要SurfaceTexture中收到的图像数据作为纹理更新到对应的HardwareLayer中。</li>
+</ol>
+<h2 id="TextureView优点和缺点？"><a href="#TextureView优点和缺点？" class="headerlink" title="TextureView优点和缺点？"></a>TextureView优点和缺点？</h2><p><strong>优点</strong>：支持移动、旋转、缩放等动画，支持截图<br><strong>缺点</strong>：必须在硬件加速的窗口中使用，占用内存比SurfaceView高，在5.0以前在主线程渲染，5.0以后有单独的渲染线程。</p>
+<h2 id="TextureView和SurfaceView区别是什么？"><a href="#TextureView和SurfaceView区别是什么？" class="headerlink" title="TextureView和SurfaceView区别是什么？"></a>TextureView和SurfaceView区别是什么？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB7529fdd04d9cf09323a2d83303427b22?method=download&amp;shareKey=5c37edeaf1c1d09ee6d5f42631733ebd" alt="区别"></p>
+<h2 id="播放器应该选哪个？"><a href="#播放器应该选哪个？" class="headerlink" title="播放器应该选哪个？"></a>播放器应该选哪个？</h2><p>从性能和安全性角度出发，<strong>优先选SurfaceView</strong></p>
+<ol>
+<li>在android 7.0上系统surfaceview的性能比TextureView更有优势，支持对象的内容位置和包含的应用内容同步更新，平移、缩放不会产生黑边。 在7.0以下系统如果使用场景有动画效果，可以选择性使用TextureView</li>
+<li>由于失效(invalidation)和缓冲的特性，TextureView增加了额外1~3帧的延迟显示画面更新</li>
+<li>TextureView总是使用GL合成，而SurfaceView可以使用硬件overlay后端，可以占用更少的内存带宽，消耗更少的能量</li>
+<li>TextureView的内部缓冲队列导致比SurfaceView使用更多的内存</li>
+<li>SurfaceView： 内部自己持有surface，surface 创建、销毁、大小改变时系统来处理的，通过surfaceHolder 的callback回调通知。当画布创建好时，可以将surface绑定到MediaPlayer中。SurfaceView如果为用户可见的时候，创建SurfaceView的SurfaceHolder用于显示视频流解析的帧图片，如果发现SurfaceView变为用户不可见的时候，则立即销毁SurfaceView的SurfaceHolder，以达到节约系统资源的目的</li>
+</ol>
+
       
     </div>
 
@@ -292,7 +327,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/设计模式/" rel="tag">#设计模式</a>
+            <a href="/tags/View/" rel="tag">#View</a>
           
         </div>
       
@@ -301,17 +336,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/03/15/Smali浅析及dex-java互转/" rel="next" title="Smali浅析及dex,java互转">
-                <i class="fa fa-chevron-left"></i> Smali浅析及dex,java互转
+              <a href="/2018/03/27/一个App从启动到主页面经历了什么过程？/" rel="next" title="一个App从启动到主页面经历了什么过程？">
+                <i class="fa fa-chevron-left"></i> 一个App从启动到主页面经历了什么过程？
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/03/23/Android主流视频播放及缓存实现原理调研/" rel="prev" title="Android主流视频播放及缓存实现原理调研">
-                Android主流视频播放及缓存实现原理调研 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -429,7 +460,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#责任链模式"><span class="nav-number">1.</span> <span class="nav-text">责任链模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是责任链模式？"><span class="nav-number">1.1.</span> <span class="nav-text">什么是责任链模式？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类图"><span class="nav-number">1.2.</span> <span class="nav-text">类图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Handler接口"><span class="nav-number">1.3.</span> <span class="nav-text">Handler接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConcreteHandler实现类"><span class="nav-number">1.4.</span> <span class="nav-text">ConcreteHandler实现类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Client调用类"><span class="nav-number">1.5.</span> <span class="nav-text">Client调用类</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#SurfaceView及TextureView对比"><span class="nav-number">1.</span> <span class="nav-text">SurfaceView及TextureView对比</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SurfaceView是什么？"><span class="nav-number">1.1.</span> <span class="nav-text">SurfaceView是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SurfaceView这样设计的优势和缺陷是什么？"><span class="nav-number">1.2.</span> <span class="nav-text">SurfaceView这样设计的优势和缺陷是什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#优势"><span class="nav-number">1.2.1.</span> <span class="nav-text">优势</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缺点"><span class="nav-number">1.2.2.</span> <span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SurfaceView双缓冲是什么？"><span class="nav-number">1.3.</span> <span class="nav-text">SurfaceView双缓冲是什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#好处是什么？"><span class="nav-number">1.3.1.</span> <span class="nav-text">好处是什么？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TextureView是什么？"><span class="nav-number">1.4.</span> <span class="nav-text">TextureView是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TextureView优点和缺点？"><span class="nav-number">1.5.</span> <span class="nav-text">TextureView优点和缺点？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TextureView和SurfaceView区别是什么？"><span class="nav-number">1.6.</span> <span class="nav-text">TextureView和SurfaceView区别是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#播放器应该选哪个？"><span class="nav-number">1.7.</span> <span class="nav-text">播放器应该选哪个？</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">

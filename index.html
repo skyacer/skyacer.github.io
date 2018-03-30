@@ -215,6 +215,132 @@
             
               
                 
+                <a class="post-title-link" href="/2018/03/30/看你用过AIDL，来回答一下下面的问题/" itemprop="url">
+                  看你用过AIDL，来回答一下下面的问题
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-30T10:34:35+08:00" content="2018-03-30">
+              2018-03-30
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/用法/" itemprop="url" rel="index">
+                    <span itemprop="name">用法</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="听说你用过AIDL，来回答一下下面的问题"><a href="#听说你用过AIDL，来回答一下下面的问题" class="headerlink" title="听说你用过AIDL，来回答一下下面的问题"></a>听说你用过AIDL，来回答一下下面的问题</h1><h2 id="远程服务和本地服务有什么区别？"><a href="#远程服务和本地服务有什么区别？" class="headerlink" title="远程服务和本地服务有什么区别？"></a>远程服务和本地服务有什么区别？</h2><p>远程Service与调用者不在同一个进程里（即远程Service是运行在另外一个进程）；而本地服务则是与调用者运行在同一个进程里.</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBb04a338cd8535d591dac72913f58fe0b?method=download&amp;shareKey=cfc7cfa45ca7da191b07815906f883da" alt="本地服务和远程服务的区别"></p>
+<h2 id="与Binder和AIDL相关的类有哪些？"><a href="#与Binder和AIDL相关的类有哪些？" class="headerlink" title="与Binder和AIDL相关的类有哪些？"></a>与Binder和AIDL相关的类有哪些？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBacec11f703dd60b08468fa217fa61837?method=download&amp;shareKey=174b58f6c56f45b5b13f7bc642c11ade" alt=""></p>
+<p>AIDL生成的是IMyService接口，stub和proxy都实现了IMyService。</p>
+<h2 id="IInterface是什么？"><a href="#IInterface是什么？" class="headerlink" title="IInterface是什么？"></a>IInterface是什么？</h2><p>IInterface是一个用于表达Service提供的功能的一个契约，也就是说IInterface里有的方法，Service都可以提供，只要拿到IInterface，就可以直接调用里面的方法，就是一个接口。</p>
+<h2 id="IMyService为什么要分Stub和Proxy"><a href="#IMyService为什么要分Stub和Proxy" class="headerlink" title="IMyService为什么要分Stub和Proxy?"></a>IMyService为什么要分Stub和Proxy?</h2><p>这是为了适用于本地调用和远程调用两种情况。</p>
+<ol>
+<li>如果Service运行在和Client同一个进程，那么直接使用Stub即可。 </li>
+<li>如果Service运行在其他进程，客户端使用的是Proxy，这里这个Proxy的功能就是把参数封装后发送给Binder驱动，然后执行一系列IPC操作最后再取出结果返回。</li>
+</ol>
+<h2 id="如果使用的是远端服务，是不是Stub就没用了？"><a href="#如果使用的是远端服务，是不是Stub就没用了？" class="headerlink" title="如果使用的是远端服务，是不是Stub就没用了？"></a>如果使用的是远端服务，是不是Stub就没用了？</h2><p>不是的，Client使用Proxy发出去消息后，Service接受请求并作出相应就需要Stub，Stub是继承自</p>
+<h2 id="如何判断Service运行在同一个进程还是不同的进程？"><a href="#如何判断Service运行在同一个进程还是不同的进程？" class="headerlink" title="如何判断Service运行在同一个进程还是不同的进程？"></a>如何判断Service运行在同一个进程还是不同的进程？</h2><p>如果 <strong>Service</strong> 运行在同一进程，那么客户端拿到的 <strong>IBinder</strong> 就是 <strong>Stub</strong> 类，而 <strong>Stub</strong> 的 <strong>queryLocalInterface</strong> 又会返回自己；而 <strong>Service</strong> 运行在单独进程中时，客户端拿到的 <strong>IBinder</strong> 就是系统提供好的 <strong>BinderProxy</strong>，<strong>BinderProxy</strong> 中的 <strong>queryLocalInterface</strong> 默认直接返回 <strong>null</strong>，根据代码，<strong>asInterface</strong> 就会构造一个 <strong>Proxy</strong> 返回给客户端。接着就继续我们之前那个问题提到的流程。</p>
+<h2 id="AIDL是不是Binder-IPC必需的？"><a href="#AIDL是不是Binder-IPC必需的？" class="headerlink" title="AIDL是不是Binder IPC必需的？"></a>AIDL是不是Binder IPC必需的？</h2><p>不是的，AIDL只是一种规范，我们完全可以用binder类和BinderProxy类就可以自己实现Service与客户端的通信。</p>
+<p>例如：<br>Service</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBd157868fca0b72e5d0f4476caeff8ab7?method=download&amp;shareKey=4e055d88181a10a29a81be5f643de590" alt="Service.onBind"></p>
+<p>Client</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBd1e9d678db70029248f7463ea9523c04?method=download&amp;shareKey=6f117034aaf1e553735e3c7cbc688fe6" alt="Client.serviceConnected"></p>
+<p>但是在日常开发中，我们最好还是按照AIDL的规范来进行操作。</p>
+<h2 id="Binder远程通信流程是什么样的？"><a href="#Binder远程通信流程是什么样的？" class="headerlink" title="Binder远程通信流程是什么样的？"></a>Binder远程通信流程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB271e57b8c299a05434eb4dfee600dda0?method=download&amp;shareKey=7cd6547a89e45d2d66b4a9e7ddb4c98c" alt="Binder通信流程"></p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/03/28/SurfaceView和TextureView对比/" itemprop="url">
                   SurfaceView和TextureView对比
                 </a>
@@ -646,6 +772,34 @@
 <li>server会读取binder driver中的请求数据，如果是发送给自己的，解包Parcel对象，处理并将结果返回。</li>
 <li>整个的调用过程是一个同步过程，在server处理的时候，client会block住。因此client调用过程不应在主线程。</li>
 </ol>
+<h2 id="Binder通信的整体架构是什么样的？"><a href="#Binder通信的整体架构是什么样的？" class="headerlink" title="Binder通信的整体架构是什么样的？"></a>Binder通信的整体架构是什么样的？</h2><p>以startService为例</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB00286158fda80010a20e60615ed275e7?method=download&amp;shareKey=01403e81380671ec011ece3384769ce8" alt="Binder整体架构"></p>
+<ol>
+<li>发起端线程向Binder Driver发起binder ioctl请求后，采用环不断talkWithDriver，此时线程处于阻塞状态，直到收到BR__XXX命令才会结束该过程。<ul>
+<li>BR_TRANSACTION_COMPLETE: oneway模式下,收到该命令则退出</li>
+<li>BR_REPLY: 非oneway模式下,收到该命令才退出;</li>
+<li>BR_DEAD_REPLY: 目标进程/线程/binder实体为空, 以及释放正在等待reply的binder thread或者binder buffer;</li>
+<li>BR_FAILED_REPLY: 情况较多,比如非法handle, 错误事务栈, security, 内存不足, buffer不足, 数据拷贝失败, 节点创建失败, 各种不匹配等问题</li>
+<li>BR_ACQUIRE_RESULT: 目前未使用的协议; </li>
+</ul>
+</li>
+<li>左图中waitForResponse收到BR_TRANSACTION_COMPLETE,则直接退出循环, 则没有机会执行executeCommand()方法, 故将其颜色画为灰色. 除以上5种BR_XXX命令, 当收到其他BR命令,则都会执行executeCommand过程.</li>
+<li>目标Binder线程创建后, 便进入joinThreadPool()方法, 采用循环不断地循环执行getAndExecuteCommand()方法, 当bwr的读写buffer都没有数据时,则阻塞在binder_thread_read的wait_event过程. 另外,正常情况下binder线程一旦创建则不会退出.</li>
+</ol>
+<h2 id="从通信协议来看startService过程是什么样的？"><a href="#从通信协议来看startService过程是什么样的？" class="headerlink" title="从通信协议来看startService过程是什么样的？"></a>从通信协议来看startService过程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB935c967a2d790a6a56eb2b6eed2c2e0f?method=download&amp;shareKey=78cb0aaa730052688ce763416944da14" alt="startService过程"></p>
+<ul>
+<li>Binder客户端或者服务端向Binder Driver发送的命令都是BC_开头的，例如BC_TRANSACTION和BC_REPLY。</li>
+<li>只有当BC_TRANSACTION或者BC_REPLY时，才会调用binder_transaction()来处理事物，并且都会回应调用者一个BINDER_WORK_TRANSACTION_COMPLETE事物，经过binder_thread_read()会转变成BR_TRANSACTION_COMPLETE.</li>
+<li>startService过程是一个非oneway的过程。</li>
+</ul>
+<h2 id="一个oneway的通信过程"><a href="#一个oneway的通信过程" class="headerlink" title="一个oneway的通信过程"></a>一个oneway的通信过程</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB9857c297fb55614b277b57404f052513?method=download&amp;shareKey=041e392cf9cee0bdb9b5d12591d0b952" alt="一个oneway的通信过程"></p>
+<h2 id="为什么oneway通信还需要等待回应"><a href="#为什么oneway通信还需要等待回应" class="headerlink" title="为什么oneway通信还需要等待回应"></a>为什么oneway通信还需要等待回应</h2><p>以寄信举例：</p>
+<ol>
+<li>当把信交给邮寄员(BC_TRANSACTION)</li>
+<li>邮寄员收到信后, 填一张单子给你作为一份回执(BR_TRANSACTION_COMPLETE). 这样你才放心知道邮递员已确定接收信, 否则就这样走了,信到底有没有交到邮递员手里都不知道,这样的通信实在太让人不省心, 长时间收不到远方家人的回信, 无法得知是在路的中途信件丢失呢,还是压根就没有交到邮递员的手里. 所以说oneway也得知道信是投递状态是否成功.</li>
+<li>邮递员利用交通工具(Binder Driver),将信交给了你的家人(BR_TRANSACTION);</li>
+</ol>
+<h2 id="oneway与非oneway有什么区别？"><a href="#oneway与非oneway有什么区别？" class="headerlink" title="oneway与非oneway有什么区别？"></a>oneway与非oneway有什么区别？</h2><p><strong>oneway与非oneway:</strong> 都是需要等待Binder Driver的回应消息BR_TRANSACTION_COMPLETE. 主要区别在于oneway的通信收到BR_TRANSACTION_COMPLETE则返回,而不会再等待BR_REPLY消息的到来. 另外，oneway的binder IPC则接收端无法获取对方的pid.</p>
 
           
         
@@ -787,126 +941,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/03/23/Android中JSBridge的原理和实现/" itemprop="url">
-                  Android中JSBridge的原理和实现
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-23T15:49:11+08:00" content="2018-03-23">
-              2018-03-23
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/hybrid/" itemprop="url" rel="index">
-                    <span itemprop="name">hybrid</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Android中JSBridge的原理和实现"><a href="#Android中JSBridge的原理和实现" class="headerlink" title="Android中JSBridge的原理和实现"></a>Android中JSBridge的原理和实现</h1><h2 id="Java如何调用JavaScript？"><a href="#Java如何调用JavaScript？" class="headerlink" title="Java如何调用JavaScript？"></a>Java如何调用JavaScript？</h2><p>通过Webview的loadUrl实现，格式为</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WebView.loadUrl(&quot;javascript:function()&quot;);</span><br></pre></td></tr></table></figure>
-<h2 id="JavaScript如何调用Java？"><a href="#JavaScript如何调用Java？" class="headerlink" title="JavaScript如何调用Java？"></a>JavaScript如何调用Java？</h2><p>在JavaScript中，当调用window对象的prompt方法时，会触发Java中的WebChromeClient对象的onJsPrompt方法，可以利用这个机制来实现js调用native的代码。</p>
-<h2 id="通信的数据格式是什么样的？"><a href="#通信的数据格式是什么样的？" class="headerlink" title="通信的数据格式是什么样的？"></a>通信的数据格式是什么样的？</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jsbridge://className:port/methodName?jsonObj</span><br></pre></td></tr></table></figure>
-<p>当js调用native的某个方法时，需要className类名，port值是当native需要将操作结果返回给js时，在js中定义的一个callback，并且将这个callback存储在指定的位置上，这个port就是定义了callback的存储位置。</p>
-<h2 id="JSBridge的流程是什么样的？"><a href="#JSBridge的流程是什么样的？" class="headerlink" title="JSBridge的流程是什么样的？"></a>JSBridge的流程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBa8108b16603bdc5383f216303cf9bece?method=download&amp;shareKey=f009640af1cc59eeaac1d9d162e096b3" alt="JSBridge流程图"></p>
-<p>H5-&gt;通过某种方式触发一个url-&gt;Native捕获到url,进行分析-&gt;原生做处理-&gt;Native调用H5的JSBridge对象传递回调</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBcc5446892fa809c8caafe4425dda21a0?method=download&amp;shareKey=b1376e3c24fa9aa44b836cc1f261ea07" alt="h5与原生页面交互流程"></p>
-<h2 id="JSBridge使用过程中的兼容性问题？"><a href="#JSBridge使用过程中的兼容性问题？" class="headerlink" title="JSBridge使用过程中的兼容性问题？"></a>JSBridge使用过程中的兼容性问题？</h2><ol>
-<li>字符串转义抛出异常，在jsbridge传递数据的时候，必须以json形式传递，不能直接传递string，bool等基础类型，这样才能应用固定的转义规则。</li>
-<li>Javascript调用原生方法会偶现失败。失败的时机是在webView调用onPageFinished前后。解决方式如下：1) js自己刷新两次 2）先调用一个空方法，然后settimeout 20ms来进行主要业务的调用，避开onPageFinished时间点。</li>
-<li>webview要执行js代码必须在主线程，如果在子线程会出现js收不到native的传值。</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -952,7 +986,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-count">20</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -960,7 +994,7 @@
           
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-count">11</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>

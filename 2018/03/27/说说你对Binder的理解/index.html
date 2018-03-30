@@ -68,7 +68,10 @@
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBd52e4b3cc4142e562801a0dd2b7da289?method=download&shareKey=049460ad939a62f133f58a26abed2003">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBccd772d903351df07869c79d55e9c5ee?method=download&shareKey=4a9ac174e0dac55ca001ec995a58ef53">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBa872146e4e5ec332a071e0f1062506f6?method=download&shareKey=1c8253f5e16081b11ee16b16866d5bb2">
-<meta property="og:updated_time" content="2018-03-27T07:31:11.000Z">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB00286158fda80010a20e60615ed275e7?method=download&shareKey=01403e81380671ec011ece3384769ce8">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB935c967a2d790a6a56eb2b6eed2c2e0f?method=download&shareKey=78cb0aaa730052688ce763416944da14">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB9857c297fb55614b277b57404f052513?method=download&shareKey=041e392cf9cee0bdb9b5d12591d0b952">
+<meta property="og:updated_time" content="2018-03-30T07:52:35.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="说说你对Binder的理解">
 <meta name="twitter:description" content="说说你对Binder的理解 在Android开发中，涉及到多进程的通信底层都是依赖Binder IPC机制，所以Binder是Android开发绕不过去的一个知识点。这里我们具体来看一下Binder的实现原理。  为什么要使用Binder？ 性能方面 安全方面  性能方面Binder相对于传统的Socket方式，更加高效。Binder数据拷贝只需要一次，相对于传统的管道、消息队列、Socket都需">
@@ -321,6 +324,34 @@
 <li>server会读取binder driver中的请求数据，如果是发送给自己的，解包Parcel对象，处理并将结果返回。</li>
 <li>整个的调用过程是一个同步过程，在server处理的时候，client会block住。因此client调用过程不应在主线程。</li>
 </ol>
+<h2 id="Binder通信的整体架构是什么样的？"><a href="#Binder通信的整体架构是什么样的？" class="headerlink" title="Binder通信的整体架构是什么样的？"></a>Binder通信的整体架构是什么样的？</h2><p>以startService为例</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB00286158fda80010a20e60615ed275e7?method=download&amp;shareKey=01403e81380671ec011ece3384769ce8" alt="Binder整体架构"></p>
+<ol>
+<li>发起端线程向Binder Driver发起binder ioctl请求后，采用环不断talkWithDriver，此时线程处于阻塞状态，直到收到BR__XXX命令才会结束该过程。<ul>
+<li>BR_TRANSACTION_COMPLETE: oneway模式下,收到该命令则退出</li>
+<li>BR_REPLY: 非oneway模式下,收到该命令才退出;</li>
+<li>BR_DEAD_REPLY: 目标进程/线程/binder实体为空, 以及释放正在等待reply的binder thread或者binder buffer;</li>
+<li>BR_FAILED_REPLY: 情况较多,比如非法handle, 错误事务栈, security, 内存不足, buffer不足, 数据拷贝失败, 节点创建失败, 各种不匹配等问题</li>
+<li>BR_ACQUIRE_RESULT: 目前未使用的协议; </li>
+</ul>
+</li>
+<li>左图中waitForResponse收到BR_TRANSACTION_COMPLETE,则直接退出循环, 则没有机会执行executeCommand()方法, 故将其颜色画为灰色. 除以上5种BR_XXX命令, 当收到其他BR命令,则都会执行executeCommand过程.</li>
+<li>目标Binder线程创建后, 便进入joinThreadPool()方法, 采用循环不断地循环执行getAndExecuteCommand()方法, 当bwr的读写buffer都没有数据时,则阻塞在binder_thread_read的wait_event过程. 另外,正常情况下binder线程一旦创建则不会退出.</li>
+</ol>
+<h2 id="从通信协议来看startService过程是什么样的？"><a href="#从通信协议来看startService过程是什么样的？" class="headerlink" title="从通信协议来看startService过程是什么样的？"></a>从通信协议来看startService过程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB935c967a2d790a6a56eb2b6eed2c2e0f?method=download&amp;shareKey=78cb0aaa730052688ce763416944da14" alt="startService过程"></p>
+<ul>
+<li>Binder客户端或者服务端向Binder Driver发送的命令都是BC_开头的，例如BC_TRANSACTION和BC_REPLY。</li>
+<li>只有当BC_TRANSACTION或者BC_REPLY时，才会调用binder_transaction()来处理事物，并且都会回应调用者一个BINDER_WORK_TRANSACTION_COMPLETE事物，经过binder_thread_read()会转变成BR_TRANSACTION_COMPLETE.</li>
+<li>startService过程是一个非oneway的过程。</li>
+</ul>
+<h2 id="一个oneway的通信过程"><a href="#一个oneway的通信过程" class="headerlink" title="一个oneway的通信过程"></a>一个oneway的通信过程</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB9857c297fb55614b277b57404f052513?method=download&amp;shareKey=041e392cf9cee0bdb9b5d12591d0b952" alt="一个oneway的通信过程"></p>
+<h2 id="为什么oneway通信还需要等待回应"><a href="#为什么oneway通信还需要等待回应" class="headerlink" title="为什么oneway通信还需要等待回应"></a>为什么oneway通信还需要等待回应</h2><p>以寄信举例：</p>
+<ol>
+<li>当把信交给邮寄员(BC_TRANSACTION)</li>
+<li>邮寄员收到信后, 填一张单子给你作为一份回执(BR_TRANSACTION_COMPLETE). 这样你才放心知道邮递员已确定接收信, 否则就这样走了,信到底有没有交到邮递员手里都不知道,这样的通信实在太让人不省心, 长时间收不到远方家人的回信, 无法得知是在路的中途信件丢失呢,还是压根就没有交到邮递员的手里. 所以说oneway也得知道信是投递状态是否成功.</li>
+<li>邮递员利用交通工具(Binder Driver),将信交给了你的家人(BR_TRANSACTION);</li>
+</ol>
+<h2 id="oneway与非oneway有什么区别？"><a href="#oneway与非oneway有什么区别？" class="headerlink" title="oneway与非oneway有什么区别？"></a>oneway与非oneway有什么区别？</h2><p><strong>oneway与非oneway:</strong> 都是需要等待Binder Driver的回应消息BR_TRANSACTION_COMPLETE. 主要区别在于oneway的通信收到BR_TRANSACTION_COMPLETE则返回,而不会再等待BR_REPLY消息的到来. 另外，oneway的binder IPC则接收端无法获取对方的pid.</p>
 
       
     </div>
@@ -422,7 +453,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-count">20</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -430,7 +461,7 @@
           
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-count">11</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -472,7 +503,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#说说你对Binder的理解"><span class="nav-number">1.</span> <span class="nav-text">说说你对Binder的理解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要使用Binder？"><span class="nav-number">1.1.</span> <span class="nav-text">为什么要使用Binder？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#性能方面"><span class="nav-number">1.1.1.</span> <span class="nav-text">性能方面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安全性方面"><span class="nav-number">1.1.2.</span> <span class="nav-text">安全性方面</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Socket拷贝两次是哪两次？"><span class="nav-number">1.2.</span> <span class="nav-text">Socket拷贝两次是哪两次？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android里的IPC原理是什么？"><span class="nav-number">1.3.</span> <span class="nav-text">Android里的IPC原理是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Binder通信流程是什么样的？"><span class="nav-number">1.4.</span> <span class="nav-text">Binder通信流程是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#举一个Binder运行的例子？"><span class="nav-number">1.5.</span> <span class="nav-text">举一个Binder运行的例子？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用服务的具体执行过程是什么样的？"><span class="nav-number">1.6.</span> <span class="nav-text">使用服务的具体执行过程是什么样的？</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#说说你对Binder的理解"><span class="nav-number">1.</span> <span class="nav-text">说说你对Binder的理解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要使用Binder？"><span class="nav-number">1.1.</span> <span class="nav-text">为什么要使用Binder？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#性能方面"><span class="nav-number">1.1.1.</span> <span class="nav-text">性能方面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安全性方面"><span class="nav-number">1.1.2.</span> <span class="nav-text">安全性方面</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Socket拷贝两次是哪两次？"><span class="nav-number">1.2.</span> <span class="nav-text">Socket拷贝两次是哪两次？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android里的IPC原理是什么？"><span class="nav-number">1.3.</span> <span class="nav-text">Android里的IPC原理是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Binder通信流程是什么样的？"><span class="nav-number">1.4.</span> <span class="nav-text">Binder通信流程是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#举一个Binder运行的例子？"><span class="nav-number">1.5.</span> <span class="nav-text">举一个Binder运行的例子？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用服务的具体执行过程是什么样的？"><span class="nav-number">1.6.</span> <span class="nav-text">使用服务的具体执行过程是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Binder通信的整体架构是什么样的？"><span class="nav-number">1.7.</span> <span class="nav-text">Binder通信的整体架构是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#从通信协议来看startService过程是什么样的？"><span class="nav-number">1.8.</span> <span class="nav-text">从通信协议来看startService过程是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一个oneway的通信过程"><span class="nav-number">1.9.</span> <span class="nav-text">一个oneway的通信过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么oneway通信还需要等待回应"><span class="nav-number">1.10.</span> <span class="nav-text">为什么oneway通信还需要等待回应</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#oneway与非oneway有什么区别？"><span class="nav-number">1.11.</span> <span class="nav-text">oneway与非oneway有什么区别？</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">

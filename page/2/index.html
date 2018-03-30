@@ -215,6 +215,126 @@
             
               
                 
+                <a class="post-title-link" href="/2018/03/23/Android中JSBridge的原理和实现/" itemprop="url">
+                  Android中JSBridge的原理和实现
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-23T15:49:11+08:00" content="2018-03-23">
+              2018-03-23
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/hybrid/" itemprop="url" rel="index">
+                    <span itemprop="name">hybrid</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Android中JSBridge的原理和实现"><a href="#Android中JSBridge的原理和实现" class="headerlink" title="Android中JSBridge的原理和实现"></a>Android中JSBridge的原理和实现</h1><h2 id="Java如何调用JavaScript？"><a href="#Java如何调用JavaScript？" class="headerlink" title="Java如何调用JavaScript？"></a>Java如何调用JavaScript？</h2><p>通过Webview的loadUrl实现，格式为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WebView.loadUrl(&quot;javascript:function()&quot;);</span><br></pre></td></tr></table></figure>
+<h2 id="JavaScript如何调用Java？"><a href="#JavaScript如何调用Java？" class="headerlink" title="JavaScript如何调用Java？"></a>JavaScript如何调用Java？</h2><p>在JavaScript中，当调用window对象的prompt方法时，会触发Java中的WebChromeClient对象的onJsPrompt方法，可以利用这个机制来实现js调用native的代码。</p>
+<h2 id="通信的数据格式是什么样的？"><a href="#通信的数据格式是什么样的？" class="headerlink" title="通信的数据格式是什么样的？"></a>通信的数据格式是什么样的？</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jsbridge://className:port/methodName?jsonObj</span><br></pre></td></tr></table></figure>
+<p>当js调用native的某个方法时，需要className类名，port值是当native需要将操作结果返回给js时，在js中定义的一个callback，并且将这个callback存储在指定的位置上，这个port就是定义了callback的存储位置。</p>
+<h2 id="JSBridge的流程是什么样的？"><a href="#JSBridge的流程是什么样的？" class="headerlink" title="JSBridge的流程是什么样的？"></a>JSBridge的流程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBa8108b16603bdc5383f216303cf9bece?method=download&amp;shareKey=f009640af1cc59eeaac1d9d162e096b3" alt="JSBridge流程图"></p>
+<p>H5-&gt;通过某种方式触发一个url-&gt;Native捕获到url,进行分析-&gt;原生做处理-&gt;Native调用H5的JSBridge对象传递回调</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBcc5446892fa809c8caafe4425dda21a0?method=download&amp;shareKey=b1376e3c24fa9aa44b836cc1f261ea07" alt="h5与原生页面交互流程"></p>
+<h2 id="JSBridge使用过程中的兼容性问题？"><a href="#JSBridge使用过程中的兼容性问题？" class="headerlink" title="JSBridge使用过程中的兼容性问题？"></a>JSBridge使用过程中的兼容性问题？</h2><ol>
+<li>字符串转义抛出异常，在jsbridge传递数据的时候，必须以json形式传递，不能直接传递string，bool等基础类型，这样才能应用固定的转义规则。</li>
+<li>Javascript调用原生方法会偶现失败。失败的时机是在webView调用onPageFinished前后。解决方式如下：1) js自己刷新两次 2）先调用一个空方法，然后settimeout 20ms来进行主要业务的调用，避开onPageFinished时间点。</li>
+<li>webview要执行js代码必须在主线程，如果在子线程会出现js收不到native的传值。</li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/03/23/Android主流视频播放及缓存实现原理调研/" itemprop="url">
                   Android主流视频播放及缓存实现原理调研
                 </a>
@@ -726,135 +846,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/03/11/解释器模式/" itemprop="url">
-                  解释器模式
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-11T17:39:05+08:00" content="2018-03-11">
-              2018-03-11
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="解释器模式"><a href="#解释器模式" class="headerlink" title="解释器模式"></a>解释器模式</h1><blockquote>
-<p>今天在看虚拟机相关实现代码时，遇到了解释器模式，由于之前没用过，特地搞清楚了这种设计模式。</p>
-</blockquote>
-<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>在银行、证券类项目里，经常会有一些模型的计算，通常是加、减、乘、除四则运算，当然不止这四种运算，还有更加复杂的运算公式，但是归根结底，框架都是一样的，只是实现的算法不同而已，我们来设计一个运算框架，来看看解释器模式在里面的运用。</p>
-<h2 id="初步设计"><a href="#初步设计" class="headerlink" title="初步设计"></a>初步设计</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB47cf9f80b0189913c094a14cd4da71d0?method=download&amp;shareKey=0f83c3f3fdd3602afee5cf1baf118424" alt="初步设计"></p>
-<p>这样的设计一看就很清楚，通过抽象类Expression，各个具体实现的子类，比如负责加法运算，负责减法运算的类等等都需要继承这个抽象类。</p>
-<h2 id="优化设计"><a href="#优化设计" class="headerlink" title="优化设计"></a>优化设计</h2><p><img src="" alt="优化设计"></p>
-<p>根据<a href="[迪米特法则_百度百科](https://baike.baidu.com/item/%E8%BF%AA%E7%B1%B3%E7%89%B9%E6%B3%95%E5%88%99">迪米特法则</a>)，再通过Client类只与直接的朋友Calculator交流，与其他的类没关系。</p>
-<h2 id="解释器模式-1"><a href="#解释器模式-1" class="headerlink" title="解释器模式"></a>解释器模式</h2><p>解释器模式（Interpreter Pattern）是一种按照规定语法进行解析的方案，在现在项目中使用较少，其定义如下：给定一门语言，定义它的文法的一种表示，并定义一个解释器，该解释器使用该表示来解释语言中的句子。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB98d78601105b7ab51a517bcfe819af4b?method=download&amp;shareKey=c47517d824b9d1db6e6f8274bad8d4f5" alt="解释器模式通用类图"></p>
-<ul>
-<li>AbstractExpression——抽象解释器，具体的解释任务由各个实现类完成，具体的解释器分别由TerminalExpression和NonTerminalExpression完成。</li>
-<li>TerminalExpression终结符表达式，实现与文法中的元素相关联的解释操作，通常一个解释器模式中只有一个终结符表达式，但有多个实例，具体例子中是</li>
-<li>NonterminalExpression——非终结符表达式，具体到我们的例子就是加减法规则分别对应AddExpression和SubExpression两个类。</li>
-<li>Context——环境角色，具体到例子里是采用HashMap代替。</li>
-</ul>
-<h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><p>解释器是一个简单的语法分析工具，最显著的特定就是扩展性，如果需要扩展语法，增加非终结符就可以了。</p>
-<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><ol>
-<li>解释器会引起类膨胀</li>
-<li>采用递归调用方法</li>
-<li>效率问题</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -900,7 +891,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-count">20</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -908,7 +899,7 @@
           
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-count">11</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>

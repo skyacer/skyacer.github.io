@@ -215,6 +215,153 @@
             
               
                 
+                <a class="post-title-link" href="/2018/03/14/《Head-first-HTML与CSS》读书笔记/" itemprop="url">
+                  《Head first HTML与CSS》读书笔记
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-14T09:38:31+08:00" content="2018-03-14">
+              2018-03-14
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/读书/" itemprop="url" rel="index">
+                    <span itemprop="name">读书</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="《Head-First-HTML与CSS》-读书笔记"><a href="#《Head-First-HTML与CSS》-读书笔记" class="headerlink" title="《Head First HTML与CSS》 读书笔记"></a>《Head First HTML与CSS》 读书笔记</h1><h3 id="img-图像"><a href="#img-图像" class="headerlink" title="img 图像"></a>img 图像</h3><ul>
+<li>JPEG 有损，适合复杂图像</li>
+<li>PNG “无损”，指不会丢掉信息，但会压缩文件大小，适合单色图像或者logo等小图像 。PNG-24支持数百万种颜色，PNG-16支持数千种，PNG-8支持256种颜色</li>
+<li>GIF “无损”，同上 ，类似PNG，唯一支持动画并得到广泛支持的图片格式。</li>
+</ul>
+<p>alt是<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">**如果把一个透明的图像放在Web页面中，则要确保这个图像的蒙版颜色与Web页面的背景色一直。**</span><br><span class="line">**透明图像可以使用PNG或者GIF格式。**</span><br><span class="line"></span><br><span class="line">图像可以用在指向其他Web页面的链接，要由图像创建一个链接，可以使用```img```元素作为```a```元素的内容，将链接放在```a```原色的href属性中。</span><br><span class="line"></span><br><span class="line">### HTML 版本</span><br><span class="line"></span><br><span class="line">在使用标准HTML时，无需指定版本号，在HTML5以后都向后兼容，所以只需 ```&lt;!doctype html&gt;</span><br></pre></td></tr></table></figure></p>
+<p>具体内容看 《Head First HTML5 Programming》</p>
+<h3 id="W3C-验证工具"><a href="#W3C-验证工具" class="headerlink" title="W3C 验证工具"></a>W3C 验证工具</h3><blockquote>
+<p>用于验证html所有标记是否都合法</p>
+</blockquote>
+<h2 id="使用meta指定字符编码"><a href="#使用meta指定字符编码" class="headerlink" title="使用meta指定字符编码"></a>使用meta指定字符编码</h2><figure class="highlight plain"><figcaption><span>charset </span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">要放在head元素中，title上面</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### Web规范</span><br><span class="line"></span><br><span class="line">一定要在head元素中包含title元素</span><br><span class="line"></span><br><span class="line">alt是img元素中的必要属性</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### font-family </span><br><span class="line"></span><br><span class="line">可以列出各种可能用到的字体，因为windows 或 mac平台可能有不同字体区别，A有B没有等等情况。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### woff（Web开放字体格式）</span><br><span class="line"></span><br><span class="line">还可以选择在服务器上托管字体</span><br><span class="line"></span><br><span class="line">1. 找到一个免费授权的字体</span><br><span class="line">2. 确保有所需字体的所有格式  比如.ttf/ .otf / .eot / .svg / .woff</span><br><span class="line">3. 把你的字体放在Web上  一般除了放置.woff还需要放置.ttf作为备选，一些老的浏览器/移动设备等不支持.woff</span><br><span class="line">4. 在CSS中增加 font-face属性</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### 调整字体大小</span><br><span class="line"></span><br><span class="line">font-size : 150%、1.2em  设置百分数/小数点时，相对的是父元素的字体大小，这里的em是字体大小比例的结尾，跟```&lt;em&gt;</span><br></pre></td></tr></table></figure>
+<p>元素没任何关系。</p>
+<p>同样也可以设置small，x-small，medium等等</p>
+<h3 id="改变字体风格"><a href="#改变字体风格" class="headerlink" title="改变字体风格"></a>改变字体风格</h3><p>比如font-style: italic; 斜体风格</p>
+<h3 id="Web颜色成色原理"><a href="#Web颜色成色原理" class="headerlink" title="Web颜色成色原理"></a>Web颜色成色原理</h3><p>三基色：红绿蓝三种颜色配比而成</p>
+<p>background-color: rgb(80%， 40%， 0%);<br>background-color: rgb(204， 102， 0);<br>background-color: #cc6600;</p>
+<h3 id="文本装饰"><a href="#文本装饰" class="headerlink" title="文本装饰"></a>文本装饰</h3><p>text-decoration : line-through; //中划线</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEBf6e2e236fc5ab172ab064db99d404c44?method=download&amp;shareKey=804afb25bc5a50f1dacb2816a070e4c5" alt="第八章总结"></p>
+<h2 id="第九章-与元素亲密接触"><a href="#第九章-与元素亲密接触" class="headerlink" title="第九章 与元素亲密接触"></a>第九章 与元素亲密接触</h2><h3 id="盒模型"><a href="#盒模型" class="headerlink" title="盒模型"></a>盒模型</h3><p>CSS将每个元素看成一个盒子，可以对这个盒子设置内外边距，边框等等参数。</p>
+<p>class 对应 .<br>id 对应 #</p>
+<p>最后链接的css覆盖前面相同属性的css</p>
+<h3 id="样式表不仅可以用在浏览器"><a href="#样式表不仅可以用在浏览器" class="headerlink" title="样式表不仅可以用在浏览器"></a>样式表不仅可以用在浏览器</h3><p>media 可以指定用样式表的设备<br><code>&lt;link href=“lounge-mobile.css” rel=“stylesheet” media=“screen” and (max-device-width: 480px)”&gt;</code><br>指定带屏幕的设备，且屏幕宽度不超过480像素</p>
+<h3 id="媒体查询"><a href="#媒体查询" class="headerlink" title="媒体查询"></a>媒体查询</h3><p>通过@media 规则来查询相应符合条件的设备才能运用以下规则</p>
+<p>IE8之前版本不支持媒体查询</p>
+<h3 id="字体规则"><a href="#字体规则" class="headerlink" title="字体规则"></a>字体规则</h3><p>如果font-family中有字体名中包含空格，要加上引号，比如 “Times New Roman”</p>
+<h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEBbb9945e91a6d0c760dc61cead9fad022?method=download&amp;shareKey=3ec7dd7514527015836ec7232335ec7c" alt="总结"></p>
+<h2 id="第10章-高级Web建设"><a href="#第10章-高级Web建设" class="headerlink" title="第10章 高级Web建设"></a>第10章 高级Web建设</h2><p><code>&lt;div&gt;</code>让元素逻辑分区。在页面中要使用<code>&lt;div&gt;</code>，但不要滥用。如果这样做有助于你将页面分解为逻辑区，从而保证结构清晰并便于指定样式，那么可以增加更多的结构。如果只是为了在页面中创建大量结构而增加<code>&lt;div&gt;</code>，就只会让页面复杂，而没有任何实际好处。</p>
+<p>padding : 0px（上）, 20px（右）, 30px(下), 10px（左）</p>
+<p><code>&lt;span&gt;</code>元素采用类似的方式建立内联内容的逻辑分组。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBc54baf6b170ae5e6b68c829828911f56?method=download&amp;shareKey=9431dc41a0e60418b4d07092062f3651" alt="第10章总结"></p>
+<h2 id="第11章-摆放元素"><a href="#第11章-摆放元素" class="headerlink" title="第11章  摆放元素"></a>第11章  摆放元素</h2><h3 id="使用流"><a href="#使用流" class="headerlink" title="使用流"></a>使用流</h3><p>流实际上就是浏览器在页面上摆放HTML元素所用的方法。</p>
+<h3 id="内联元素"><a href="#内联元素" class="headerlink" title="内联元素"></a>内联元素</h3><p>内联元素在水平方向上会相互挨着，总体上会从左上方流向右下方。</p>
+<h3 id="浏览器并排放置两个内联元素时……"><a href="#浏览器并排放置两个内联元素时……" class="headerlink" title="浏览器并排放置两个内联元素时……"></a>浏览器并排放置两个内联元素时……</h3><p>float属性尽可能地向左或向右（根据float的值）浮动一个元素，然后在它下面所有内容会绕流这个元素（所谓绕流，就是像流体一样绕着这个元素流动）</p>
+<h3 id="如何浮动元素"><a href="#如何浮动元素" class="headerlink" title="如何浮动元素"></a>如何浮动元素</h3><p>使用float属性必须设置width<br>2</p>
+<h2 id="第12章-现代HTML"><a href="#第12章-现代HTML" class="headerlink" title="第12章  现代HTML"></a>第12章  现代HTML</h2><h3 id="重新考虑HTML结构"><a href="#重新考虑HTML结构" class="headerlink" title="重新考虑HTML结构"></a>重新考虑HTML结构</h3><p>移动端浏览器设备都支持HTML5, IE8及更糟版本，safaric3及更早版本</p>
+<h2 id="第13章-表格与更多列表"><a href="#第13章-表格与更多列表" class="headerlink" title="第13章 表格与更多列表"></a>第13章 表格与更多列表</h2><p>用 <code>&lt;table&gt;</code> 代表表格，<code>&lt;tr&gt;</code>是第一行，<code>&lt;th&gt;</code>元素是表头，<code>&lt;td&gt;</code>构成单元行的每一行</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB7e6b0b8909c553fd2346d02c83566240?method=download&amp;shareKey=ea290155980e0a26d29c96ac3e77e325" alt="小结"></p>
+<h2 id="第14章-HTML表单"><a href="#第14章-HTML表单" class="headerlink" title="第14章 HTML表单"></a>第14章 HTML表单</h2><p><code>&lt;form&gt;</code>元素如何工作？</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB5da3185c60675d3f90caf67d8f6b262b?method=download&amp;shareKey=fa555bfad25e0b4a1d5c7539f9f163eb" alt="```&lt;form&gt;```元素如何工作？"></p>
+<h3 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB2faa57a81655e6ca0efc1b4efcd829b1?method=download&amp;shareKey=91d409de8667ea13750347676cfa0815" alt="14章小结"></p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/03/11/解释器模式/" itemprop="url">
                   解释器模式
                 </a>
@@ -908,194 +1055,11 @@ open protected fun alreadyHasView(): Unit = throw IllegalStateException(&quot;Vi
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2017/12/12/一句话解决的事何必说三句，Kotlin入坑指南/" itemprop="url">
-                  一句话解决的事何必说三句，Kotlin入坑指南
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2017-12-12T21:39:24+08:00" content="2017-12-12">
-              2017-12-12
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <blockquote>
-<p>看到这个标题你可能觉得很奇怪，其实这里指的是Kotlin语言出色的简洁性，能比原有用Java代码实现的功能缩小三倍以上的代码量。不仅如此，这还不是Kotlin最出色的语言特性，不信你接着往下看。</p>
-</blockquote>
-<h2 id="什么是Kotlin？"><a href="#什么是Kotlin？" class="headerlink" title="什么是Kotlin？"></a>什么是Kotlin？</h2><p>Kotlin是JetBrains开发的基于JVM的语言。JetBrains是一家捷克的软件开发公司，该公司位于捷克的布拉格，研发了IntelliJ IDEA这款相对于Eclipse有较大改善的大名鼎鼎IDE产品，使用Java开发的童鞋想必也是非常了解了，还有一些其他类似产品比如，Pycharm，Clion等等，我就不打广告了[捂脸]</p>
-<p>而Android Studio这款官方的Android开发IDE也是基于IntelliJ开发出来的。而在今年的Google I/O大会上，Google官方承认了Kotlin作为Android开发的官方语言，所以说JetBrains与Google想必是有什么不可告人的秘密，咳咳。</p>
-<h2 id="我们为什么要学Kotlin？"><a href="#我们为什么要学Kotlin？" class="headerlink" title="我们为什么要学Kotlin？"></a>我们为什么要学Kotlin？</h2><p>下面来讲一下Kotlin和Java相比的优势是什么？</p>
-<ul>
-<li>更简洁：这是它重要的优点之一，可以比Java编写少得多的代码。</li>
-<li><p>更安全：Kotlin是空安全的，它在编译期间就会处理各种为null的情况，无需像java一样添加很多的判空代码，节约很多调试空指针异常的时间，很大程度上避免出现NullPointException。</p>
-</li>
-<li><p>易扩展：扩展函数意味着我们不仅可以扩展我们原有写好的类，还可以扩展系统级的类，非常灵活，另外如果在类里编写扩展函数，那么只对当前类生效。</p>
-</li>
-<li>函数式：Kotlin使用了很多函数式编程的概念，比如用到了lambda表达式来更方便地解决问题。</li>
-<li><p>Kotlin Android Extensions：再也不用编写烦人的findViewById()了，如果你集成了ButterKnife，是时候删除对它的依赖了，Kotlin支持了对于View以id形式访问。</p>
-</li>
-<li><p>不用写分号，就像你看到的上述代码一样，对于很多写过脚本语言的童鞋来说，不要写分号这一点真是节省了很多时间，对于一天写几百行几千行甚至上万行代码的童鞋们来说，相当于省了多少个分号。</p>
-</li>
-</ul>
-<p>到这里有的同学想要说了，你说的这些好处确实不错，但是我之前的项目全是用java语言来写的，难不成让我推倒重来过？别急，最后我要说的一个最大的优势就是</p>
-<ul>
-<li>与Java语言可混合编程，也就是说我们可以继续使用原来所有用Java写的代码和库，因为两个语言之间高度互操作，想尝试的童鞋们建议可以从新的小功能小模块入手，对这些模块使用Kotlin代码进行编写，原有的稳定模块之后再逐步重构。</li>
-<li>对初学者友好，kotlin对java语言转用kotlin提供了很多便利，对于初学者来说免去很多不必要的烦恼。最贴心的是Kotlin插件支持一键由Java转Kotlin，为你之后想要重构提供了很大的便利性。</li>
-</ul>
-<h2 id="简洁性"><a href="#简洁性" class="headerlink" title="简洁性"></a>简洁性</h2><p>我们以最基本的POJO为例</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">long</span> id;</span><br><span class="line"><span class="keyword">private</span> String name;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setId</span><span class="params">(<span class="keyword">long</span> id)</span> </span>&#123;</span><br><span class="line"><span class="keyword">this</span>. id = id;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line"><span class="keyword">this</span>. name=name;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getId</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="keyword">return</span> id;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="keyword">return</span> name;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>其实上述类里就两个字段，一个id一个name，如果拿kotlin来写的话是什么样子呢？</p>
-<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span></span>(<span class="keyword">var</span> name: String, <span class="keyword">var</span> id: String)</span><br></pre></td></tr></table></figure>
-<p>这一句代码就够了，Kotlin会自动生成所有属性和它们的访问器，以及一些方法，例如toString方法及equals方法。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">var user = User(&quot;kotlin&quot;,&quot;123&quot;)</span><br></pre></td></tr></table></figure>
-<p>另外如果不需要参数或者只需要一个参数时</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">class User &#123;</span><br><span class="line">var name: String? = null</span><br><span class="line">var id: String? = null</span><br><span class="line"></span><br><span class="line">constructor(name: String) &#123;</span><br><span class="line">this.name = name</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">constructor(name: String, id: String) &#123;</span><br><span class="line">this.name = name</span><br><span class="line">this.id = id</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="空安全"><a href="#空安全" class="headerlink" title="空安全"></a>空安全</h2><p>可能有的童鞋会问了，？= 是个shenmegui？？</p>
-<p>当我们用Java写代码时，我们如果不想出现NullPointerException，我们需要在使用它之前每次去判断是否为空。而Kotlin这类空安全语言默认对象和字段不能为空，如果我们非要让一个字段或对象为空那么必须使用安全调用操作符（？）来指定。</p>
-<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> user: User? = <span class="literal">null</span></span><br><span class="line">toast(user.name)</span><br></pre></td></tr></table></figure>
-<p>例如以上代码，是无法编译通过的，因为user是可能为空的，而user没对空情况做处理，所以无法编译。解决方式有两种：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//第一种对字段进行空情况做处理，则可安全调用</span><br><span class="line">if(user != null)&#123;</span><br><span class="line">	toast(user.name)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//第二种利用安全调用操作符，只有在user不为空时会调用user.name，否则调用toast(null)</span><br><span class="line">toast (user?.name）</span><br></pre></td></tr></table></figure>
-<p>我们也可以给它赋一个默认值，当user为空时调用toast(“kotlin”)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//Elvis操作符用法</span><br><span class="line">toast(user?.name ?: &quot;kotlin&quot;)</span><br></pre></td></tr></table></figure>
-<h2 id="易扩展"><a href="#易扩展" class="headerlink" title="易扩展"></a>易扩展</h2><p>上述代码有的人会问了，为什么你的toast可以这么写？其实就是kotlin的扩展函数在起作用。</p>
-<p>kotlin允许我们对任何类添加方法，包括系统级的类，自定义类等等，比如我想在Context类中添加一个toast方法。<br>我们新建一个kt文件（kotlin的文件后缀），在里面写上</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">fun Context.toast(message: CharSequence, duration: Int = Toast.LENGTH_SHORT) &#123; </span><br><span class="line">    Toast.makeText(this, message, duration).show()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>加上这句之后，你可以在所有用到context的地方调用<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">这是个很有意思的特性，接下来的事情就是发挥你们的想象力了~</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">## 函数式（Lambdas）</span><br><span class="line">举个栗子，我们在Android开发中，经常需要写的点击事件</span><br></pre></td></tr></table></figure></p>
-<p>view.setOnClickListener(new OnClickListener(){<br>    @Override<br>    public void onClick(View v) {<br>        Toast.makeText(v.getContext(), “Click”, Toast.LENGTH_SHORT).show();<br>    }<br>})<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">利用了之前提到的扩展函数，可以写成</span><br></pre></td></tr></table></figure></p>
-<p>view.setOnClickListener(object : OnClickListener {<br>    override fun onClick(v: View) {<br>        toast(“Click”)<br>    }<br>}</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">利用lambdas表达式我们可以把上述代码优化</span><br></pre></td></tr></table></figure>
-<p>view.setOnClickListener({view -&gt; toast(“Click”)}}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">很多情况下我们并不需要用到参数View，所以左值参数也可以省略</span><br></pre></td></tr></table></figure></p>
-<p>view.setOnClickListener({toast(“Click”)}}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">由于这个方法只有一个参数，我们可以省略这个圆括号：</span><br></pre></td></tr></table></figure></p>
-<p>view.setOnClickListener{toast(“Click”)}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">比原来的java代码简短了5倍，并且也很容易理解。</span><br><span class="line"></span><br><span class="line">## Kotlin Android Extention</span><br><span class="line">举个栗子，在Android中我们不可避免地要写以下这种代码</span><br></pre></td></tr></table></figure></p>
-<p>TextView textView = findViewById(R.id.textview);<br>Button button = findViewById(R.id.button);</p>
-<p>textView.setText(“kotlin”);<br>button.setOnClickListener(…)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">或者利用ButterKnife，写如下代码</span><br></pre></td></tr></table></figure>
-<p>@Bind(R.id.textview)<br>TextView mTextView;</p>
-<p>@Bind(R.id.button)<br>Button mButton;</p>
-<p>…</p>
-<p>mTextView.setText(“kotlin”);</p>
-<p>mButton.setOnClickListener(…)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">相信不止我一个人觉得这种代码又重复又无聊，kotlin给我们提供了另外一个思路，直接利用id来绑定</span><br></pre></td></tr></table></figure>
-<p>// 导入该Activity对应的布局文件<br>import kotlinx.android.synthetic.main.activity_main.*</p>
-<p>…<br>    //导入后，整个Activity就可以直接利用id来对View进行操作了<br>    // Instead of findView(R.id.textView) as TextView<br>    textView.setText(“kotlin”)<br>    // Instead of findView(R.id.button) as Button<br>    button.setOnClickListener(…)<br>    }<br>}<br><code>`</code><br>这样处理再也没有一点多余代码，直接利用view的id操作，简洁明了。</p>
-<p>导入格式：import kotlinx.android.synthetic.main.<layout>.*</layout></p>
-<h2 id="对初学者友好"><a href="#对初学者友好" class="headerlink" title="对初学者友好"></a>对初学者友好</h2><p>我们在由一门语言转到另一门语言时难免有所抵触，会考虑新的语言学习成本等等问题。不过对于Kotlin来说，给了掌握Java语言童鞋们转Kotlin很多便利性：</p>
-<ul>
-<li>在java中编写一段代码，粘贴到kotlin文件中，IDE利用黑科技将粘贴的java代码自动转换成kotlin。</li>
-</ul>
-<p><img src="http://upload-images.jianshu.io/upload_images/4287000-4abfca0b41b182f8?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
-<ul>
-<li>对于之前已经编写好的java类，我们重构不知何从下手时，kotlin提供一键转换功能</li>
-</ul>
-<p>在idea中安装kotlin插件之后，我们可以在Code下找到</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/4287000-a3f05589390e24de?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文浅显地总结了下kotlin对比java的几个优势，对于深层次的解析会放在后面的文章，有兴趣的童鞋可以继续关注，毕竟一门语言博大精深也不是一篇文章能讲完的。相信你看到这里内心早就想体验一下kotlin的魅力了，<a href="https://kotlinlang.org/docs/tutorials/kotlin-android.html" target="_blank" rel="noopener">点此开启你的kotlin之旅吧。</a></p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
-<li>Kotlin 官方文档</li>
-<li>《Kotlin for android Developers》</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1136,7 +1100,7 @@ open protected fun alreadyHasView(): Unit = throw IllegalStateException(&quot;Vi
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">20</span>
+              <span class="site-state-item-count">21</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1144,7 +1108,7 @@ open protected fun alreadyHasView(): Unit = throw IllegalStateException(&quot;Vi
           
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -1153,7 +1117,7 @@ open protected fun alreadyHasView(): Unit = throw IllegalStateException(&quot;Vi
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

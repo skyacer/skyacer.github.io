@@ -41,7 +41,7 @@
 <link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="设计模式," />
+  <meta name="keywords" content="View," />
 
 
 
@@ -57,21 +57,23 @@
 
 
 
-<meta name="description" content="解释器模式 今天在看虚拟机相关实现代码时，遇到了解释器模式，由于之前没用过，特地搞清楚了这种设计模式。  背景在银行、证券类项目里，经常会有一些模型的计算，通常是加、减、乘、除四则运算，当然不止这四种运算，还有更加复杂的运算公式，但是归根结底，框架都是一样的，只是实现的算法不同而已，我们来设计一个运算框架，来看看解释器模式在里面的运用。 初步设计 这样的设计一看就很清楚，通过抽象类Expressi">
-<meta name="keywords" content="设计模式">
+<meta name="description" content="Android窗口管理分析（一）——View是如何绘制到屏幕上的 窗口管理涉及到的模块很多，除了WindowManagerService还包括SurfaceFlinger服务、Linux的共享内存及tmpfs文件系统、Binder通信、InputManagerService、VSYNC同步技术等。  View的窗口管理分为哪些部分？ WMS是负责View绘制的吗？WMS的作用是窗口管理，不负责Vi">
+<meta name="keywords" content="View">
 <meta property="og:type" content="article">
-<meta property="og:title" content="解释器模式">
-<meta property="og:url" content="http://skyacer.github.io/2018/03/11/解释器模式/index.html">
+<meta property="og:title" content="Android窗口管理分析（一）——View是如何绘制到屏幕上的">
+<meta property="og:url" content="http://skyacer.github.io/2018/04/11/Android窗口管理分析（一）——View是如何绘制到屏幕上的/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
-<meta property="og:description" content="解释器模式 今天在看虚拟机相关实现代码时，遇到了解释器模式，由于之前没用过，特地搞清楚了这种设计模式。  背景在银行、证券类项目里，经常会有一些模型的计算，通常是加、减、乘、除四则运算，当然不止这四种运算，还有更加复杂的运算公式，但是归根结底，框架都是一样的，只是实现的算法不同而已，我们来设计一个运算框架，来看看解释器模式在里面的运用。 初步设计 这样的设计一看就很清楚，通过抽象类Expressi">
+<meta property="og:description" content="Android窗口管理分析（一）——View是如何绘制到屏幕上的 窗口管理涉及到的模块很多，除了WindowManagerService还包括SurfaceFlinger服务、Linux的共享内存及tmpfs文件系统、Binder通信、InputManagerService、VSYNC同步技术等。  View的窗口管理分为哪些部分？ WMS是负责View绘制的吗？WMS的作用是窗口管理，不负责Vi">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB47cf9f80b0189913c094a14cd4da71d0?method=download&shareKey=0f83c3f3fdd3602afee5cf1baf118424">
-<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB98d78601105b7ab51a517bcfe819af4b?method=download&shareKey=c47517d824b9d1db6e6f8274bad8d4f5">
-<meta property="og:updated_time" content="2018-03-11T09:41:15.000Z">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBdb44b5849365c6f181d3c424dc60e1ab?method=download&shareKey=30075989c77b1a06262ff679ef2ed252">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB552342f685a75dfac6192a6898c70c21?method=download&shareKey=9b0c041e0aa0a537614211820967f4ce">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB98371b5048dfa8b7fe0142093823d404?method=download&shareKey=fba43e8d94e0d2b4d30cb2f10704f573">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBe00aaff15eaf1ac892950c9e4c6fd4b4?method=download&shareKey=e57fbd76b670782fb8bb85869ec2d0d3">
+<meta property="og:updated_time" content="2018-04-11T07:44:31.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="解释器模式">
-<meta name="twitter:description" content="解释器模式 今天在看虚拟机相关实现代码时，遇到了解释器模式，由于之前没用过，特地搞清楚了这种设计模式。  背景在银行、证券类项目里，经常会有一些模型的计算，通常是加、减、乘、除四则运算，当然不止这四种运算，还有更加复杂的运算公式，但是归根结底，框架都是一样的，只是实现的算法不同而已，我们来设计一个运算框架，来看看解释器模式在里面的运用。 初步设计 这样的设计一看就很清楚，通过抽象类Expressi">
-<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB47cf9f80b0189913c094a14cd4da71d0?method=download&shareKey=0f83c3f3fdd3602afee5cf1baf118424">
+<meta name="twitter:title" content="Android窗口管理分析（一）——View是如何绘制到屏幕上的">
+<meta name="twitter:description" content="Android窗口管理分析（一）——View是如何绘制到屏幕上的 窗口管理涉及到的模块很多，除了WindowManagerService还包括SurfaceFlinger服务、Linux的共享内存及tmpfs文件系统、Binder通信、InputManagerService、VSYNC同步技术等。  View的窗口管理分为哪些部分？ WMS是负责View绘制的吗？WMS的作用是窗口管理，不负责Vi">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEBdb44b5849365c6f181d3c424dc60e1ab?method=download&shareKey=30075989c77b1a06262ff679ef2ed252">
 
 
 
@@ -89,7 +91,7 @@
   };
 </script>
 
-  <title> 解释器模式 | SkyAcer's blog </title>
+  <title> Android窗口管理分析（一）——View是如何绘制到屏幕上的 | SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -217,7 +219,7 @@
             
             
               
-                解释器模式
+                Android窗口管理分析（一）——View是如何绘制到屏幕上的
               
             
           </h1>
@@ -229,8 +231,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-11T17:39:05+08:00" content="2018-03-11">
-              2018-03-11
+            <time itemprop="dateCreated" datetime="2018-04-11T15:42:02+08:00" content="2018-04-11">
+              2018-04-11
             </time>
           </span>
 
@@ -243,8 +245,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
+                  <a href="/categories/framework/" itemprop="url" rel="index">
+                    <span itemprop="name">framework</span>
                   </a>
                 </span>
 
@@ -275,27 +277,37 @@
       
 
       
-        <h1 id="解释器模式"><a href="#解释器模式" class="headerlink" title="解释器模式"></a>解释器模式</h1><blockquote>
-<p>今天在看虚拟机相关实现代码时，遇到了解释器模式，由于之前没用过，特地搞清楚了这种设计模式。</p>
+        <h1 id="Android窗口管理分析（一）——View是如何绘制到屏幕上的"><a href="#Android窗口管理分析（一）——View是如何绘制到屏幕上的" class="headerlink" title="Android窗口管理分析（一）——View是如何绘制到屏幕上的"></a>Android窗口管理分析（一）——View是如何绘制到屏幕上的</h1><blockquote>
+<p>窗口管理涉及到的模块很多，除了WindowManagerService还包括SurfaceFlinger服务、Linux的共享内存及tmpfs文件系统、Binder通信、InputManagerService、VSYNC同步技术等。</p>
 </blockquote>
-<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>在银行、证券类项目里，经常会有一些模型的计算，通常是加、减、乘、除四则运算，当然不止这四种运算，还有更加复杂的运算公式，但是归根结底，框架都是一样的，只是实现的算法不同而已，我们来设计一个运算框架，来看看解释器模式在里面的运用。</p>
-<h2 id="初步设计"><a href="#初步设计" class="headerlink" title="初步设计"></a>初步设计</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB47cf9f80b0189913c094a14cd4da71d0?method=download&amp;shareKey=0f83c3f3fdd3602afee5cf1baf118424" alt="初步设计"></p>
-<p>这样的设计一看就很清楚，通过抽象类Expression，各个具体实现的子类，比如负责加法运算，负责减法运算的类等等都需要继承这个抽象类。</p>
-<h2 id="优化设计"><a href="#优化设计" class="headerlink" title="优化设计"></a>优化设计</h2><p><img src="" alt="优化设计"></p>
-<p>根据<a href="[迪米特法则_百度百科](https://baike.baidu.com/item/%E8%BF%AA%E7%B1%B3%E7%89%B9%E6%B3%95%E5%88%99">迪米特法则</a>)，再通过Client类只与直接的朋友Calculator交流，与其他的类没关系。</p>
-<h2 id="解释器模式-1"><a href="#解释器模式-1" class="headerlink" title="解释器模式"></a>解释器模式</h2><p>解释器模式（Interpreter Pattern）是一种按照规定语法进行解析的方案，在现在项目中使用较少，其定义如下：给定一门语言，定义它的文法的一种表示，并定义一个解释器，该解释器使用该表示来解释语言中的句子。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB98d78601105b7ab51a517bcfe819af4b?method=download&amp;shareKey=c47517d824b9d1db6e6f8274bad8d4f5" alt="解释器模式通用类图"></p>
-<ul>
-<li>AbstractExpression——抽象解释器，具体的解释任务由各个实现类完成，具体的解释器分别由TerminalExpression和NonTerminalExpression完成。</li>
-<li>TerminalExpression终结符表达式，实现与文法中的元素相关联的解释操作，通常一个解释器模式中只有一个终结符表达式，但有多个实例，具体例子中是</li>
-<li>NonterminalExpression——非终结符表达式，具体到我们的例子就是加减法规则分别对应AddExpression和SubExpression两个类。</li>
-<li>Context——环境角色，具体到例子里是采用HashMap代替。</li>
-</ul>
-<h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><p>解释器是一个简单的语法分析工具，最显著的特定就是扩展性，如果需要扩展语法，增加非终结符就可以了。</p>
-<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><ol>
-<li>解释器会引起类膨胀</li>
-<li>采用递归调用方法</li>
-<li>效率问题</li>
+<h2 id="View的窗口管理分为哪些部分？"><a href="#View的窗口管理分为哪些部分？" class="headerlink" title="View的窗口管理分为哪些部分？"></a>View的窗口管理分为哪些部分？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBdb44b5849365c6f181d3c424dc60e1ab?method=download&amp;shareKey=30075989c77b1a06262ff679ef2ed252" alt="窗口管理"></p>
+<h2 id="WMS是负责View绘制的吗？"><a href="#WMS是负责View绘制的吗？" class="headerlink" title="WMS是负责View绘制的吗？"></a>WMS是负责View绘制的吗？</h2><p><strong>WMS的作用是窗口管理，不负责View的绘制，真正完成图像绘制的是SurfaceFlinger服务</strong></p>
+<p>WMS（WindowManagerService）是负责Android的窗口的管理，比如窗口的添加、移除、调整顺序等等。至于图像的绘制和合成都不是WMS管理的范畴。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">TextView mview=new TextView(context);</span><br><span class="line">    ...&lt;!--设置颜色 样式--&gt;</span><br><span class="line">    WindowManager mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);</span><br><span class="line">    WindowManager.LayoutParams wmParams = new WindowManager.LayoutParams();</span><br><span class="line">    wmParams.type = WindowManager.LayoutParams.TYPE_TOAST;</span><br><span class="line">    wmParams.format = PixelFormat.RGBA_8888;</span><br><span class="line">    wmParams.width = 800;</span><br><span class="line">    wmParams.height = 800;</span><br><span class="line">    mWindowManager.addView(mview, wmParams);</span><br></pre></td></tr></table></figure>
+<ol>
+<li>在利用WindowManager.addView添加窗口之前，TextView的onDraw不会被调用，也就是说View必须被添加到窗口中，才会被绘制。换句话说，<strong>只有申请了依附窗口，View才会有可以绘制的目标内存。</strong></li>
+<li>在添加窗口的时候，除了WMS自己进行注册整理，还需要向SurfaceFlinger服务申请一块Surface画布，对应的是一块内存。</li>
+<li>只有这块内存申请成功之后，APP才会有绘画的目标，这块内存是APP和SurfaceFlinger服务端共享的，省去了绘图资源的拷贝。</li>
+</ol>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB552342f685a75dfac6192a6898c70c21?method=download&amp;shareKey=9b0c041e0aa0a537614211820967f4ce" alt="Android绘图原理"></p>
+<p><strong>可以看到App通过unLockCanvasAndPost直接和SurfaceFlinger通信进行重绘的。WMS只负责窗口的管理，不负责绘制。</strong></p>
+<h2 id="窗口分组是什么样的？"><a href="#窗口分组是什么样的？" class="headerlink" title="窗口分组是什么样的？"></a>窗口分组是什么样的？</h2><p>Android中的窗口主要分为三种：</p>
+<ol>
+<li>系统窗口——Toast</li>
+<li>应用窗口——Dialog、Activity。不过Dialog必须依附Activity才能存在</li>
+<li>子窗口——PopupWindow，必须依附其他窗口，依附的窗口只能是1，2而不能是3</li>
+</ol>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB98371b5048dfa8b7fe0142093823d404?method=download&amp;shareKey=fba43e8d94e0d2b4d30cb2f10704f573" alt="窗口组织形式"></p>
+<p>WMS不仅只是管理窗口，还负责窗口动画，Touch事件等等。</p>
+<h2 id="View绘制的内存分配是什么机制？"><a href="#View绘制的内存分配是什么机制？" class="headerlink" title="View绘制的内存分配是什么机制？"></a>View绘制的内存分配是什么机制？</h2><p>每个Activity看做一个图层，对应一块Surface，Surface绘图表面对应的内存是SurfaceFlinger申请的，内存是APP与SurfaceFlinger间进程共享的，所以APP和SurfaceFlinger的通信基于<strong>共享内存</strong>实现的。</p>
+<h2 id="共享内存的具体实现是什么样的？"><a href="#共享内存的具体实现是什么样的？" class="headerlink" title="共享内存的具体实现是什么样的？"></a>共享内存的具体实现是什么样的？</h2><p>共享内存是基于MAP+tmpfs文件系统实现，可以理解为SF为APP申请一块内存，然后通过binder将内存相关的信息传递给APP，APP端在这块内存中绘制内容，绘制完毕后通知SF图层混排，再由SF将数据渲染到屏幕上，这么做的目的主要考虑图像内存比较大，用socket,binder方式传递效率上无法满足要求。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBe00aaff15eaf1ac892950c9e4c6fd4b4?method=download&amp;shareKey=e57fbd76b670782fb8bb85869ec2d0d3" alt="共享内存具体实现"></p>
+<ol>
+<li>SurfaceFlinger服务属于系统服务，主要用于将APP绘制完毕的数据渲染到屏幕上。</li>
+<li>各应用的View的绘制都需要经过SurfaceFlinger服务。</li>
+<li>WindowManagerService：WMS控制Surface画布的添加和次序，动画还有触摸事件。</li>
+<li>每个App进程负责相应图层的绘制。</li>
+<li>App与SurfaceFlinger通信是通过匿名内存来实现的。</li>
 </ol>
 
       
@@ -311,7 +323,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/设计模式/" rel="tag">#设计模式</a>
+            <a href="/tags/View/" rel="tag">#View</a>
           
         </div>
       
@@ -320,17 +332,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/03/10/Java-native方法及JNI实例/" rel="next" title="Java native方法及JNI实例">
-                <i class="fa fa-chevron-left"></i> Java native方法及JNI实例
+              <a href="/2018/04/04/HTTP浅析（一）HTTP报文/" rel="next" title="HTTP解析（一）HTTP报文">
+                <i class="fa fa-chevron-left"></i> HTTP解析（一）HTTP报文
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/03/14/《Head-first-HTML与CSS》读书笔记/" rel="prev" title="《Head first HTML与CSS》读书笔记">
-                《Head first HTML与CSS》读书笔记 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -448,7 +456,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#解释器模式"><span class="nav-number">1.</span> <span class="nav-text">解释器模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#初步设计"><span class="nav-number">1.2.</span> <span class="nav-text">初步设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优化设计"><span class="nav-number">1.3.</span> <span class="nav-text">优化设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解释器模式-1"><span class="nav-number">1.4.</span> <span class="nav-text">解释器模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优点"><span class="nav-number">1.5.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缺点"><span class="nav-number">1.6.</span> <span class="nav-text">缺点</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android窗口管理分析（一）——View是如何绘制到屏幕上的"><span class="nav-number">1.</span> <span class="nav-text">Android窗口管理分析（一）——View是如何绘制到屏幕上的</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#View的窗口管理分为哪些部分？"><span class="nav-number">1.1.</span> <span class="nav-text">View的窗口管理分为哪些部分？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WMS是负责View绘制的吗？"><span class="nav-number">1.2.</span> <span class="nav-text">WMS是负责View绘制的吗？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#窗口分组是什么样的？"><span class="nav-number">1.3.</span> <span class="nav-text">窗口分组是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#View绘制的内存分配是什么机制？"><span class="nav-number">1.4.</span> <span class="nav-text">View绘制的内存分配是什么机制？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#共享内存的具体实现是什么样的？"><span class="nav-number">1.5.</span> <span class="nav-text">共享内存的具体实现是什么样的？</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">

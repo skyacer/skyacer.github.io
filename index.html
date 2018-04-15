@@ -215,8 +215,8 @@
             
               
                 
-                <a class="post-title-link" href="/2018/04/15/《Android优化系列》——音频播放/" itemprop="url">
-                  《Android优化系列》——音频播放
+                <a class="post-title-link" href="/2018/04/15/《Android优化专题》——音频播放/" itemprop="url">
+                  《Android优化专题》——音频播放
                 </a>
               
             
@@ -277,7 +277,7 @@
       
         
           
-            <h1 id="《Android优化系列》——音频播放"><a href="#《Android优化系列》——音频播放" class="headerlink" title="《Android优化系列》——音频播放"></a>《Android优化系列》——音频播放</h1><h2 id="一、控制app的音量与播放"><a href="#一、控制app的音量与播放" class="headerlink" title="一、控制app的音量与播放"></a>一、控制app的音量与播放</h2><h3 id="使用硬件音量键来控制音量"><a href="#使用硬件音量键来控制音量" class="headerlink" title="使用硬件音量键来控制音量"></a>使用硬件音量键来控制音量</h3><p>需要在Activity或者Fragment创建的时候就设置音量控制，这样确保不管App是否可见，音频控制功能都正常工作。</p>
+            <h1 id="《Android优化专题》——音频播放"><a href="#《Android优化专题》——音频播放" class="headerlink" title="《Android优化专题》——音频播放"></a>《Android优化专题》——音频播放</h1><h2 id="一、控制app的音量与播放"><a href="#一、控制app的音量与播放" class="headerlink" title="一、控制app的音量与播放"></a>一、控制app的音量与播放</h2><h3 id="使用硬件音量键来控制音量"><a href="#使用硬件音量键来控制音量" class="headerlink" title="使用硬件音量键来控制音量"></a>使用硬件音量键来控制音量</h3><p>需要在Activity或者Fragment创建的时候就设置音量控制，这样确保不管App是否可见，音频控制功能都正常工作。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setVolumeControlStream(AudioManager.STREAM_MUSIC);</span><br></pre></td></tr></table></figure>
 <h3 id="使用硬件的播放控制按键来控制App的音频播放"><a href="#使用硬件的播放控制按键来控制App的音频播放" class="headerlink" title="使用硬件的播放控制按键来控制App的音频播放"></a>使用硬件的播放控制按键来控制App的音频播放</h3><p>无论用户通过手机或者线控耳机等按下哪些控制按钮，比如播放、暂停，系统都会广播一个带有ACTION_MEDIA_BUTTON的Intent。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;receiver android:name=&quot;.RemoteControlReceiver&quot;&gt;</span><br><span class="line">    &lt;intent-filter&gt;</span><br><span class="line">        &lt;action android:name=&quot;android.intent.action.MEDIA_BUTTON&quot; /&gt;</span><br><span class="line">    &lt;/intent-filter&gt;</span><br><span class="line">&lt;/receiver&gt;</span><br></pre></td></tr></table></figure>

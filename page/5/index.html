@@ -215,6 +215,189 @@
             
               
                 
+                <a class="post-title-link" href="/2017/12/12/一句话解决的事何必说三句，Kotlin入坑指南/" itemprop="url">
+                  一句话解决的事何必说三句，Kotlin入坑指南
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-12-12T21:39:24+08:00" content="2017-12-12">
+              2017-12-12
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index">
+                    <span itemprop="name">编程</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <blockquote>
+<p>看到这个标题你可能觉得很奇怪，其实这里指的是Kotlin语言出色的简洁性，能比原有用Java代码实现的功能缩小三倍以上的代码量。不仅如此，这还不是Kotlin最出色的语言特性，不信你接着往下看。</p>
+</blockquote>
+<h2 id="什么是Kotlin？"><a href="#什么是Kotlin？" class="headerlink" title="什么是Kotlin？"></a>什么是Kotlin？</h2><p>Kotlin是JetBrains开发的基于JVM的语言。JetBrains是一家捷克的软件开发公司，该公司位于捷克的布拉格，研发了IntelliJ IDEA这款相对于Eclipse有较大改善的大名鼎鼎IDE产品，使用Java开发的童鞋想必也是非常了解了，还有一些其他类似产品比如，Pycharm，Clion等等，我就不打广告了[捂脸]</p>
+<p>而Android Studio这款官方的Android开发IDE也是基于IntelliJ开发出来的。而在今年的Google I/O大会上，Google官方承认了Kotlin作为Android开发的官方语言，所以说JetBrains与Google想必是有什么不可告人的秘密，咳咳。</p>
+<h2 id="我们为什么要学Kotlin？"><a href="#我们为什么要学Kotlin？" class="headerlink" title="我们为什么要学Kotlin？"></a>我们为什么要学Kotlin？</h2><p>下面来讲一下Kotlin和Java相比的优势是什么？</p>
+<ul>
+<li>更简洁：这是它重要的优点之一，可以比Java编写少得多的代码。</li>
+<li><p>更安全：Kotlin是空安全的，它在编译期间就会处理各种为null的情况，无需像java一样添加很多的判空代码，节约很多调试空指针异常的时间，很大程度上避免出现NullPointException。</p>
+</li>
+<li><p>易扩展：扩展函数意味着我们不仅可以扩展我们原有写好的类，还可以扩展系统级的类，非常灵活，另外如果在类里编写扩展函数，那么只对当前类生效。</p>
+</li>
+<li>函数式：Kotlin使用了很多函数式编程的概念，比如用到了lambda表达式来更方便地解决问题。</li>
+<li><p>Kotlin Android Extensions：再也不用编写烦人的findViewById()了，如果你集成了ButterKnife，是时候删除对它的依赖了，Kotlin支持了对于View以id形式访问。</p>
+</li>
+<li><p>不用写分号，就像你看到的上述代码一样，对于很多写过脚本语言的童鞋来说，不要写分号这一点真是节省了很多时间，对于一天写几百行几千行甚至上万行代码的童鞋们来说，相当于省了多少个分号。</p>
+</li>
+</ul>
+<p>到这里有的同学想要说了，你说的这些好处确实不错，但是我之前的项目全是用java语言来写的，难不成让我推倒重来过？别急，最后我要说的一个最大的优势就是</p>
+<ul>
+<li>与Java语言可混合编程，也就是说我们可以继续使用原来所有用Java写的代码和库，因为两个语言之间高度互操作，想尝试的童鞋们建议可以从新的小功能小模块入手，对这些模块使用Kotlin代码进行编写，原有的稳定模块之后再逐步重构。</li>
+<li>对初学者友好，kotlin对java语言转用kotlin提供了很多便利，对于初学者来说免去很多不必要的烦恼。最贴心的是Kotlin插件支持一键由Java转Kotlin，为你之后想要重构提供了很大的便利性。</li>
+</ul>
+<h2 id="简洁性"><a href="#简洁性" class="headerlink" title="简洁性"></a>简洁性</h2><p>我们以最基本的POJO为例</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">long</span> id;</span><br><span class="line"><span class="keyword">private</span> String name;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setId</span><span class="params">(<span class="keyword">long</span> id)</span> </span>&#123;</span><br><span class="line"><span class="keyword">this</span>. id = id;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line"><span class="keyword">this</span>. name=name;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getId</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="keyword">return</span> id;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="keyword">return</span> name;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实上述类里就两个字段，一个id一个name，如果拿kotlin来写的话是什么样子呢？</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span></span>(<span class="keyword">var</span> name: String, <span class="keyword">var</span> id: String)</span><br></pre></td></tr></table></figure>
+<p>这一句代码就够了，Kotlin会自动生成所有属性和它们的访问器，以及一些方法，例如toString方法及equals方法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">var user = User(&quot;kotlin&quot;,&quot;123&quot;)</span><br></pre></td></tr></table></figure>
+<p>另外如果不需要参数或者只需要一个参数时</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">class User &#123;</span><br><span class="line">var name: String? = null</span><br><span class="line">var id: String? = null</span><br><span class="line"></span><br><span class="line">constructor(name: String) &#123;</span><br><span class="line">this.name = name</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">constructor(name: String, id: String) &#123;</span><br><span class="line">this.name = name</span><br><span class="line">this.id = id</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="空安全"><a href="#空安全" class="headerlink" title="空安全"></a>空安全</h2><p>可能有的童鞋会问了，？= 是个shenmegui？？</p>
+<p>当我们用Java写代码时，我们如果不想出现NullPointerException，我们需要在使用它之前每次去判断是否为空。而Kotlin这类空安全语言默认对象和字段不能为空，如果我们非要让一个字段或对象为空那么必须使用安全调用操作符（？）来指定。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> user: User? = <span class="literal">null</span></span><br><span class="line">toast(user.name)</span><br></pre></td></tr></table></figure>
+<p>例如以上代码，是无法编译通过的，因为user是可能为空的，而user没对空情况做处理，所以无法编译。解决方式有两种：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//第一种对字段进行空情况做处理，则可安全调用</span><br><span class="line">if(user != null)&#123;</span><br><span class="line">	toast(user.name)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//第二种利用安全调用操作符，只有在user不为空时会调用user.name，否则调用toast(null)</span><br><span class="line">toast (user?.name）</span><br></pre></td></tr></table></figure>
+<p>我们也可以给它赋一个默认值，当user为空时调用toast(“kotlin”)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//Elvis操作符用法</span><br><span class="line">toast(user?.name ?: &quot;kotlin&quot;)</span><br></pre></td></tr></table></figure>
+<h2 id="易扩展"><a href="#易扩展" class="headerlink" title="易扩展"></a>易扩展</h2><p>上述代码有的人会问了，为什么你的toast可以这么写？其实就是kotlin的扩展函数在起作用。</p>
+<p>kotlin允许我们对任何类添加方法，包括系统级的类，自定义类等等，比如我想在Context类中添加一个toast方法。<br>我们新建一个kt文件（kotlin的文件后缀），在里面写上</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">fun Context.toast(message: CharSequence, duration: Int = Toast.LENGTH_SHORT) &#123; </span><br><span class="line">    Toast.makeText(this, message, duration).show()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>加上这句之后，你可以在所有用到context的地方调用<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">这是个很有意思的特性，接下来的事情就是发挥你们的想象力了~</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">## 函数式（Lambdas）</span><br><span class="line">举个栗子，我们在Android开发中，经常需要写的点击事件</span><br></pre></td></tr></table></figure></p>
+<p>view.setOnClickListener(new OnClickListener(){<br>    @Override<br>    public void onClick(View v) {<br>        Toast.makeText(v.getContext(), “Click”, Toast.LENGTH_SHORT).show();<br>    }<br>})<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">利用了之前提到的扩展函数，可以写成</span><br></pre></td></tr></table></figure></p>
+<p>view.setOnClickListener(object : OnClickListener {<br>    override fun onClick(v: View) {<br>        toast(“Click”)<br>    }<br>}</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">利用lambdas表达式我们可以把上述代码优化</span><br></pre></td></tr></table></figure>
+<p>view.setOnClickListener({view -&gt; toast(“Click”)}}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">很多情况下我们并不需要用到参数View，所以左值参数也可以省略</span><br></pre></td></tr></table></figure></p>
+<p>view.setOnClickListener({toast(“Click”)}}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">由于这个方法只有一个参数，我们可以省略这个圆括号：</span><br></pre></td></tr></table></figure></p>
+<p>view.setOnClickListener{toast(“Click”)}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">比原来的java代码简短了5倍，并且也很容易理解。</span><br><span class="line"></span><br><span class="line">## Kotlin Android Extention</span><br><span class="line">举个栗子，在Android中我们不可避免地要写以下这种代码</span><br></pre></td></tr></table></figure></p>
+<p>TextView textView = findViewById(R.id.textview);<br>Button button = findViewById(R.id.button);</p>
+<p>textView.setText(“kotlin”);<br>button.setOnClickListener(…)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">或者利用ButterKnife，写如下代码</span><br></pre></td></tr></table></figure>
+<p>@Bind(R.id.textview)<br>TextView mTextView;</p>
+<p>@Bind(R.id.button)<br>Button mButton;</p>
+<p>…</p>
+<p>mTextView.setText(“kotlin”);</p>
+<p>mButton.setOnClickListener(…)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">相信不止我一个人觉得这种代码又重复又无聊，kotlin给我们提供了另外一个思路，直接利用id来绑定</span><br></pre></td></tr></table></figure>
+<p>// 导入该Activity对应的布局文件<br>import kotlinx.android.synthetic.main.activity_main.*</p>
+<p>…<br>    //导入后，整个Activity就可以直接利用id来对View进行操作了<br>    // Instead of findView(R.id.textView) as TextView<br>    textView.setText(“kotlin”)<br>    // Instead of findView(R.id.button) as Button<br>    button.setOnClickListener(…)<br>    }<br>}<br><code>`</code><br>这样处理再也没有一点多余代码，直接利用view的id操作，简洁明了。</p>
+<p>导入格式：import kotlinx.android.synthetic.main.<layout>.*</layout></p>
+<h2 id="对初学者友好"><a href="#对初学者友好" class="headerlink" title="对初学者友好"></a>对初学者友好</h2><p>我们在由一门语言转到另一门语言时难免有所抵触，会考虑新的语言学习成本等等问题。不过对于Kotlin来说，给了掌握Java语言童鞋们转Kotlin很多便利性：</p>
+<ul>
+<li>在java中编写一段代码，粘贴到kotlin文件中，IDE利用黑科技将粘贴的java代码自动转换成kotlin。</li>
+</ul>
+<p><img src="http://upload-images.jianshu.io/upload_images/4287000-4abfca0b41b182f8?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<ul>
+<li>对于之前已经编写好的java类，我们重构不知何从下手时，kotlin提供一键转换功能</li>
+</ul>
+<p>在idea中安装kotlin插件之后，我们可以在Code下找到</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4287000-a3f05589390e24de?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文浅显地总结了下kotlin对比java的几个优势，对于深层次的解析会放在后面的文章，有兴趣的童鞋可以继续关注，毕竟一门语言博大精深也不是一篇文章能讲完的。相信你看到这里内心早就想体验一下kotlin的魅力了，<a href="https://kotlinlang.org/docs/tutorials/kotlin-android.html" target="_blank" rel="noopener">点此开启你的kotlin之旅吧。</a></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li>Kotlin 官方文档</li>
+<li>《Kotlin for android Developers》</li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2017/11/19/Android沉浸式状态栏实践及源码分析/" itemprop="url">
                   Android透明化/沉浸式状态栏实践及源码分析
                 </a>
@@ -744,124 +927,11 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2017/07/21/解决Android-Studio-HTTP网络代理错误提示/" itemprop="url">
-                  解决Android-Studio-HTTP网络代理错误提示
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2017-07-21T19:18:35+08:00" content="2017-07-21">
-              2017-07-21
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="Warning"><a href="#Warning" class="headerlink" title="Warning"></a>Warning</h2><p>今天在设置Android Studio的时候看到这个大大的Warning，强迫症的我简直不能忍啊，然后Google了一些方法，在Stackoverflow上普遍都是要修改虚拟机参数的代理设置，但是我并没有改过。</p>
-<p><img src="images/2016-4-23-http-proxy-error-1.jpg" alt="创建repo"></p>
-<h2 id="mac下设置"><a href="#mac下设置" class="headerlink" title="mac下设置"></a>mac下设置</h2><p>想着去把http代理的参数改回来发现mac下的java路径下并不好找，最终干脆在图形界面的java里设置。</p>
-<p><img src="images/2016-4-23-http-proxy-error-2.png" alt="创建repo"></p>
-<p><img src="images/2016-4-23-http-proxy-error-3.png" alt="创建repo"></p>
-<h2 id="修复"><a href="#修复" class="headerlink" title="修复"></a>修复</h2><p><img src="images/2016-4-23-http-proxy-error-4.jpg" alt="创建repo"></p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span>
+    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/6/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -902,7 +972,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">25</span>
+              <span class="site-state-item-count">26</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -910,7 +980,7 @@
           
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -919,7 +989,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-count">16</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

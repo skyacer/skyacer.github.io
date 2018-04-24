@@ -59,14 +59,13 @@
 
 <meta name="description" content="Little And More.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="tags">
-<meta property="og:url" content="http://skyacer.github.io/tags/index.html">
+<meta property="og:title" content="SkyAcer&#39;s blog">
+<meta property="og:url" content="http://skyacer.github.io/page/6/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
 <meta property="og:description" content="Little And More.">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2016-04-23T06:20:36.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="tags">
+<meta name="twitter:title" content="SkyAcer&#39;s blog">
 <meta name="twitter:description" content="Little And More.">
 
 
@@ -85,13 +84,7 @@
   };
 </script>
 
-  <title>
-  
-
-  
-    标签 | SkyAcer's blog
-  
-</title>
+  <title> SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -110,7 +103,9 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left  ">
+  <div class="container one-collumn sidebar-position-left 
+   page-home 
+ ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -197,20 +192,128 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
+  <section id="posts" class="posts-expand">
+    
+      
 
-  <div id="posts" class="posts-expand">
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
     
-    
-      <div class="tag-cloud">
-        <div class="tag-cloud-title">
-            目前共计 16 个标签
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/07/21/解决Android-Studio-HTTP网络代理错误提示/" itemprop="url">
+                  解决Android-Studio-HTTP网络代理错误提示
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-07-21T19:18:35+08:00" content="2017-07-21">
+              2017-07-21
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index">
+                    <span itemprop="name">编程</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
         </div>
-        <div class="tag-cloud-tags">
-          <a href="/tags/Android/" style="font-size: 30px; color: #111">Android</a> <a href="/tags/Code/" style="font-size: 12px; color: #ccc">Code</a> <a href="/tags/FrameWork/" style="font-size: 24px; color: #4f4f4f">FrameWork</a> <a href="/tags/HTTP-HTTPS/" style="font-size: 12px; color: #ccc">HTTP/HTTPS</a> <a href="/tags/Java/" style="font-size: 12px; color: #ccc">Java</a> <a href="/tags/Kotlin/" style="font-size: 18px; color: #8e8e8e">Kotlin</a> <a href="/tags/View/" style="font-size: 18px; color: #8e8e8e">View</a> <a href="/tags/iTerm/" style="font-size: 12px; color: #ccc">iTerm</a> <a href="/tags/前端/" style="font-size: 12px; color: #ccc">前端</a> <a href="/tags/基础知识/" style="font-size: 12px; color: #ccc">基础知识</a> <a href="/tags/源码解析/" style="font-size: 12px; color: #ccc">源码解析</a> <a href="/tags/电量/" style="font-size: 12px; color: #ccc">电量</a> <a href="/tags/编解码/" style="font-size: 12px; color: #ccc">编解码</a> <a href="/tags/网络/" style="font-size: 12px; color: #ccc">网络</a> <a href="/tags/设计模式/" style="font-size: 18px; color: #8e8e8e">设计模式</a> <a href="/tags/音频/" style="font-size: 12px; color: #ccc">音频</a>
-        </div>
-      </div>
+      </header>
     
-  </div>
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Warning"><a href="#Warning" class="headerlink" title="Warning"></a>Warning</h2><p>今天在设置Android Studio的时候看到这个大大的Warning，强迫症的我简直不能忍啊，然后Google了一些方法，在Stackoverflow上普遍都是要修改虚拟机参数的代理设置，但是我并没有改过。</p>
+<p><img src="images/2016-4-23-http-proxy-error-1.jpg" alt="创建repo"></p>
+<h2 id="mac下设置"><a href="#mac下设置" class="headerlink" title="mac下设置"></a>mac下设置</h2><p>想着去把http代理的参数改回来发现mac下的java路径下并不好找，最终干脆在图形界面的java里设置。</p>
+<p><img src="images/2016-4-23-http-proxy-error-2.png" alt="创建repo"></p>
+<p><img src="images/2016-4-23-http-proxy-error-3.png" alt="创建repo"></p>
+<h2 id="修复"><a href="#修复" class="headerlink" title="修复"></a>修复</h2><p><img src="images/2016-4-23-http-proxy-error-4.jpg" alt="创建repo"></p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+  </section>
+
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span>
+  </nav>
+
 
 
           </div>
@@ -218,10 +321,6 @@
 
 
           
-  <div class="comments" id="comments">
-    
-  </div>
-
 
         </div>
         

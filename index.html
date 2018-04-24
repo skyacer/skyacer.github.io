@@ -215,6 +215,156 @@
             
               
                 
+                <a class="post-title-link" href="/2018/04/24/《Android优化专题》——优化电池续航能力/" itemprop="url">
+                  《Android优化专题》——优化电池续航能力
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-04-24T17:18:56+08:00" content="2018-04-24">
+              2018-04-24
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android优化专题/" itemprop="url" rel="index">
+                    <span itemprop="name">Android优化专题</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="《Android优化专题》——优化电池续航能力"><a href="#《Android优化专题》——优化电池续航能力" class="headerlink" title="《Android优化专题》——优化电池续航能力"></a>《Android优化专题》——优化电池续航能力</h1><h2 id="一、监测设备的电量和充电状态"><a href="#一、监测设备的电量和充电状态" class="headerlink" title="一、监测设备的电量和充电状态"></a>一、监测设备的电量和充电状态</h2><blockquote>
+<p>在用户充电时，程序做任何操作都不会太受到电量影响，此时就适合做一些下载，刷新数据等耗电操作。</p>
+</blockquote>
+<h3 id="1-判断当前充电状态"><a href="#1-判断当前充电状态" class="headerlink" title="1. 判断当前充电状态"></a>1. 判断当前充电状态</h3><p>BatteryManager会广播Sticky intent，我们不需要注册BroadcastReiver，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);</span><br><span class="line">Intent batteryStatus = context.registerReceiver(null, ifilter);</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// Are we charging / charged?  </span><br><span class="line">int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);</span><br><span class="line">boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||</span><br><span class="line">                     status == BatteryManager.BATTERY_STATUS_FULL;</span><br><span class="line"></span><br><span class="line">// How are we charging?  </span><br><span class="line">int chargePlug = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);</span><br><span class="line">boolean usbCharge = chargePlug == BATTERY_PLUGGED_USB;</span><br><span class="line">boolean acCharge = chargePlug == BATTERY_PLUGGED_AC;</span><br></pre></td></tr></table></figure>
+<p>通过判断设备此时是不是通过AC充电器，USB充电，不在充电状态三种情况来进行是否耗电操作，通常做法是，在使用AC充电时最大化后台更新操作，在使用USB充电时降低更新操作，不在充电状态时，最小化更新操作。</p>
+<h3 id="2-监测充电状态的改变"><a href="#2-监测充电状态的改变" class="headerlink" title="2. 监测充电状态的改变"></a>2. 监测充电状态的改变</h3><p>充电状态随时改变，通过检查充电状态的改变，来改变App的某些行为。我们需要在Manifest文件里面注册一个监听来接收ACTION_POWER_CONNECTED and ACTION_POWER_DISCONNECTED的intent。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;receiver android:name=&quot;.PowerConnectionReceiver&quot;&gt;</span><br><span class="line">  &lt;intent-filter&gt;</span><br><span class="line">    &lt;action android:name=&quot;android.intent.action.ACTION_POWER_CONNECTED&quot;/&gt;</span><br><span class="line">    &lt;action android:name=&quot;android.intent.action.ACTION_POWER_DISCONNECTED&quot;/&gt;</span><br><span class="line">  &lt;/intent-filter&gt;</span><br><span class="line">&lt;/receiver&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class PowerConnectionReceiver extends BroadcastReceiver &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onReceive(Context context, Intent intent) &#123;</span><br><span class="line">        int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);</span><br><span class="line">        boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||</span><br><span class="line">                            status == BatteryManager.BATTERY_STATUS_FULL;</span><br><span class="line"></span><br><span class="line">        int chargePlug = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);</span><br><span class="line">        boolean usbCharge = chargePlug == BATTERY_PLUGGED_USB;</span><br><span class="line">        boolean acCharge = chargePlug == BATTERY_PLUGGED_AC;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-判断当前电池电量"><a href="#3-判断当前电池电量" class="headerlink" title="3. 判断当前电池电量"></a>3. 判断当前电池电量</h3><p>对于一些情况，获取当前电量对于我们是否要进行某个级别的后台操作十分有意义。我们可以从获取电池状态的intent中提取电池电量和容量信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int level = battery.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);</span><br><span class="line">int scale = battery.getIntExtra(BatteryManager.EXTRA_SCALE, -1);</span><br><span class="line">float batteryPct = level / (float)scale;</span><br></pre></td></tr></table></figure>
+<h3 id="4-检测电量的有效改变"><a href="#4-检测电量的有效改变" class="headerlink" title="4. 检测电量的有效改变"></a>4. 检测电量的有效改变</h3><p>检测电量的有效改变，包括电量进入低电量模式，充电后离开低电量模式，这两种状态的变更是值得我们关注的。我们仅仅需要监听ACTION_BATTERY_LOW与ACTION_BATTERY_OKAY.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;receiver android:name=&quot;.BatteryLevelReceiver&quot;&gt;</span><br><span class="line">&lt;intent-filter&gt;</span><br><span class="line">  &lt;action android:name=&quot;android.intent.action.ACTION_BATTERY_LOW&quot;/&gt;</span><br><span class="line">  &lt;action android:name=&quot;android.intent.action.ACTION_BATTERY_OKAY&quot;/&gt;</span><br><span class="line">  &lt;/intent-filter&gt;</span><br><span class="line">&lt;/receiver&gt;</span><br></pre></td></tr></table></figure>
+<p>对于设备进入低电量模式我们要尤其注意，这个时候的任何更新、下载等操作是非常影响用户体验，尤其还有可能下载到一半设备就已经关机了。</p>
+<h2 id="二、判断设备的停驻模式"><a href="#二、判断设备的停驻模式" class="headerlink" title="二、判断设备的停驻模式"></a>二、判断设备的停驻模式</h2><blockquote>
+<p>Android设备有好几种停驻状态，为设备充电，包括车载模式，家庭模式，数字对战模拟模式。停驻状态与充电状态是非常密切相关联的。</p>
+</blockquote>
+<h3 id="1-判断当前停驻状态"><a href="#1-判断当前停驻状态" class="headerlink" title="1. 判断当前停驻状态"></a>1. 判断当前停驻状态</h3><p>停驻状态的广播内容是sticky intent，所以不需要注册广播</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">IntentFilter ifilter = new IntentFilter(Intent.ACTION_DOCK_EVENT);</span><br><span class="line">Intent dockStatus = context.registerReceiver(null, ifilter);</span><br><span class="line"></span><br><span class="line">int dockState = battery.getIntExtra(EXTRA_DOCK_STATE, -1);</span><br><span class="line">boolean isDocked = dockState != Intent.EXTRA_DOCK_STATE_UNDOCKED;</span><br></pre></td></tr></table></figure>
+<h3 id="2-判断当前停驻类型"><a href="#2-判断当前停驻类型" class="headerlink" title="2. 判断当前停驻类型"></a>2. 判断当前停驻类型</h3><ul>
+<li>Car</li>
+<li>Desk</li>
+<li>Low-End (Analog) Desk：API level 11开始才有</li>
+<li>High-End (Digital) Desk：API level 11开始才有</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">boolean isCar = dockState == EXTRA_DOCK_STATE_CAR;</span><br><span class="line">boolean isDesk = dockState == EXTRA_DOCK_STATE_DESK ||</span><br><span class="line">                 dockState == EXTRA_DOCK_STATE_LE_DESK ||</span><br><span class="line">                 dockState == EXTRA_DOCK_STATE_HE_DESK;</span><br></pre></td></tr></table></figure>
+<h3 id="3-监测停驻状态或者类型改变"><a href="#3-监测停驻状态或者类型改变" class="headerlink" title="3. 监测停驻状态或者类型改变"></a>3. 监测停驻状态或者类型改变</h3><p>只需要像下面一样注册监听器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;action android:name=&quot;android.intent.action.ACTION_DOCK_EVENT&quot;/&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="三、判断并监测网络连接状态"><a href="#三、判断并监测网络连接状态" class="headerlink" title="三、判断并监测网络连接状态"></a>三、判断并监测网络连接状态</h2><blockquote>
+<p>通过网络的连接状况改变，相应改变app的行为，减少无谓的操作，从而延长设备的续航能力。</p>
+</blockquote>
+<h3 id="1-判断当前是否有网络连接"><a href="#1-判断当前是否有网络连接" class="headerlink" title="1. 判断当前是否有网络连接"></a>1. 判断当前是否有网络连接</h3><p>检查是否有网络连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ConnectivityManager cm =</span><br><span class="line">        (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);</span><br><span class="line"></span><br><span class="line">NetworkInfo activeNetwork = cm.getActiveNetworkInfo();</span><br><span class="line">boolean isConnected = activeNetwork.isConnectedOrConnecting();</span><br></pre></td></tr></table></figure>
+<h3 id="2-判断连接网络的类型"><a href="#2-判断连接网络的类型" class="headerlink" title="2. 判断连接网络的类型"></a>2. 判断连接网络的类型</h3><p>分为移动网络，WiMax，Wi-Fi，以太网等连接类型</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">boolean isWiFi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;</span><br></pre></td></tr></table></figure>
+<p>使用移动网络比WI-FI代价更大，多数情况下，移动网络下减少一些数据的获取操作，在有WIFI的情况下才开始。</p>
+<h3 id="3-监测网络连接的切换"><a href="#3-监测网络连接的切换" class="headerlink" title="3. 监测网络连接的切换"></a>3. 监测网络连接的切换</h3><p>在manifest文件中注册一个带有action的Receiver</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;action android:name=&quot;android.net.conn.CONNECTIVITY_CHANGE&quot;/&gt;</span><br></pre></td></tr></table></figure>
+<p>当然我们也没必要不间断地监听网络改变，我们只需要在完成某件任务时而进行监测即可。</p>
+<h3 id="4-切换是否开启这些Receivers来提高效率"><a href="#4-切换是否开启这些Receivers来提高效率" class="headerlink" title="4. 切换是否开启这些Receivers来提高效率"></a>4. 切换是否开启这些Receivers来提高效率</h3><p>通过使用PackageManager来切换任何一个在mainfest定义好的组件开启状态，可以使用下面的方法来开启或者关闭任何一个broadcast receiver：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ComponentName receiver = new ComponentName(context, myReceiver.class);</span><br><span class="line"></span><br><span class="line">PackageManager pm = context.getPackageManager();</span><br><span class="line"></span><br><span class="line">pm.setComponentEnabledSetting(receiver,</span><br><span class="line">        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,</span><br><span class="line">        PackageManager.DONT_KILL_APP)</span><br></pre></td></tr></table></figure>
+<p>如果判断到了网络连接已经断开，可以在这个时候关闭除了网络环境改变之外的所有Receivers</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/04/17/RecyclerView源码解析/" itemprop="url">
                   RecyclerView源码解析
                 </a>
@@ -812,203 +962,11 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/04/04/HTTP浅析（一）HTTP报文/" itemprop="url">
-                  HTTP解析（一）HTTP报文
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-04-04T17:27:32+08:00" content="2018-04-04">
-              2018-04-04
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/基础知识/" itemprop="url" rel="index">
-                    <span itemprop="name">基础知识</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="HTTP浅析（一）HTTP报文"><a href="#HTTP浅析（一）HTTP报文" class="headerlink" title="HTTP浅析（一）HTTP报文"></a>HTTP浅析（一）HTTP报文</h1><p><img src="https://note.youdao.com/yws/api/personal/file/WEB0dbed166d932eb00e22bccb5438230eb?method=download&amp;shareKey=a5ed5c1fbdc8496b9839ba3fe967c133" alt="HTTP报文"></p>
-<ol>
-<li>起始行</li>
-<li>首部</li>
-<li>主体（非必须）</li>
-</ol>
-<h3 id="结构图"><a href="#结构图" class="headerlink" title="结构图"></a>结构图</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6daa85ab664df6f242e6a0ab5c031aad?method=download&amp;shareKey=b82f6a53c791a919eec21bb7e03b778f" alt="HTTP报文结构图"></p>
-<h2 id="连接管理"><a href="#连接管理" class="headerlink" title="连接管理"></a>连接管理</h2><h3 id="从浏览器键入地址到连接结束的过程是什么？"><a href="#从浏览器键入地址到连接结束的过程是什么？" class="headerlink" title="从浏览器键入地址到连接结束的过程是什么？"></a>从浏览器键入地址到连接结束的过程是什么？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB2e66135edc8807da9a26b82c7f6fe49b?method=download&amp;shareKey=5d42e46fb1f35a721f6700404182fe78" alt="连接过程"></p>
-<p>TCP为HTTP提供一条可靠的比特传输管道，从TCP连接一端填入的字节会从另一端以原有的顺序、正确地传送出来。</p>
-<h3 id="HTTP和HTTPS的区别？"><a href="#HTTP和HTTPS的区别？" class="headerlink" title="HTTP和HTTPS的区别？"></a>HTTP和HTTPS的区别？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB014ec3806a6ade023937cf16362f8e2b?method=download&amp;shareKey=ca78563f5a64ea7de698304d2d9c723b" alt=""></p>
-<h3 id="TCP连接持续不断地进行"><a href="#TCP连接持续不断地进行" class="headerlink" title="TCP连接持续不断地进行"></a>TCP连接持续不断地进行</h3><p>TCP连接根据四个值来识别</p>
-<ol>
-<li>源IP地址</li>
-<li>源端口号</li>
-<li>目的IP地址</li>
-<li>目的端口号</li>
-</ol>
-<p>这四个值唯一确定了一条连接，任意一条不相同的连接必然这四个值不会完全相同。</p>
-<h3 id="TCP结构是什么？"><a href="#TCP结构是什么？" class="headerlink" title="TCP结构是什么？"></a>TCP结构是什么？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB8979962c8f98c373c80f33dc1f6677f9?method=download&amp;shareKey=2015d94639e71cf59dd0f696da882912" alt="TCP结构图"></p>
-<h3 id="如何用Socket实现HTTP事务？"><a href="#如何用Socket实现HTTP事务？" class="headerlink" title="如何用Socket实现HTTP事务？"></a>如何用Socket实现HTTP事务？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB3c1d56f9ec210ee4b1c20bcb9ad638af?method=download&amp;shareKey=8ee5d2c611ab91d812316957645e29df" alt="如何用Socket实现HTTP事务"></p>
-<h3 id="TCP客户端和服务器如何通过Socket通信？"><a href="#TCP客户端和服务器如何通过Socket通信？" class="headerlink" title="TCP客户端和服务器如何通过Socket通信？"></a>TCP客户端和服务器如何通过Socket通信？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB3c1d56f9ec210ee4b1c20bcb9ad638af?method=download&amp;shareKey=8ee5d2c611ab91d812316957645e29df" alt="通过Socket通信"></p>
-<h3 id="HTTP事务的时延有哪些原因？"><a href="#HTTP事务的时延有哪些原因？" class="headerlink" title="HTTP事务的时延有哪些原因？"></a>HTTP事务的时延有哪些原因？</h3><p>由于和建立TCP连接相比，事务处理时间是很短的，除非在处理很复杂的动态资源，否则HTTP的时延就是由TCP网络时延导致的。</p>
-<ol>
-<li>如果最近没有对URI中的主机名访问，通过DNS解析系统要转换IP需要花费数十秒。</li>
-<li>TCP每次连接都需要三次握手，这个值最多一两秒，但是连接多的话会累加上去（非HTTP2.0的情况）</li>
-<li>一旦连接建立，读取请求报文，传输请求报文，处理请求报文都需要时间。</li>
-<li>回送HTTP相应也需要时间。</li>
-</ol>
-<h3 id="我们应该从哪些方面来提升TCP的性能？"><a href="#我们应该从哪些方面来提升TCP的性能？" class="headerlink" title="我们应该从哪些方面来提升TCP的性能？"></a>我们应该从哪些方面来提升TCP的性能？</h3><ol>
-<li>TCP连接建立握手</li>
-<li>TCP慢启动拥塞控制</li>
-<li>数据聚集的Nagle算法</li>
-<li>用于捎带确认的TCP延迟确认算法</li>
-<li>TIME_WAIT时延和端口耗尽</li>
-</ol>
-<h3 id="什么是TCP的延迟确认机制？"><a href="#什么是TCP的延迟确认机制？" class="headerlink" title="什么是TCP的延迟确认机制？"></a>什么是TCP的延迟确认机制？</h3><p>由于因特网无法确保可靠的分组传输（因特网路由器超负荷的话，可以随意丢弃分组，所以TCP实现了自己的确认机制来确保数据的成功传输）</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB661a339d12a31ad81a5ba68c79fb6b34?method=download&amp;shareKey=70f21e7cbb55c0ed891869e621837eb4" alt="TCP延迟确认"></p>
-<h3 id="什么是TCP慢启动？"><a href="#什么是TCP慢启动？" class="headerlink" title="什么是TCP慢启动？"></a>什么是TCP慢启动？</h3><p>TCP面对大量的数据，不会一次性将所有分组都发出去，TCP会随着时间进行自我“调谐”，起初会限制连接的最大速度。如果成功则会逐渐加大传输速度，简单来说：</p>
-<p>发送一个分组 -&gt; 确认发送成功 -&gt; 具备一次性发送两个分组的权限 -&gt; 发送两个分组 -&gt; 以此类推</p>
-<h3 id="什么是Nagle算法和TCP-NODELAY？"><a href="#什么是Nagle算法和TCP-NODELAY？" class="headerlink" title="什么是Nagle算法和TCP_NODELAY？"></a>什么是Nagle算法和TCP_NODELAY？</h3><p>由于每个TCP段都会有40个字节的标记和首部无法省略，所以在发送频繁的小数据请求时，这40个多余的字节带来的性能问题就会变得严重。</p>
-<p>Nagle算法试图在发送一个分组前，将大量的TCP数据绑定在一起，以提高网络效率。</p>
-<p>仅适合频繁的小数据请求</p>
-<p>缺点：可能会因为无法填满一个分组，导致一直等待永远不会到来的数据而产生延迟</p>
-<h3 id="什么是TIME-WAIT累积与端口耗尽？"><a href="#什么是TIME-WAIT累积与端口耗尽？" class="headerlink" title="什么是TIME_WAIT累积与端口耗尽？"></a>什么是TIME_WAIT累积与端口耗尽？</h3><p>在TCP关闭后，在内存中会维持一个小的控制块，用来记录最近这个关闭的IP地址和端口号，通常会存在一段时间，通常是所顾忌的最大分段试用期的两倍（2MSL,通常为两分钟），确保分组被复制且插入了具有相同连接值（源/目的IP地址和端口号），这样会破坏TCP数据。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBb568c12c17e19e314530750afc6690e9?method=download&amp;shareKey=ca31faf73759d96177949f489e139282" alt="TIME_WAIT"></p>
-<p>但是这种情况下有可能产生问题，原因是因为可用端口数是有限的，也就是假如可用端口是60000个，那么如果2MSL两分钟，则连接率不能高于 60000 / 120 = 500个/秒。</p>
-<p>另外要注意大量打开连接或控制块的情况下，有些操作系统的速度会严重减缓。</p>
-<h3 id="从哪些方面来提升HTTP性能？"><a href="#从哪些方面来提升HTTP性能？" class="headerlink" title="从哪些方面来提升HTTP性能？"></a>从哪些方面来提升HTTP性能？</h3><ul>
-<li>并行连接</li>
-<li>持久连接</li>
-<li>管道化连接</li>
-<li>复用连接</li>
-</ul>
-<h3 id="并行连接有什么优点和限制？"><a href="#并行连接有什么优点和限制？" class="headerlink" title="并行连接有什么优点和限制？"></a>并行连接有什么优点和限制？</h3><p><strong>并行连接不一定更快，但会让人“感觉上”更快</strong>，因为如果客户端的网络带宽较小时，大部分的时间其实是用来传输数据的，，如果此时一个连接就足以把带宽占满反倒并行连接会消耗很多内存资源，在效率上也没有什么提升，得不偿失。</p>
-<p>一般浏览器把并行连接数限定在较小的值，通常是4个。</p>
-<h3 id="持久连接是什么？与并行连接相比有什么好处？"><a href="#持久连接是什么？与并行连接相比有什么好处？" class="headerlink" title="持久连接是什么？与并行连接相比有什么好处？"></a>持久连接是什么？与并行连接相比有什么好处？</h3><p>在HTTP/1.1协议中，支持HTTP设备在事物处理结束之后将TCP保持打开状态，以便之后的复用。</p>
-<p>好处是既可以避免缓慢的连接建立，也就是三次握手阶段，还可以避免慢启动的拥塞适应阶段，以便更快速地进行数据传输。</p>
-<h3 id="Keep-Alive首部在哑代理中会出现什么问题？"><a href="#Keep-Alive首部在哑代理中会出现什么问题？" class="headerlink" title="Keep-Alive首部在哑代理中会出现什么问题？"></a>Keep-Alive首部在哑代理中会出现什么问题？</h3><p><strong>会出现仅有第一个请求有效，其余请求都被代理忽略，从而导致客户端一直loading而得不到返回结果。</strong></p>
-<p>原因如下：</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBcbe56b9b9f29b37c71cd540e81ad8125?method=download&amp;shareKey=b8b0d5fb2b422811f9cb17743b6de858" alt="Keep-Alive"></p>
-<p>主要原因就是逐跳首部被哑代理当成了端到端首部进行传输。</p>
-<h3 id="什么是端到端首部？什么是逐跳首部？"><a href="#什么是端到端首部？什么是逐跳首部？" class="headerlink" title="什么是端到端首部？什么是逐跳首部？"></a>什么是端到端首部？什么是逐跳首部？</h3><ul>
-<li><p>端到端首部（End-to-end Header）分在此类别中的首部会转发给请求/响应对应的最终接受目标，且必须保存在由缓存生成的响应中，另外规定它必须被转发。</p>
-</li>
-<li><p>逐跳首部（Hop-by-hop Header）分在此类别中的首部只对单次转发有效，会因通过缓存或代理而不再转发。所有的Connection首部都是不能被转发的，例如Connection/Keep-Alive/Proxy-Authenticate/Proxy-Authorization/Trailer/TE/Transfer-Encoding/Upgrade</p>
-</li>
-</ul>
-<h3 id="有什么办法可以解决Keep-Alive在哑代理的问题？"><a href="#有什么办法可以解决Keep-Alive在哑代理的问题？" class="headerlink" title="有什么办法可以解决Keep-Alive在哑代理的问题？"></a>有什么办法可以解决Keep-Alive在哑代理的问题？</h3><p>Netscape通过将Connection:Keep-Alive改成Proxy-Connectoion:Keep-Alive进行传输。由于Proxy-Connectoion:Keep-Alive是自定义的，服务器并不知道是什么意思，如果哑代理传输过去后，服务器当做普通连接进行处理，就不会出现代理收不到接下来的请求的问题了。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB3eadd942432552d68e7b7f188a514ad9?method=download&amp;shareKey=bfe5f398f69e5eae8c2d59064b94fb7f" alt="哑代理聪明代理解决方式"></p>
-<p>但这个方法只能在中间没有出现哑代理和聪明的代理结合的情况下才有效。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB7c17e8f0d3cb9917d30b5a68cad0125c?method=download&amp;shareKey=7c2c1e2db3ebf9b5c6ac6c775c339644" alt="哑代理聪明代理混合"></p>
-<h3 id="持久连接和keep-alive有什么不同？"><a href="#持久连接和keep-alive有什么不同？" class="headerlink" title="持久连接和keep-alive有什么不同？"></a>持久连接和keep-alive有什么不同？</h3><p>keep-alive是HTTP/1.0+加入的首部字段，而持久连接是在HTTP/1.1就默认支持的，如果要在事务结束后关闭，就需要在报文里添加Connection:close首部。</p>
-<h3 id="持久连接和管道化连接有什么不同？"><a href="#持久连接和管道化连接有什么不同？" class="headerlink" title="持久连接和管道化连接有什么不同？"></a>持久连接和管道化连接有什么不同？</h3><p>管道连接是在持久连接上，相对于keep-alive的又一个性能优化，在响应到达之前，可以将多条请求加入队列。当第一条请求通过网络流向服务器时，第二条和第三条请求也可以开始发送了。</p>
-<p>具体区别：</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBa087747b00a36815c73c788e573cd5ac?method=download&amp;shareKey=d8117a777bea2780f75692d9b314cf78" alt="三种连接的区别"></p>
-<h3 id="什么是幂等事物，什么是非幂等事物？"><a href="#什么是幂等事物，什么是非幂等事物？" class="headerlink" title="什么是幂等事物，什么是非幂等事物？"></a>什么是幂等事物，什么是非幂等事物？</h3><p>如果一个事物，不管执行一次还是执行多次，得到的结果都是相同的，那么这个事物就是幂等的。比如：GET、HEAD、PUT、DELETE、TRACE和OPTIONS方法。</p>
-<p>反之，非幂等事物的请求（比如POST），这种事物就不应该以管道化的方式传送非幂等请求，要发送一条非幂等请求，就需要等待来自前一条请求的响应状态。</p>
-<h3 id="怎么样的连接是正常关闭的？"><a href="#怎么样的连接是正常关闭的？" class="headerlink" title="怎么样的连接是正常关闭的？"></a>怎么样的连接是正常关闭的？</h3><h4 id="完全关闭与半关闭有什么区别？"><a href="#完全关闭与半关闭有什么区别？" class="headerlink" title="完全关闭与半关闭有什么区别？"></a>完全关闭与半关闭有什么区别？</h4><ol>
-<li>应用程序关闭TCP输入和输出信道中的任意一个，只有两者都关闭了，socket才会调用close()将TCP连接的输入和输出信道都关闭，此时才是完全关闭。</li>
-<li>当socket调用shutdown()时，此时会单独关闭输入/输出信道，被称为“半关闭”。</li>
-</ol>
-<h4 id="半关闭状态，哪种情况更加危险？"><a href="#半关闭状态，哪种情况更加危险？" class="headerlink" title="半关闭状态，哪种情况更加危险？"></a>半关闭状态，哪种情况更加危险？</h4><p>关闭连接的输出信道是安全的，因为连接另一端的对等实体会从其缓冲区中读取所有数据之后收到一条通知，说明流结束了，这样你就知道将连接关闭了。</p>
-<p>而关闭连接的输入信道是危险的，大部分操作系统会对这种情况视为很严重的错误来处理，比如：假设你在一条持久连接发送了10条管道式请求，此时数据还在应用缓冲区存着，此时第11条请求，服务器将连接关闭，而这条请求会发送到已经关闭的连接上去，并且会回送一条重置的信息，之前缓冲数据都会丢失。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBd2aeddd8bc5679ee1b39df879772498b?method=download&amp;shareKey=3584790325996d4033aa39969b56de73" alt="输入输出信道"></p>
-<h4 id="那么正确关闭HTTP请求连接顺序是什么样的？"><a href="#那么正确关闭HTTP请求连接顺序是什么样的？" class="headerlink" title="那么正确关闭HTTP请求连接顺序是什么样的？"></a>那么正确关闭HTTP请求连接顺序是什么样的？</h4><p>正常关闭的应用程序首先应该关闭输出信道，然后等待连接另一端的实体关闭输入信道。</p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1049,7 +1007,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">25</span>
+              <span class="site-state-item-count">26</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1057,7 +1015,7 @@
           
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -1066,7 +1024,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">15</span>
+                <span class="site-state-item-count">16</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

@@ -215,6 +215,186 @@
             
               
                 
+                <a class="post-title-link" href="/2018/03/27/说说你对Binder的理解/" itemprop="url">
+                  说说你对Binder的理解
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-27T15:26:17+08:00" content="2018-03-27">
+              2018-03-27
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/源码/" itemprop="url" rel="index">
+                    <span itemprop="name">源码</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="说说你对Binder的理解"><a href="#说说你对Binder的理解" class="headerlink" title="说说你对Binder的理解"></a>说说你对Binder的理解</h1><blockquote>
+<p>在Android开发中，涉及到多进程的通信底层都是依赖Binder IPC机制，所以Binder是Android开发绕不过去的一个知识点。这里我们具体来看一下Binder的实现原理。</p>
+</blockquote>
+<h2 id="为什么要使用Binder？"><a href="#为什么要使用Binder？" class="headerlink" title="为什么要使用Binder？"></a>为什么要使用Binder？</h2><ol>
+<li>性能方面</li>
+<li>安全方面</li>
+</ol>
+<h3 id="性能方面"><a href="#性能方面" class="headerlink" title="性能方面"></a>性能方面</h3><p>Binder相对于传统的Socket方式，更加高效。Binder数据拷贝只需要一次，相对于传统的管道、消息队列、Socket都需要两次，效率更高，仅次于共享内存方式（一次也不需要）。</p>
+<h3 id="安全性方面"><a href="#安全性方面" class="headerlink" title="安全性方面"></a>安全性方面</h3><p>这才是真正使用Binder原因的重中之重，因为传统的通信对于双发的身份并没有做出严格的验证，Socket通信地址是客户端手动填入，很容易伪造，而Binder机制从协议本身就支持通信双方做身份校验，大大提升了安全性。</p>
+<h2 id="Socket拷贝两次是哪两次？"><a href="#Socket拷贝两次是哪两次？" class="headerlink" title="Socket拷贝两次是哪两次？"></a>Socket拷贝两次是哪两次？</h2><p>当应用程序向一个socket传输数据之后，该socket将创建相应的套接字缓存，并将用户数据拷贝到缓存中。当报文在各协议层传达输的过程中，每一导的报文头将插入到用户数据之前。skb为报文头申请了足够的空间，所以避免了由于插入报文头而对报文进行多次拷贝。用户数据只拷贝了两次：一是从用户空间拷贝到内核；二是报文数据从内核拷贝到网络适配器。</p>
+<h2 id="Android里的IPC原理是什么？"><a href="#Android里的IPC原理是什么？" class="headerlink" title="Android里的IPC原理是什么？"></a>Android里的IPC原理是什么？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBd52e4b3cc4142e562801a0dd2b7da289?method=download&amp;shareKey=049460ad939a62f133f58a26abed2003" alt="Android IPC"></p>
+<ol>
+<li>每个Android进程，只能运行在自己进程所拥有的虚拟地址空间。对应一个4GB（这个可以配置）的虚拟地址控件，3GB为用户空间，1GB是内核空间。</li>
+<li>用户空间不可共享，内核空间可共享。</li>
+<li>通信时恰恰是利用可共享的内核内存空间完成底层通信的。</li>
+</ol>
+<h2 id="Binder通信流程是什么样的？"><a href="#Binder通信流程是什么样的？" class="headerlink" title="Binder通信流程是什么样的？"></a>Binder通信流程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBccd772d903351df07869c79d55e9c5ee?method=download&amp;shareKey=4a9ac174e0dac55ca001ec995a58ef53" alt="Binder架构"></p>
+<ul>
+<li><strong>Client进程</strong>：使用服务的进程</li>
+<li><strong>Server进程</strong>：提供服务的进程</li>
+<li><strong>ServiceManager进程</strong>：ServiceManager的作用是将字符串形式的Binder名字转化为对该Binder的引用，使得Client能够通过Binder名字获得对Server中Binder实体的引用。</li>
+<li><strong>Binder驱动</strong>：驱动负责进程之间Binder通信的简历，Binder在进程之间的传递，Binder引用计数管理，数据包在进程之间传递和交互等一系列底层支持。</li>
+</ul>
+<ol>
+<li>注册服务（addService）：Server进程要先注册Service到ServiceManager。该过程：Server是客户端，ServiceManager是服务端。</li>
+<li>获取服务（getService）：Client进程</li>
+<li>使用服务：client根据得到的Service建立与Service所在的Server进程通信的通路，然后可以直接与Service交互。该过程：client是客户端，server是服务端。</li>
+</ol>
+<p>注意：上述不是彼此之间直接交互的，都是通过Binder驱动进行交互的。<strong>Binder驱动位于内核空间，而Client，Server，Service Manager位于用户空间。</strong> 对于开发者来说，Binder驱动和Service Manager可以看做是Android平台的基础架构，只需要自定义实现client、Server端，借助Android平台架构可以直接进行IPC通信。</p>
+<h2 id="举一个Binder运行的例子？"><a href="#举一个Binder运行的例子？" class="headerlink" title="举一个Binder运行的例子？"></a>举一个Binder运行的例子？</h2><p>如下是实现浮动窗口的部分代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//获取WindowManager服务引用</span><br><span class="line">WindowManager wm = (WindowManager)getSystemService(getApplication().WINDOW_SERVICE);  </span><br><span class="line">//布局参数layoutParams相关设置略...</span><br><span class="line">View view=LayoutInflater.from(getApplication()).inflate(R.layout.float_layout, null);  </span><br><span class="line">//添加view</span><br><span class="line">wm.addView(view, layoutParams);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>注册服务（addService）：在Android开机启动过程中，Android系统会初始化各种Service，并将这些Service向ServiceManager注册，这一步是系统管理的。</li>
+<li>获取服务（getService）：通过context中的方法拿到Service的代理对象，然后拿到wm的WindowManager对象的引用</li>
+<li>使用服务：通过这个引用向具体的服务端发送请求，服务端执行完毕后返回。调用WindowManager的addView函数，触发的是远程调用，调用时运行在systemServer进程的WindowManager的addView方法。</li>
+</ul>
+<h2 id="使用服务的具体执行过程是什么样的？"><a href="#使用服务的具体执行过程是什么样的？" class="headerlink" title="使用服务的具体执行过程是什么样的？"></a>使用服务的具体执行过程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBa872146e4e5ec332a071e0f1062506f6?method=download&amp;shareKey=1c8253f5e16081b11ee16b16866d5bb2" alt="具体执行过程"></p>
+<ol>
+<li>client通过获得一个server的代理接口，对server进行调用。</li>
+<li>代理接口中定义的方法与server中定义的方法时一一对应的。</li>
+<li>client调用某个代理接口中的方法时，代理接口的方法会将client传递的参数打包成Parcel对象。</li>
+<li>代理接口将Parcel发送给内核中的binder driver。</li>
+<li>server会读取binder driver中的请求数据，如果是发送给自己的，解包Parcel对象，处理并将结果返回。</li>
+<li>整个的调用过程是一个同步过程，在server处理的时候，client会block住。因此client调用过程不应在主线程。</li>
+</ol>
+<h2 id="Binder通信的整体架构是什么样的？"><a href="#Binder通信的整体架构是什么样的？" class="headerlink" title="Binder通信的整体架构是什么样的？"></a>Binder通信的整体架构是什么样的？</h2><p>以startService为例</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB00286158fda80010a20e60615ed275e7?method=download&amp;shareKey=01403e81380671ec011ece3384769ce8" alt="Binder整体架构"></p>
+<ol>
+<li>发起端线程向Binder Driver发起binder ioctl请求后，采用环不断talkWithDriver，此时线程处于阻塞状态，直到收到BR__XXX命令才会结束该过程。<ul>
+<li>BR_TRANSACTION_COMPLETE: oneway模式下,收到该命令则退出</li>
+<li>BR_REPLY: 非oneway模式下,收到该命令才退出;</li>
+<li>BR_DEAD_REPLY: 目标进程/线程/binder实体为空, 以及释放正在等待reply的binder thread或者binder buffer;</li>
+<li>BR_FAILED_REPLY: 情况较多,比如非法handle, 错误事务栈, security, 内存不足, buffer不足, 数据拷贝失败, 节点创建失败, 各种不匹配等问题</li>
+<li>BR_ACQUIRE_RESULT: 目前未使用的协议; </li>
+</ul>
+</li>
+<li>左图中waitForResponse收到BR_TRANSACTION_COMPLETE,则直接退出循环, 则没有机会执行executeCommand()方法, 故将其颜色画为灰色. 除以上5种BR_XXX命令, 当收到其他BR命令,则都会执行executeCommand过程.</li>
+<li>目标Binder线程创建后, 便进入joinThreadPool()方法, 采用循环不断地循环执行getAndExecuteCommand()方法, 当bwr的读写buffer都没有数据时,则阻塞在binder_thread_read的wait_event过程. 另外,正常情况下binder线程一旦创建则不会退出.</li>
+</ol>
+<h2 id="从通信协议来看startService过程是什么样的？"><a href="#从通信协议来看startService过程是什么样的？" class="headerlink" title="从通信协议来看startService过程是什么样的？"></a>从通信协议来看startService过程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB935c967a2d790a6a56eb2b6eed2c2e0f?method=download&amp;shareKey=78cb0aaa730052688ce763416944da14" alt="startService过程"></p>
+<ul>
+<li>Binder客户端或者服务端向Binder Driver发送的命令都是BC_开头的，例如BC_TRANSACTION和BC_REPLY。</li>
+<li>只有当BC_TRANSACTION或者BC_REPLY时，才会调用binder_transaction()来处理事物，并且都会回应调用者一个BINDER_WORK_TRANSACTION_COMPLETE事物，经过binder_thread_read()会转变成BR_TRANSACTION_COMPLETE.</li>
+<li>startService过程是一个非oneway的过程。</li>
+</ul>
+<h2 id="一个oneway的通信过程"><a href="#一个oneway的通信过程" class="headerlink" title="一个oneway的通信过程"></a>一个oneway的通信过程</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB9857c297fb55614b277b57404f052513?method=download&amp;shareKey=041e392cf9cee0bdb9b5d12591d0b952" alt="一个oneway的通信过程"></p>
+<h2 id="为什么oneway通信还需要等待回应"><a href="#为什么oneway通信还需要等待回应" class="headerlink" title="为什么oneway通信还需要等待回应"></a>为什么oneway通信还需要等待回应</h2><p>以寄信举例：</p>
+<ol>
+<li>当把信交给邮寄员(BC_TRANSACTION)</li>
+<li>邮寄员收到信后, 填一张单子给你作为一份回执(BR_TRANSACTION_COMPLETE). 这样你才放心知道邮递员已确定接收信, 否则就这样走了,信到底有没有交到邮递员手里都不知道,这样的通信实在太让人不省心, 长时间收不到远方家人的回信, 无法得知是在路的中途信件丢失呢,还是压根就没有交到邮递员的手里. 所以说oneway也得知道信是投递状态是否成功.</li>
+<li>邮递员利用交通工具(Binder Driver),将信交给了你的家人(BR_TRANSACTION);</li>
+</ol>
+<h2 id="oneway与非oneway有什么区别？"><a href="#oneway与非oneway有什么区别？" class="headerlink" title="oneway与非oneway有什么区别？"></a>oneway与非oneway有什么区别？</h2><p><strong>oneway与非oneway:</strong> 都是需要等待Binder Driver的回应消息BR_TRANSACTION_COMPLETE. 主要区别在于oneway的通信收到BR_TRANSACTION_COMPLETE则返回,而不会再等待BR_REPLY消息的到来. 另外，oneway的binder IPC则接收端无法获取对方的pid.</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/03/24/HTTPS浅析/" itemprop="url">
                   HTTPS浅析
                 </a>
@@ -692,130 +872,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/03/15/Smali浅析及dex-java互转/" itemprop="url">
-                  Smali浅析及dex,java互转
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-15T15:25:33+08:00" content="2018-03-15">
-              2018-03-15
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/虚拟机/" itemprop="url" rel="index">
-                    <span itemprop="name">虚拟机</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Smali浅析及dex-java互转"><a href="#Smali浅析及dex-java互转" class="headerlink" title="Smali浅析及dex,java互转"></a>Smali浅析及dex,java互转</h1><blockquote>
-<p>今天在看热修复时，文中多次提到smali文件，索性一次性将其搞明白。</p>
-</blockquote>
-<h2 id="Smali文件是什么？"><a href="#Smali文件是什么？" class="headerlink" title="Smali文件是什么？"></a>Smali文件是什么？</h2><p>Android程序员用Java语言开发APP，编译工具会将Java源文件（.java）编译成Dalvik可执行文件（.dex）。Android系统中Dalvik Virtual Machine 会执行该文件。smali/baksmali则是Dalvik VM可执行文件的汇编器/反汇编器。反汇编Dalvik可执行文件（.dex）后，将会得到.smali后缀文件。smali代码拥有特定的语法。<br>相比于.dex文件，smali文件的语法更容易理解些。下面是.dex文件、.smali文件、.java文件三者之间的转化关系。 </p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBf7bc5c52f9ae48bd1139a2c9aa1e0a84?method=download&amp;shareKey=3d0688dddd774b00c561d9e0cdc6e39d" alt=""></p>
-<h2 id="为什么要学会smali"><a href="#为什么要学会smali" class="headerlink" title="为什么要学会smali"></a>为什么要学会smali</h2><p>当我们反编译之后得到jar或者smali文件，android采用java语言开发，但是android系统使用自己的dalvik虚拟机，代码编译最终不是采用java的class，而是使用smali。因此我们反编译得到的代码，jar的话很多地方无法正确的解释出来，如果我们反编译的是smali则可以正确的理解程序的意思，因此学会smali十分有必要</p>
-<h2 id="将-java文件转化成-dex文件，在Dalvik-VM中来执行-dex文件"><a href="#将-java文件转化成-dex文件，在Dalvik-VM中来执行-dex文件" class="headerlink" title="将.java文件转化成.dex文件，在Dalvik VM中来执行.dex文件"></a>将.java文件转化成.dex文件，在Dalvik VM中来执行.dex文件</h2><h3 id="创建java文件"><a href="#创建java文件" class="headerlink" title="创建java文件"></a>创建java文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class Foo&#123;</span><br><span class="line">    public static void main(String [] args)&#123;</span><br><span class="line">            System.out.println(&quot;Hello, world!haha&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="将-java转换成-class文件"><a href="#将-java转换成-class文件" class="headerlink" title="将.java转换成.class文件"></a>将.java转换成.class文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac Foo.java</span><br></pre></td></tr></table></figure>
-<h3 id="将-class转换成-dex文件，由于需要安装到设备，直接转成-apk文件"><a href="#将-class转换成-dex文件，由于需要安装到设备，直接转成-apk文件" class="headerlink" title="将.class转换成.dex文件，由于需要安装到设备，直接转成.apk文件"></a>将.class转换成.dex文件，由于需要安装到设备，直接转成.apk文件</h3><p>这里需要用到sdk/build-tool/ 的dx工具</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dx --dex --output=foo.apk Foo.class</span><br></pre></td></tr></table></figure>
-<h3 id="安装到设备上"><a href="#安装到设备上" class="headerlink" title="安装到设备上"></a>安装到设备上</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push foo.apk /sdcard/</span><br></pre></td></tr></table></figure>
-<h3 id="调用Dalvik-VM执行foo-apk"><a href="#调用Dalvik-VM执行foo-apk" class="headerlink" title="调用Dalvik VM执行foo.apk"></a>调用Dalvik VM执行foo.apk</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line"></span><br><span class="line">dalvikvm -cp /sdcard/foo.apk Foo</span><br></pre></td></tr></table></figure>
-<p>显示如下结果：</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBd87465c39d4be8a079d281efd9d97fba?method=download&amp;shareKey=bfe9017215668d1a772dc7dacedfc784" alt="执行foo.apk"></p>
-<h2 id="dex文件转换成-smali文件"><a href="#dex文件转换成-smali文件" class="headerlink" title=".dex文件转换成.smali文件"></a>.dex文件转换成.smali文件</h2><p>这里我们要用到一个工具smali.jar，<a href="https://bitbucket.org/JesusFreke/smali/downloads/" target="_blank" rel="noopener">点此下载</a></p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBcb9c9ac545a9642e39ead74cb6a23870?method=download&amp;shareKey=b4f104247e03390ad5eb8585e0b64905" alt="转换.smali文件"></p>
-<h2 id="smali文件转换成-dex文件"><a href="#smali文件转换成-dex文件" class="headerlink" title=".smali文件转换成.dex文件"></a>.smali文件转换成.dex文件</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6bbc9762fc4093c4739c74c92e06e34f?method=download&amp;shareKey=6b4cd1db87da67bf55f14e2c4ced021d" alt="转换.smali文件"></p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -861,7 +917,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-count">27</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

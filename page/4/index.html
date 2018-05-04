@@ -215,6 +215,130 @@
             
               
                 
+                <a class="post-title-link" href="/2018/03/15/Smali浅析及dex-java互转/" itemprop="url">
+                  Smali浅析及dex,java互转
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-15T15:25:33+08:00" content="2018-03-15">
+              2018-03-15
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">虚拟机</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Smali浅析及dex-java互转"><a href="#Smali浅析及dex-java互转" class="headerlink" title="Smali浅析及dex,java互转"></a>Smali浅析及dex,java互转</h1><blockquote>
+<p>今天在看热修复时，文中多次提到smali文件，索性一次性将其搞明白。</p>
+</blockquote>
+<h2 id="Smali文件是什么？"><a href="#Smali文件是什么？" class="headerlink" title="Smali文件是什么？"></a>Smali文件是什么？</h2><p>Android程序员用Java语言开发APP，编译工具会将Java源文件（.java）编译成Dalvik可执行文件（.dex）。Android系统中Dalvik Virtual Machine 会执行该文件。smali/baksmali则是Dalvik VM可执行文件的汇编器/反汇编器。反汇编Dalvik可执行文件（.dex）后，将会得到.smali后缀文件。smali代码拥有特定的语法。<br>相比于.dex文件，smali文件的语法更容易理解些。下面是.dex文件、.smali文件、.java文件三者之间的转化关系。 </p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBf7bc5c52f9ae48bd1139a2c9aa1e0a84?method=download&amp;shareKey=3d0688dddd774b00c561d9e0cdc6e39d" alt=""></p>
+<h2 id="为什么要学会smali"><a href="#为什么要学会smali" class="headerlink" title="为什么要学会smali"></a>为什么要学会smali</h2><p>当我们反编译之后得到jar或者smali文件，android采用java语言开发，但是android系统使用自己的dalvik虚拟机，代码编译最终不是采用java的class，而是使用smali。因此我们反编译得到的代码，jar的话很多地方无法正确的解释出来，如果我们反编译的是smali则可以正确的理解程序的意思，因此学会smali十分有必要</p>
+<h2 id="将-java文件转化成-dex文件，在Dalvik-VM中来执行-dex文件"><a href="#将-java文件转化成-dex文件，在Dalvik-VM中来执行-dex文件" class="headerlink" title="将.java文件转化成.dex文件，在Dalvik VM中来执行.dex文件"></a>将.java文件转化成.dex文件，在Dalvik VM中来执行.dex文件</h2><h3 id="创建java文件"><a href="#创建java文件" class="headerlink" title="创建java文件"></a>创建java文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class Foo&#123;</span><br><span class="line">    public static void main(String [] args)&#123;</span><br><span class="line">            System.out.println(&quot;Hello, world!haha&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="将-java转换成-class文件"><a href="#将-java转换成-class文件" class="headerlink" title="将.java转换成.class文件"></a>将.java转换成.class文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac Foo.java</span><br></pre></td></tr></table></figure>
+<h3 id="将-class转换成-dex文件，由于需要安装到设备，直接转成-apk文件"><a href="#将-class转换成-dex文件，由于需要安装到设备，直接转成-apk文件" class="headerlink" title="将.class转换成.dex文件，由于需要安装到设备，直接转成.apk文件"></a>将.class转换成.dex文件，由于需要安装到设备，直接转成.apk文件</h3><p>这里需要用到sdk/build-tool/ 的dx工具</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dx --dex --output=foo.apk Foo.class</span><br></pre></td></tr></table></figure>
+<h3 id="安装到设备上"><a href="#安装到设备上" class="headerlink" title="安装到设备上"></a>安装到设备上</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push foo.apk /sdcard/</span><br></pre></td></tr></table></figure>
+<h3 id="调用Dalvik-VM执行foo-apk"><a href="#调用Dalvik-VM执行foo-apk" class="headerlink" title="调用Dalvik VM执行foo.apk"></a>调用Dalvik VM执行foo.apk</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line"></span><br><span class="line">dalvikvm -cp /sdcard/foo.apk Foo</span><br></pre></td></tr></table></figure>
+<p>显示如下结果：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBd87465c39d4be8a079d281efd9d97fba?method=download&amp;shareKey=bfe9017215668d1a772dc7dacedfc784" alt="执行foo.apk"></p>
+<h2 id="dex文件转换成-smali文件"><a href="#dex文件转换成-smali文件" class="headerlink" title=".dex文件转换成.smali文件"></a>.dex文件转换成.smali文件</h2><p>这里我们要用到一个工具smali.jar，<a href="https://bitbucket.org/JesusFreke/smali/downloads/" target="_blank" rel="noopener">点此下载</a></p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBcb9c9ac545a9642e39ead74cb6a23870?method=download&amp;shareKey=b4f104247e03390ad5eb8585e0b64905" alt="转换.smali文件"></p>
+<h2 id="smali文件转换成-dex文件"><a href="#smali文件转换成-dex文件" class="headerlink" title=".smali文件转换成.dex文件"></a>.smali文件转换成.dex文件</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6bbc9762fc4093c4739c74c92e06e34f?method=download&amp;shareKey=6b4cd1db87da67bf55f14e2c4ced021d" alt="转换.smali文件"></p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/03/14/《Head-first-HTML与CSS》读书笔记/" itemprop="url">
                   《Head first HTML与CSS》读书笔记
                 </a>
@@ -824,237 +948,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/01/18/Kotlin-Android-UI利器之Anko-Layouts/" itemprop="url">
-                  Kotlin Android UI利器之Anko Layouts
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-01-18T10:38:38+08:00" content="2018-01-18">
-              2018-01-18
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>前段时间写了一篇Kotlin语法入门的文章，还没有看过的盆友请戳<strong>(<a href="http://www.jianshu.com/p/3d2c0c92f545" target="_blank" rel="noopener">这里</a>)</strong>，有的可能看完之后已经开始尝试用kotlin来写代码了。不过上篇体现的仅仅是针对于Kotlin相较于Java在用法上的扩展性以及写法上的简洁性，那么Android中还有另一个重要的组成部分，布局文件呢？接下来我们就继续看一下Anko（基于Kotlin的扩展库）对于Android传统布局文件XML做的改进及优化，以及工作原理。</p>
-<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>Anko是Kotlin为Android推出的第三方库，旨在提升Android界面的开发效率，使代码更简洁易懂并更容易阅读。Anko总共分为以下四个部分：</p>
-<ul>
-<li>Anko Commons: 轻量级类库包括intent，dialog，logging等帮助类</li>
-<li>Anko Layouts：快速的空安全的方式来写动态的布局</li>
-<li>Anko SQLite：关于Android SQLite查询语句DSL和容器解析器</li>
-<li>Anko Coroutines：Coroutines提供了一种长时间阻塞线程的解决方案，并且代之以开销更小和更可控的操作(suspension of a coroutine)</li>
-</ul>
-<p>我们可以看到，Anko不仅仅可以用来写布局，更加可以做一些基础支持工具，比如操作数据库，用Intent进行数据传递等等，本文着重探讨的是Anko Layouts这一部分。</p>
-<h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><ul>
-<li>Anko可以让我们在源码中写UI布局，严格的编译检查可以保证类型安全，不会出现类型转换异常</li>
-<li>没有多余的CPU开销来解析XML文件</li>
-<li>我们可以把Anko DSL约束放在函数中，提高代码复用率，比原有xml的include更强大</li>
-</ul>
-<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><p>如下，是应用中的关于我们界面布局文件:</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/4287000-a8d30173c1b78577?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="关于我们"></p>
-<p>由于布局非常简单，就不多解释了，那么如果将上述布局用Anko来写如下所示：</p>
-<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">verticalLayout &#123;</span><br><span class="line">               verticalLayout &#123;</span><br><span class="line">                   backgroundResource = R.mipmap.setting_about_us_bg</span><br><span class="line">                   setGravity(Gravity.CENTER_HORIZONTAL)</span><br><span class="line">                   imageView &#123;</span><br><span class="line">                       backgroundResource = R.mipmap.setting_about_us_logo_ic</span><br><span class="line">                   &#125;.lparams(width = wrapContent, height = wrapContent)&#123;</span><br><span class="line">                       topMargin = dip(<span class="number">114</span>)</span><br><span class="line">                   &#125;</span><br><span class="line"></span><br><span class="line">                   mTvVersion = textView&#123;</span><br><span class="line">                       textSize = <span class="number">14</span>f</span><br><span class="line">                       textColor = R.color.yx_text_desc</span><br><span class="line">                   &#125;.lparams(width = wrapContent, height = wrapContent)&#123;</span><br><span class="line">                       topMargin = dip(<span class="number">9</span>)</span><br><span class="line">                       bottomMargin = dip(<span class="number">186</span>)</span><br><span class="line">                   &#125;</span><br><span class="line"></span><br><span class="line">                   verticalLayout &#123;</span><br><span class="line">                       setGravity(Gravity.CENTER_HORIZONTAL)</span><br><span class="line">                       textView&#123;</span><br><span class="line">                           text = ResourcesUtil.getString(R.string.about_check_update)</span><br><span class="line">                           textSize = <span class="number">14</span>f</span><br><span class="line">                           backgroundResource = R.drawable.selector_about_us_btn_bg</span><br><span class="line">                           textColor = R.color.yx_text_desc</span><br><span class="line">                           gravity = Gravity.CENTER</span><br><span class="line">                       &#125;.lparams(width = dip(<span class="number">127</span>), height = dip(<span class="number">36</span>))&#123;</span><br><span class="line">                           bottomMargin = dip(<span class="number">20</span>)</span><br><span class="line">                       &#125;</span><br><span class="line">                       textView&#123;</span><br><span class="line">                           text = ResourcesUtil.getString(R.string.private_rights)</span><br><span class="line">                           textSize = <span class="number">14</span>f</span><br><span class="line">                           backgroundResource = R.drawable.selector_about_us_btn_bg</span><br><span class="line">                           textColor = R.color.yx_text_desc</span><br><span class="line">                           gravity = Gravity.CENTER</span><br><span class="line">                       &#125;.lparams(width = dip(<span class="number">127</span>), height = dip(<span class="number">36</span>))&#123;</span><br><span class="line">                       &#125;</span><br><span class="line"></span><br><span class="line">                       view().lparams(width = wrapContent, height = <span class="number">0</span> , weight = <span class="number">1.0</span>f)</span><br><span class="line"></span><br><span class="line">                       mTvCorpRight = textView&#123;</span><br><span class="line">                           text = ResourcesUtil.getString(R.string.corpright_format)</span><br><span class="line">                           textColor = R.color.yx_text_desc</span><br><span class="line">                       &#125;.lparams(width = wrapContent, height = wrapContent)&#123;</span><br><span class="line">                           bottomMargin = dip(<span class="number">20</span>)</span><br><span class="line">                       &#125;</span><br><span class="line">                   &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>verticalLayout就是orientation设置为Vertical的LinearLayout</li>
-<li>布局总共分为两部分，一部分关于控件自身的属性，比如<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">* 整体写法上与XML布局很相似，也是从上往下依次定义各控件</span><br><span class="line"></span><br><span class="line">## 支持扩展</span><br><span class="line"></span><br><span class="line">Anko支持扩展方法，例如我们可以做如下扩展</span><br></pre></td></tr></table></figure></li>
-</ul>
-<p>fun Context.toast(message: CharSequence, duration: Int = Toast.LENGTH_SHORT) {<br>    Toast.makeText(this, message, duration).show()<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">然后我们就可以在Anko中直接用该toast方法</span><br></pre></td></tr></table></figure></p>
-<p>  verticalLayout {<br>            val name = editText()<br>            button(“Say Hello”) {<br>                onClick { toast(“Hello!”) }<br>            }<br>        }<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">当然，如果括号中任何方法也没有的话可以省略括号。</span><br></pre></td></tr></table></figure></p>
-<p>verticalLayout {<br>    button(“Ok”)<br>    button(R.string.cancel)<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">## 支持Runtime Layouts</span><br><span class="line">如果你有在特定逻辑下才会出现的布局，那么使用Anko来实现就很方便了，而如果用原有的方式，就必须在Java代码里编写布局，而相较于Anko来实现会显得冗余而且难以维护，尤其遇到复杂的布局实现，纯粹使用Java代码去写会非常头疼。</span><br><span class="line"></span><br><span class="line">例如要实现一个只有在横屏情况下，且横屏最小宽度要大于700px，才会展示一个特定的宽度的RecyclerView，宽度为屏幕宽度的50%。</span><br><span class="line"></span><br><span class="line">用Anko DSL来实现，只需10行代码。</span><br></pre></td></tr></table></figure></p>
-<p>configuration(orientation = Orientation.LANDSCAPE, smallestWidth = 700) {<br>  recyclerView {<br>    init()<br>  }.lparams(width = widthProcent(50), height = matchParent)</p>
-<p>  frameLayout().lparams(width = matchParent, height = matchParent)<br>}</p>
-<p>fun <t :="" view=""> T.widthProcent(procent: Int): Int =<br>  getAppUseableScreenSize().x.toFloat().times(procent.toFloat() / 100).toInt()<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">有兴趣的童鞋可以用Java代码来实现这个布局，并且与以上代码进行对比。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">## 适配不同SDK版本更方便</span><br><span class="line">如上述代码那样，用Anko来写布局和XML没有什么两样。但由于Android碎片化问题比较严重，不同版本的SDK占有率相差不大，为了针对不同SDK版本的手机有更优的体验，我们就需要对不同的SDK版本进行最新API的适配。</span><br><span class="line">用Anko来编写布局使得我们可以进行兼容性检查，根据SDK的版本来使用哪种API，而不是在布局文件中来写两个XML文件。例如当SDK版本大于5.0才会设置elevation属性：</span><br></pre></td></tr></table></figure></t></p>
-<p> appBarLayout {<br>        toolBar = toolbar {<br>          if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.LOLLIPOP) elevation = 4f<br>        }.lparams(width = matchParent, height = actionBarSize())</p>
-<pre><code>}.lparams(width = matchParent)
-</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">## Anko DSL Preview插件支持</span><br><span class="line">那么我们如何才能像编写XML布局可以随时查看编写效果呢？Anko推出了Android Studio的扩展插件，装上之后也就和我们平时用XML编写布局别无二致了。</span><br><span class="line"></span><br><span class="line">![Anko DSL](http://upload-images.jianshu.io/upload_images/4287000-a4f97d3429d6c4d4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">## 性能</span><br><span class="line"></span><br><span class="line">当然上述的写法上虽然Anko写起来更加简洁明了，但作为开发人员，我们更关注于效率和性能，那么他们之间到底有什么差别呢？</span><br><span class="line">XML布局需要从资源文件中获取，然后需要用XmlPullParser解析所有的元素并一个一个的创建它们。这个过程很繁重，而且XML有很多冗余的tag，加载这些冗余的信息也加大了开销。我们来做个实验，笔者挑了严选项目一个简单的页面进行改造，发现即便这个比较简单的View用Anko与XML的时间开销的差别达到了好几倍。</span><br><span class="line"></span><br><span class="line">### XML</span><br><span class="line"></span><br><span class="line">#### </span><br><span class="line"></span><br><span class="line">![xml](http://upload-images.jianshu.io/upload_images/4287000-df6acb941c2d2d49?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)</span><br><span class="line"></span><br><span class="line">### Anko</span><br><span class="line"></span><br><span class="line">![anko](http://upload-images.jianshu.io/upload_images/4287000-1dee36ea2ab2da4b?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)</span><br><span class="line"></span><br><span class="line">以上是同一个界面用XML实现和Anko实现的截取的三个结果，为了实验的准确性，总共用了8款机型（Meizu MX2, VIVO X5M, HUAWEI Mate 8, HUAWEI Nexus 6P, XIAOMI 2S, Galaxy Note Edge, T1, MeiZu M1），分别进行了30次测量，并对结果进行整理统计：</span><br><span class="line"></span><br><span class="line">|   | XML  | Anko |</span><br><span class="line">|:------------- |:-------------:| -------------:|</span><br><span class="line">| Measure      | 0.312ms |  0.136ms |</span><br><span class="line">| Layout      | 0.28ms        |    0.130ms  |</span><br><span class="line">| Draw |  39.4ms       |   27.5ms     |</span><br><span class="line"></span><br><span class="line">我们仅仅在这个简单的页面中就体现出近300%的速度差距，足以见得Anko在性能上的优势相较于XML更节省渲染时间。而且对于低端机型MX2，小米2S，差距尤为显著，有近500%的速度差距。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">## 原理</span><br><span class="line"></span><br><span class="line">那么为什么XML和Anko可以效率差距那么明显呢？我们首先来看一下Anko Layouts部分的源码，了解它的工作原理。这里以verticalLayout为例：</span><br><span class="line"></span><br><span class="line">我们找到```CustomService.kt```这个类，发现有如下扩展方法</span><br></pre></td></tr></table></figure>
-<p>inline fun Activity.verticalLayout(theme: Int = 0): LinearLayout = verticalLayout(theme) {}<br>inline fun Activity.verticalLayout(theme: Int = 0, init: (@AnkoViewDslMarker _LinearLayout).() -&gt; Unit): LinearLayout {<br>    return ankoView(<code>$$Anko$Factories$CustomViews</code>.VERTICAL_LAYOUT_FACTORY, theme, init)<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">正是由于这个扩展方法，才允许我们在Activity中使用verticalLayout,VERTICAL_LAYOUT_FACTORY即是定义orientation为vertical的工厂类factory。</span><br><span class="line"></span><br><span class="line">继续看AnkoView这个扩展方法</span><br></pre></td></tr></table></figure></p>
-<p>inline fun <t :="" view=""> Activity.ankoView(factory: (ctx: Context) -&gt; T, theme: Int, init: T.() -&gt; Unit): T {<br>    val ctx = AnkoInternals.wrapContextIfNeeded(this, theme)<br>    val view = factory(ctx)<br>    view.init()<br>    AnkoInternals.addView(this, view)<br>    return view<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">这个方法很简单，主要做了如下三件事情：</span><br><span class="line"></span><br><span class="line">1. 工厂类将子view提取出来</span><br><span class="line">2. 初始化提取出来的子view</span><br><span class="line">3. 将view添加至root view上，这里是LinearLayout</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">```AnkoInternals```是Anko核心类，提供了许多核心方法，其中就有涉及布局的addView方法，稍后会介绍。首先看</span><br><span class="line">```wrapContextIfNeeded```这个方法</span><br></pre></td></tr></table></figure></t></p>
-<p>  fun wrapContextIfNeeded(ctx: Context, theme: Int): Context {<br>        return if (theme != 0 &amp;&amp; (ctx !is AnkoContextThemeWrapper || ctx.theme != theme)) {<br>            // 如果该context不是ContextThemeWrapper或它的子类且theme不为0，将对其进行包装，使其成为AnkoContextThemeWrapper继承自ContextThemeWrapper。<br>            AnkoContextThemeWrapper(ctx, theme)<br>        } else {<br>            ctx<br>        }<br>    }<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">接下来划重点了，着重看一下```AnkoInternals.addView(this, view)```：</span><br></pre></td></tr></table></figure></p>
-<pre><code>fun &lt;T : View&gt; addView(manager: ViewManager, view: T) {
-    return when (manager) {
-        is ViewGroup -&gt; manager.addView(view)
-        is AnkoContext&lt;*&gt; -&gt; manager.addView(view, null)
-        else -&gt; throw AnkoException(&quot;$manager is the wrong parent&quot;)
-    }
-}
-</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">这里```is```其实就是```if (manager instanceof ViewGroup)```,所以这里是调用了LinearLayout的addView，从ViewGroup源码可知，即将view添加到最后一个子View的后面。</span><br><span class="line"></span><br><span class="line">将子View添加到ViewGroup之后又是怎么设置到activity的contentView的呢？我们继续往下看，在Activity的addView扩展方法中调用了```createAnkoContext(activity, &#123; AnkoInternals.addView(this, view) &#125;, true)```，以下所示</span><br></pre></td></tr></table></figure>
-<p>   inline fun <t> T.createAnkoContext(<br>            ctx: Context,<br>            init: AnkoContext<t>.() -&gt; Unit,<br>            setContentView: Boolean = false<br>    ): AnkoContext<t> {<br>        val dsl = AnkoContextImpl(ctx, this, setContentView)<br>        dsl.init()<br>        return dsl<br>    }<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">继续看实现类AnkoContextImpl，</span><br></pre></td></tr></table></figure></t></t></t></p>
-<p>open class AnkoContextImpl<t>(<br>        override val ctx: Context,<br>        override val owner: T,<br>        private val setContentView: Boolean<br>) : AnkoContext<t> {<br>    private var myView: View? = null</t></t></p>
-<pre><code>override val view: View
-    get() = myView ?: throw IllegalStateException(&quot;View was not set previously&quot;)
-
-override fun addView(view: View?, params: ViewGroup.LayoutParams?) {
-    if (view == null) return
-
-    if (myView != null) {
-        alreadyHasView()
-    }
-
-    this.myView = view
-
-    if (setContentView) {
-        doAddView(ctx, view)
-    }
-}
-
-private fun doAddView(context: Context, view: View) {
-    when (context) {
-        is Activity -&gt; context.setContentView(view)
-        is ContextWrapper -&gt; doAddView(context.baseContext, view)
-        else -&gt; throw IllegalStateException(&quot;Context is not an Activity, can&apos;t set content view&quot;)
-    }
-}
-
-open protected fun alreadyHasView(): Unit = throw IllegalStateException(&quot;View is already set: $myView&quot;)
-</code></pre><p>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">主要做了以下几个事情：</span><br><span class="line"></span><br><span class="line">1. 判断view是不是为空，为空则直接返回</span><br><span class="line">2. 判断view是不是已经设置过，如果已设置会抛出异常</span><br><span class="line">3. 判断setContentView是否为true，为true，则会调用Activity的```setContentView(view)```方法。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">所以到这里我们就把Anko DSL的工作流程基本上讲完了，那么可以看到，Anko在解析时间上节省了XML解析的开销，接下来我们来对比一下Android加载XML布局的方式。</span><br><span class="line"></span><br><span class="line">我们知道，Android可以通过LayoutInflater.inflate方法来加载布局文件到内存中，由于本文着重介绍的是Anko DSL,这里简单列出关键的rInflate代码</span><br></pre></td></tr></table></figure></p>
-<p> void rInflate(XmlPullParser parser, View parent, Context context,<br>            AttributeSet attrs, boolean finishInflate) throws XmlPullParserException, IOException {<br>            …</p>
-<p>while (((type = parser.next()) != XmlPullParser.END_TAG ||<br>                parser.getDepth() &gt; depth) &amp;&amp; type != XmlPullParser.END_DOCUMENT) {</p>
-<pre><code>    if (type != XmlPullParser.START_TAG) {
-        continue;
-    }
-
-    final String name = parser.getName();
-
-    if (TAG_REQUEST_FOCUS.equals(name)) {
-        parseRequestFocus(parser, parent);
-    } else if (TAG_TAG.equals(name)) {
-        parseViewTag(parser, parent, attrs);
-    } else if (TAG_INCLUDE.equals(name)) {
-        if (parser.getDepth() == 0) {
-            throw new InflateException(&quot;&lt;include /&gt; cannot be the root element&quot;);
-        }
-        parseInclude(parser, context, parent, attrs);
-    } else if (TAG_MERGE.equals(name)) {
-        throw new InflateException(&quot;&lt;merge /&gt; must be the root element&quot;);
-    } else {
-        final View view = createViewFromTag(parent, name, context, attrs);
-        final ViewGroup viewGroup = (ViewGroup) parent;
-        final ViewGroup.LayoutParams params = viewGroup.generateLayoutParams(attrs);
-        rInflateChildren(parser, view, attrs, true);
-        viewGroup.addView(view, params);
-    }
-}
-    ...
-}
-</code></pre><p><code>`</code></p>
-<p>通过分析源码，不难发现，主要是使用XmlPullParser通过循环解析xml文件并将信息解析到内存View对象，布局文件中定义的一个个组件都被顺序的解析到了内存中并被父子View的形式组织起来。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>结合上面的分析，我们不难总结出Anko Layouts相较于XML的优势主要在于：</p>
-<ol>
-<li>DSL减少了XML解析的时间及内存开销，加快了渲染效率。</li>
-<li>DSL更简洁易读，减少了XML冗余的tag信息。</li>
-<li>DSL扩展性更强，支持扩展方法。</li>
-<li>DSL复用性更好，相比include方式更灵活。</li>
-<li>在动态布局方面更有优势，避免了复杂的判断逻辑。</li>
-</ol>
-<p>当然缺点也有如下几点：</p>
-<ol>
-<li>有一定的学习成本</li>
-<li>Anko DSL Preview插件对于AS 2.2以上支持还有点问题。</li>
-</ol>
-<p>当然这些缺点都不算什么，既然有Google的支持，未来趋势Kotlin所占的份额肯定是越来越多，Anko也在不断完善中，以上文章如有写错的地方欢迎拍砖，文明交流。</p>
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ol>
-<li><a href="https://kotlinlang.org/docs/reference/" target="_blank" rel="noopener">Kotlin docs</a></li>
-<li><a href="https://wangjiegulu.gitbooks.io/kotlin-for-android-developers-zh/content/ying_she_cao_zuo_fu.html" target="_blank" rel="noopener">kotlin-for-android-developers</a></li>
-<li><a href="https://github.com/Kotlin/anko/wiki/Anko-Layouts" target="_blank" rel="noopener">Anko Layout wiki</a></li>
-<li><a href="http://macoscope.com/blog/kotlin-anko-layouts/" target="_blank" rel="noopener">Use Kotlin Anko DSL and Say No to Android Layouts Written in XML</a></li>
-<li><a href="https://www.sitepoint.com/building-a-ui-with-kotlin-and-anko/" target="_blank" rel="noopener">Building a UI with Kotlin and Anko</a></li>
-<li><a href="https://android.jlelse.eu/400-faster-layouts-with-anko-da17f32c45dd" target="_blank" rel="noopener">400% faster layouts with Anko</a></li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1100,7 +993,7 @@ open protected fun alreadyHasView(): Unit = throw IllegalStateException(&quot;Vi
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-count">27</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

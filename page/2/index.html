@@ -215,6 +215,145 @@
             
               
                 
+                <a class="post-title-link" href="/2018/04/11/Android窗口管理分析（一）——View是如何绘制到屏幕上的/" itemprop="url">
+                  Android窗口管理分析（一）——View是如何绘制到屏幕上的
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-04-11T15:42:02+08:00" content="2018-04-11">
+              2018-04-11
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/framework/" itemprop="url" rel="index">
+                    <span itemprop="name">framework</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Android窗口管理分析（一）——View是如何绘制到屏幕上的"><a href="#Android窗口管理分析（一）——View是如何绘制到屏幕上的" class="headerlink" title="Android窗口管理分析（一）——View是如何绘制到屏幕上的"></a>Android窗口管理分析（一）——View是如何绘制到屏幕上的</h1><blockquote>
+<p>窗口管理涉及到的模块很多，除了WindowManagerService还包括SurfaceFlinger服务、Linux的共享内存及tmpfs文件系统、Binder通信、InputManagerService、VSYNC同步技术等。</p>
+</blockquote>
+<h2 id="View的窗口管理分为哪些部分？"><a href="#View的窗口管理分为哪些部分？" class="headerlink" title="View的窗口管理分为哪些部分？"></a>View的窗口管理分为哪些部分？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBdb44b5849365c6f181d3c424dc60e1ab?method=download&amp;shareKey=30075989c77b1a06262ff679ef2ed252" alt="窗口管理"></p>
+<h2 id="WMS是负责View绘制的吗？"><a href="#WMS是负责View绘制的吗？" class="headerlink" title="WMS是负责View绘制的吗？"></a>WMS是负责View绘制的吗？</h2><p><strong>WMS的作用是窗口管理，不负责View的绘制，真正完成图像绘制的是SurfaceFlinger服务</strong></p>
+<p>WMS（WindowManagerService）是负责Android的窗口的管理，比如窗口的添加、移除、调整顺序等等。至于图像的绘制和合成都不是WMS管理的范畴。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">TextView mview=new TextView(context);</span><br><span class="line">    ...&lt;!--设置颜色 样式--&gt;</span><br><span class="line">    WindowManager mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);</span><br><span class="line">    WindowManager.LayoutParams wmParams = new WindowManager.LayoutParams();</span><br><span class="line">    wmParams.type = WindowManager.LayoutParams.TYPE_TOAST;</span><br><span class="line">    wmParams.format = PixelFormat.RGBA_8888;</span><br><span class="line">    wmParams.width = 800;</span><br><span class="line">    wmParams.height = 800;</span><br><span class="line">    mWindowManager.addView(mview, wmParams);</span><br></pre></td></tr></table></figure>
+<ol>
+<li>在利用WindowManager.addView添加窗口之前，TextView的onDraw不会被调用，也就是说View必须被添加到窗口中，才会被绘制。换句话说，<strong>只有申请了依附窗口，View才会有可以绘制的目标内存。</strong></li>
+<li>在添加窗口的时候，除了WMS自己进行注册整理，还需要向SurfaceFlinger服务申请一块Surface画布，对应的是一块内存。</li>
+<li>只有这块内存申请成功之后，APP才会有绘画的目标，这块内存是APP和SurfaceFlinger服务端共享的，省去了绘图资源的拷贝。</li>
+</ol>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB552342f685a75dfac6192a6898c70c21?method=download&amp;shareKey=9b0c041e0aa0a537614211820967f4ce" alt="Android绘图原理"></p>
+<p><strong>可以看到App通过unLockCanvasAndPost直接和SurfaceFlinger通信进行重绘的。WMS只负责窗口的管理，不负责绘制。</strong></p>
+<h2 id="窗口分组是什么样的？"><a href="#窗口分组是什么样的？" class="headerlink" title="窗口分组是什么样的？"></a>窗口分组是什么样的？</h2><p>Android中的窗口主要分为三种：</p>
+<ol>
+<li>系统窗口——Toast</li>
+<li>应用窗口——Dialog、Activity。不过Dialog必须依附Activity才能存在</li>
+<li>子窗口——PopupWindow，必须依附其他窗口，依附的窗口只能是1，2而不能是3</li>
+</ol>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB98371b5048dfa8b7fe0142093823d404?method=download&amp;shareKey=fba43e8d94e0d2b4d30cb2f10704f573" alt="窗口组织形式"></p>
+<p>WMS不仅只是管理窗口，还负责窗口动画，Touch事件等等。</p>
+<h2 id="View绘制的内存分配是什么机制？"><a href="#View绘制的内存分配是什么机制？" class="headerlink" title="View绘制的内存分配是什么机制？"></a>View绘制的内存分配是什么机制？</h2><p>每个Activity看做一个图层，对应一块Surface，Surface绘图表面对应的内存是SurfaceFlinger申请的，内存是APP与SurfaceFlinger间进程共享的，所以APP和SurfaceFlinger的通信基于<strong>共享内存</strong>实现的。</p>
+<h2 id="共享内存的具体实现是什么样的？"><a href="#共享内存的具体实现是什么样的？" class="headerlink" title="共享内存的具体实现是什么样的？"></a>共享内存的具体实现是什么样的？</h2><p>共享内存是基于MAP+tmpfs文件系统实现，可以理解为SF为APP申请一块内存，然后通过binder将内存相关的信息传递给APP，APP端在这块内存中绘制内容，绘制完毕后通知SF图层混排，再由SF将数据渲染到屏幕上，这么做的目的主要考虑图像内存比较大，用socket,binder方式传递效率上无法满足要求。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBe00aaff15eaf1ac892950c9e4c6fd4b4?method=download&amp;shareKey=e57fbd76b670782fb8bb85869ec2d0d3" alt="共享内存具体实现"></p>
+<ol>
+<li>SurfaceFlinger服务属于系统服务，主要用于将APP绘制完毕的数据渲染到屏幕上。</li>
+<li>各应用的View的绘制都需要经过SurfaceFlinger服务。</li>
+<li>WindowManagerService：WMS控制Surface画布的添加和次序，动画还有触摸事件。</li>
+<li>每个App进程负责相应图层的绘制。</li>
+<li>App与SurfaceFlinger通信是通过匿名内存来实现的。</li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/04/04/HTTP浅析（一）HTTP报文/" itemprop="url">
                   HTTP解析（一）HTTP报文
                 </a>
@@ -836,186 +975,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/03/27/说说你对Binder的理解/" itemprop="url">
-                  说说你对Binder的理解
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-27T15:26:17+08:00" content="2018-03-27">
-              2018-03-27
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/源码/" itemprop="url" rel="index">
-                    <span itemprop="name">源码</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="说说你对Binder的理解"><a href="#说说你对Binder的理解" class="headerlink" title="说说你对Binder的理解"></a>说说你对Binder的理解</h1><blockquote>
-<p>在Android开发中，涉及到多进程的通信底层都是依赖Binder IPC机制，所以Binder是Android开发绕不过去的一个知识点。这里我们具体来看一下Binder的实现原理。</p>
-</blockquote>
-<h2 id="为什么要使用Binder？"><a href="#为什么要使用Binder？" class="headerlink" title="为什么要使用Binder？"></a>为什么要使用Binder？</h2><ol>
-<li>性能方面</li>
-<li>安全方面</li>
-</ol>
-<h3 id="性能方面"><a href="#性能方面" class="headerlink" title="性能方面"></a>性能方面</h3><p>Binder相对于传统的Socket方式，更加高效。Binder数据拷贝只需要一次，相对于传统的管道、消息队列、Socket都需要两次，效率更高，仅次于共享内存方式（一次也不需要）。</p>
-<h3 id="安全性方面"><a href="#安全性方面" class="headerlink" title="安全性方面"></a>安全性方面</h3><p>这才是真正使用Binder原因的重中之重，因为传统的通信对于双发的身份并没有做出严格的验证，Socket通信地址是客户端手动填入，很容易伪造，而Binder机制从协议本身就支持通信双方做身份校验，大大提升了安全性。</p>
-<h2 id="Socket拷贝两次是哪两次？"><a href="#Socket拷贝两次是哪两次？" class="headerlink" title="Socket拷贝两次是哪两次？"></a>Socket拷贝两次是哪两次？</h2><p>当应用程序向一个socket传输数据之后，该socket将创建相应的套接字缓存，并将用户数据拷贝到缓存中。当报文在各协议层传达输的过程中，每一导的报文头将插入到用户数据之前。skb为报文头申请了足够的空间，所以避免了由于插入报文头而对报文进行多次拷贝。用户数据只拷贝了两次：一是从用户空间拷贝到内核；二是报文数据从内核拷贝到网络适配器。</p>
-<h2 id="Android里的IPC原理是什么？"><a href="#Android里的IPC原理是什么？" class="headerlink" title="Android里的IPC原理是什么？"></a>Android里的IPC原理是什么？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBd52e4b3cc4142e562801a0dd2b7da289?method=download&amp;shareKey=049460ad939a62f133f58a26abed2003" alt="Android IPC"></p>
-<ol>
-<li>每个Android进程，只能运行在自己进程所拥有的虚拟地址空间。对应一个4GB（这个可以配置）的虚拟地址控件，3GB为用户空间，1GB是内核空间。</li>
-<li>用户空间不可共享，内核空间可共享。</li>
-<li>通信时恰恰是利用可共享的内核内存空间完成底层通信的。</li>
-</ol>
-<h2 id="Binder通信流程是什么样的？"><a href="#Binder通信流程是什么样的？" class="headerlink" title="Binder通信流程是什么样的？"></a>Binder通信流程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBccd772d903351df07869c79d55e9c5ee?method=download&amp;shareKey=4a9ac174e0dac55ca001ec995a58ef53" alt="Binder架构"></p>
-<ul>
-<li><strong>Client进程</strong>：使用服务的进程</li>
-<li><strong>Server进程</strong>：提供服务的进程</li>
-<li><strong>ServiceManager进程</strong>：ServiceManager的作用是将字符串形式的Binder名字转化为对该Binder的引用，使得Client能够通过Binder名字获得对Server中Binder实体的引用。</li>
-<li><strong>Binder驱动</strong>：驱动负责进程之间Binder通信的简历，Binder在进程之间的传递，Binder引用计数管理，数据包在进程之间传递和交互等一系列底层支持。</li>
-</ul>
-<ol>
-<li>注册服务（addService）：Server进程要先注册Service到ServiceManager。该过程：Server是客户端，ServiceManager是服务端。</li>
-<li>获取服务（getService）：Client进程</li>
-<li>使用服务：client根据得到的Service建立与Service所在的Server进程通信的通路，然后可以直接与Service交互。该过程：client是客户端，server是服务端。</li>
-</ol>
-<p>注意：上述不是彼此之间直接交互的，都是通过Binder驱动进行交互的。<strong>Binder驱动位于内核空间，而Client，Server，Service Manager位于用户空间。</strong> 对于开发者来说，Binder驱动和Service Manager可以看做是Android平台的基础架构，只需要自定义实现client、Server端，借助Android平台架构可以直接进行IPC通信。</p>
-<h2 id="举一个Binder运行的例子？"><a href="#举一个Binder运行的例子？" class="headerlink" title="举一个Binder运行的例子？"></a>举一个Binder运行的例子？</h2><p>如下是实现浮动窗口的部分代码：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//获取WindowManager服务引用</span><br><span class="line">WindowManager wm = (WindowManager)getSystemService(getApplication().WINDOW_SERVICE);  </span><br><span class="line">//布局参数layoutParams相关设置略...</span><br><span class="line">View view=LayoutInflater.from(getApplication()).inflate(R.layout.float_layout, null);  </span><br><span class="line">//添加view</span><br><span class="line">wm.addView(view, layoutParams);</span><br></pre></td></tr></table></figure>
-<ul>
-<li>注册服务（addService）：在Android开机启动过程中，Android系统会初始化各种Service，并将这些Service向ServiceManager注册，这一步是系统管理的。</li>
-<li>获取服务（getService）：通过context中的方法拿到Service的代理对象，然后拿到wm的WindowManager对象的引用</li>
-<li>使用服务：通过这个引用向具体的服务端发送请求，服务端执行完毕后返回。调用WindowManager的addView函数，触发的是远程调用，调用时运行在systemServer进程的WindowManager的addView方法。</li>
-</ul>
-<h2 id="使用服务的具体执行过程是什么样的？"><a href="#使用服务的具体执行过程是什么样的？" class="headerlink" title="使用服务的具体执行过程是什么样的？"></a>使用服务的具体执行过程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBa872146e4e5ec332a071e0f1062506f6?method=download&amp;shareKey=1c8253f5e16081b11ee16b16866d5bb2" alt="具体执行过程"></p>
-<ol>
-<li>client通过获得一个server的代理接口，对server进行调用。</li>
-<li>代理接口中定义的方法与server中定义的方法时一一对应的。</li>
-<li>client调用某个代理接口中的方法时，代理接口的方法会将client传递的参数打包成Parcel对象。</li>
-<li>代理接口将Parcel发送给内核中的binder driver。</li>
-<li>server会读取binder driver中的请求数据，如果是发送给自己的，解包Parcel对象，处理并将结果返回。</li>
-<li>整个的调用过程是一个同步过程，在server处理的时候，client会block住。因此client调用过程不应在主线程。</li>
-</ol>
-<h2 id="Binder通信的整体架构是什么样的？"><a href="#Binder通信的整体架构是什么样的？" class="headerlink" title="Binder通信的整体架构是什么样的？"></a>Binder通信的整体架构是什么样的？</h2><p>以startService为例</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB00286158fda80010a20e60615ed275e7?method=download&amp;shareKey=01403e81380671ec011ece3384769ce8" alt="Binder整体架构"></p>
-<ol>
-<li>发起端线程向Binder Driver发起binder ioctl请求后，采用环不断talkWithDriver，此时线程处于阻塞状态，直到收到BR__XXX命令才会结束该过程。<ul>
-<li>BR_TRANSACTION_COMPLETE: oneway模式下,收到该命令则退出</li>
-<li>BR_REPLY: 非oneway模式下,收到该命令才退出;</li>
-<li>BR_DEAD_REPLY: 目标进程/线程/binder实体为空, 以及释放正在等待reply的binder thread或者binder buffer;</li>
-<li>BR_FAILED_REPLY: 情况较多,比如非法handle, 错误事务栈, security, 内存不足, buffer不足, 数据拷贝失败, 节点创建失败, 各种不匹配等问题</li>
-<li>BR_ACQUIRE_RESULT: 目前未使用的协议; </li>
-</ul>
-</li>
-<li>左图中waitForResponse收到BR_TRANSACTION_COMPLETE,则直接退出循环, 则没有机会执行executeCommand()方法, 故将其颜色画为灰色. 除以上5种BR_XXX命令, 当收到其他BR命令,则都会执行executeCommand过程.</li>
-<li>目标Binder线程创建后, 便进入joinThreadPool()方法, 采用循环不断地循环执行getAndExecuteCommand()方法, 当bwr的读写buffer都没有数据时,则阻塞在binder_thread_read的wait_event过程. 另外,正常情况下binder线程一旦创建则不会退出.</li>
-</ol>
-<h2 id="从通信协议来看startService过程是什么样的？"><a href="#从通信协议来看startService过程是什么样的？" class="headerlink" title="从通信协议来看startService过程是什么样的？"></a>从通信协议来看startService过程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB935c967a2d790a6a56eb2b6eed2c2e0f?method=download&amp;shareKey=78cb0aaa730052688ce763416944da14" alt="startService过程"></p>
-<ul>
-<li>Binder客户端或者服务端向Binder Driver发送的命令都是BC_开头的，例如BC_TRANSACTION和BC_REPLY。</li>
-<li>只有当BC_TRANSACTION或者BC_REPLY时，才会调用binder_transaction()来处理事物，并且都会回应调用者一个BINDER_WORK_TRANSACTION_COMPLETE事物，经过binder_thread_read()会转变成BR_TRANSACTION_COMPLETE.</li>
-<li>startService过程是一个非oneway的过程。</li>
-</ul>
-<h2 id="一个oneway的通信过程"><a href="#一个oneway的通信过程" class="headerlink" title="一个oneway的通信过程"></a>一个oneway的通信过程</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB9857c297fb55614b277b57404f052513?method=download&amp;shareKey=041e392cf9cee0bdb9b5d12591d0b952" alt="一个oneway的通信过程"></p>
-<h2 id="为什么oneway通信还需要等待回应"><a href="#为什么oneway通信还需要等待回应" class="headerlink" title="为什么oneway通信还需要等待回应"></a>为什么oneway通信还需要等待回应</h2><p>以寄信举例：</p>
-<ol>
-<li>当把信交给邮寄员(BC_TRANSACTION)</li>
-<li>邮寄员收到信后, 填一张单子给你作为一份回执(BR_TRANSACTION_COMPLETE). 这样你才放心知道邮递员已确定接收信, 否则就这样走了,信到底有没有交到邮递员手里都不知道,这样的通信实在太让人不省心, 长时间收不到远方家人的回信, 无法得知是在路的中途信件丢失呢,还是压根就没有交到邮递员的手里. 所以说oneway也得知道信是投递状态是否成功.</li>
-<li>邮递员利用交通工具(Binder Driver),将信交给了你的家人(BR_TRANSACTION);</li>
-</ol>
-<h2 id="oneway与非oneway有什么区别？"><a href="#oneway与非oneway有什么区别？" class="headerlink" title="oneway与非oneway有什么区别？"></a>oneway与非oneway有什么区别？</h2><p><strong>oneway与非oneway:</strong> 都是需要等待Binder Driver的回应消息BR_TRANSACTION_COMPLETE. 主要区别在于oneway的通信收到BR_TRANSACTION_COMPLETE则返回,而不会再等待BR_REPLY消息的到来. 另外，oneway的binder IPC则接收端无法获取对方的pid.</p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1061,7 +1020,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">26</span>
+              <span class="site-state-item-count">27</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

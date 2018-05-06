@@ -215,6 +215,113 @@
             
               
                 
+                <a class="post-title-link" href="/2018/05/06/Java虚拟机——双亲委派模型/" itemprop="url">
+                  Java虚拟机——双亲委派模型
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-05-06T21:58:40+08:00" content="2018-05-06">
+              2018-05-06
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/基础知识/" itemprop="url" rel="index">
+                    <span itemprop="name">基础知识</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h1><div class="htmledit_views"><br>                <p><span style="font-size:18px;">说道双亲委派模型，就要从类加载器说起。。。。。。。。。。。</span></p><p></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="font-size:18px;">Java虚拟机类加载过程是把Class类文件加载到内存，并对Class文件中的数据进行校验、转换解析和初始化，最终形成可以被虚拟机直接使用的java类型的过程。</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="font-size:18px;">在加载阶段，java虚拟机需要完成以下3件事：</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="font-size:18px;color:#cc66cc;">a.通过一个类的全限定名来获取定义此类的二进制字节流。</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="font-size:18px;color:#cc66cc;">b.将定义类的二进制字节流所代表的静态存储结构转换为方法区的运行时数据结构。</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="font-size:18px;color:#cc66cc;">c.在java堆中生成一个代表该类的java.lang.Class对象，作为方法区数据的访问入口。</span></p><span style="font-size:18px;">而类的加载过程是通过类加载器完成的。</span><p><span style="font-size:18px;"><br></span></p><p><span style="font-size:18px;"><span style="font-family:Arial;line-height:26px;">在Java中，任意一个类都需要由加载它的类加载器和这个类本身一同确定其在java虚拟机中的唯一性，即比较两个类是否相等，只有在这两个类是由同一个类加载器加载的前提之下才有意义，否则，即使这两个类来源于同一个Class类文件，只要加载它的类加载器不相同，那么这两个类必定不相等(这里的相等包括代表类的Class对象的equals()方法、isAssignableFrom()方法、isInstance()方法和instanceof关键字的结果)。</span><br></span></p><p><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;">看下面的例子：</span></span></p><div class="dp-highlighter bg_java"><div class="bar"><div class="tools"><b>[java]</b> <a href="#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command('ViewSource',this);return false;">view plain</a><span data-mod="popu_168"> <a href="#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command('CopyToClipboard',this);return false;">copy</a><div style="position: absolute; left: 190px; top: 763px; width: 16px; height: 16px; z-index: 99;"><embed id="ZeroClipboardMovie_1" src="https://csdnimg.cn/public/highlighter/ZeroClipboard.swf" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="16" height="16" name="ZeroClipboardMovie_1" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=1&amp;width=16&amp;height=16" wmode="transparent"></div><div style="position: absolute; left: 190px; top: 763px; width: 16px; height: 16px; z-index: 99;"><embed id="ZeroClipboardMovie_3" src="https://csdnimg.cn/public/highlighter/ZeroClipboard.swf" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="16" height="16" name="ZeroClipboardMovie_3" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=3&amp;width=16&amp;height=16" wmode="transparent"></div></span><span data-mod="popu_169"> <a href="#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command('PrintSource',this);return false;">print</a></span><a href="#" class="About" title="?" onclick="dp.sh.Toolbar.Command('About',this);return false;">?</a></div></div><ol start="1" class="dp-j"><li class="alt"><span><span>&nbsp;&nbsp;</span></span></li></ol></div><pre class="java" name="code" style="display: none;"></pre><pre style="background-color:#2b2b2b;color:#a9b7c6;font-family:'Courier New';font-size:11.3pt;"><span style="color:#cc7832;">package </span>com.hfax.common.depository.front.test<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;"><br></span><span style="color:#cc7832;">import </span>java.io.IOException<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">import </span>java.io.InputStream<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;"><br></span><span style="color:#cc7832;"><br></span><span style="color:#cc7832;">public class </span>test2 {<br>    <span style="color:#cc7832;">public static void </span><span style="color:#ffc66d;">main</span>(String[] args)<span style="color:#cc7832;">throws </span>Exception{<br>        <span style="color:#808080;">//匿名内部类实现自定义类加载器<br></span><span style="color:#808080;">        </span><span style="color:#cc7832;">final </span>ClassLoader  myClassLoader = <span style="color:#cc7832;">new </span>ClassLoader(){<br>                <span style="color:#cc7832;">protected </span>Class&lt;?&gt; <span style="color:#ffc66d;">findClass</span>(String name)<span style="color:#cc7832;">throws </span>ClassNotFoundException {<br>                    <span style="color:#808080;">//获取类文件名<br></span><span style="color:#808080;">                    </span>String filename = name.substring(name.lastIndexOf(<span style="color:#6a8759;">“.”</span>) + <span style="color:#6897bb;">1</span>) + <span style="color:#6a8759;">“.class”</span><span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">                    </span>InputStream in = getClass().getResourceAsStream(filename)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">                    try </span>{<br>                        <span style="color:#cc7832;">byte</span>[] b = <span style="color:#cc7832;">new byte</span>[in.available()]<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">                        return </span>defineClass(name<span style="color:#cc7832;">, </span>b<span style="color:#cc7832;">, </span><span style="color:#6897bb;">0</span><span style="color:#cc7832;">, </span>b.<span style="color:#9876aa;">length</span>)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">                    </span>} <span style="color:#cc7832;">catch </span>(IOException e) {<br>                        <span style="color:#cc7832;">throw new </span>ClassNotFoundException(name)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">                    </span>}<br>                }<br>        }<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">        </span>Object obj = myClassLoader.loadClass(<span style="color:#6a8759;">“com.hfax.common.depository.front.test.test2”</span>).newInstance()<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">        </span>System.<span style="color:#9876aa;"><em>out</em></span>.println(obj.getClass())<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">        </span>System.<span style="color:#9876aa;"><em>out</em></span>.println(obj <span style="color:#cc7832;">instanceof </span>com.hfax.common.depository.front.test.test2)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">    </span>}<br>}<br></pre><br><p></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">输出结果如下：</p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">com.test.ClassLoaderTest</p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">false （<span style="color:#ff6666;">jdk1.2版本以后引入了双亲委派模型后，此时会返回true，想得到false结果的小伙伴可以用1.2以前的版本测试</span>）</p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">之所以instanceof会返回false，是因为com.test.ClassLoaderTest类默认使用Application ClassLoader加载，而obj是通过自定义类加载器加载的，类加载不相同，因此不相等。</p><br><p><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;">说到这里就轮到双亲委派模型出场了。</span></span></p><p><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;">先看双亲委派模型的经典体系统：</span></span></p><p style="text-align:center;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;"><img src="https://img-blog.csdn.net/20160102154038185" alt=""><br></span></span></p><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;">做一个简单解释：</span></span></p><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;"></span></span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">(1).BootStrap ClassLoader：启动类加载器，负责加载存放在%JAVA_HOME%\lib目录中的，或者通被-Xbootclasspath参数所指定的路径中的，并且被java虚拟机识别的(仅按照文件名识别，如rt.jar，名字不符合的类库，即使放在指定路径中也不会被加载)类库到虚拟机的内存中，启动类加载器无法被java程序直接引用。</p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">(2).Extension ClassLoader：扩展类加载器，由sun.misc.Launcher$ExtClassLoader实现，负责加载%JAVA_HOME%\lib\ext目录中的，或者被java.ext.dirs系统变量所指定的路径中的所有类库，开发者可以直接使用扩展类加载器。</p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">(3).Application ClassLoader：应用程序类加载器，由sun.misc.Launcher$AppClassLoader实现，负责加载用户类路径classpath上所指定的类库，是类加载器ClassLoader中的getSystemClassLoader()方法的返回值，开发者可以直接使用应用程序类加载器，如果程序中没有自定义过类加载器，该加载器就是程序中默认的类加载器。</p><br><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;"><span style="color:#ff0000;">这里需要注意的是<span style="font-family:Arial;line-height:26px;">上述三个JDK提供的类加载器虽然是父子类加载器关系，但是没有使用继承，而是使用了组合关系。</span></span></span></span></p><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;"></span></span></span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="color:#3366ff;">从JDK1.2开始，java虚拟机规范推荐开发者使用双亲委派模式(ParentsDelegation Model)进行类加载，其加载过程如下：</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="color:#3366ff;">(1).如果一个类加载器收到了类加载请求，它首先不会自己去尝试加载这个类，而是把类加载请求委派给父类加载器去完成。</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="color:#3366ff;">(2).每一层的类加载器都把类加载请求委派给父类加载器，直到所有的类加载请求都应该传递给顶层的启动类加载器。</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="color:#3366ff;">(3).如果顶层的启动类加载器无法完成加载请求，子类加载器尝试去加载，如果连最初发起类加载请求的类加载器也无法完成加载请求时，将会抛出ClassNotFoundException，而不再调用其子类加载器去进行类加载。</span></p><span style="font-family:Arial;line-height:26px;"><span style="color:#3366ff;">双亲委派 模式的类加载机制的优点是java类它的类加载器一起具备了一种带优先级的层次关系，越是基础的类，越是被上层的类加载器进行加载，保证了java程序的稳定运行。双亲委派模式的实现：</span></span><br><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-family:Arial;line-height:26px;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;"></span></span></span></span></p><div class="dp-highlighter bg_java"><div class="bar"><div class="tools"><b>[java]</b> <a href="#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command('ViewSource',this);return false;">view plain</a><span data-mod="popu_168"> <a href="#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command('CopyToClipboard',this);return false;">copy</a><div style="position: absolute; left: 190px; top: 2676px; width: 16px; height: 16px; z-index: 99;"><embed id="ZeroClipboardMovie_2" src="https://csdnimg.cn/public/highlighter/ZeroClipboard.swf" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="16" height="16" name="ZeroClipboardMovie_2" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=2&amp;width=16&amp;height=16" wmode="transparent"></div><div style="position: absolute; left: 190px; top: 2676px; width: 16px; height: 16px; z-index: 99;"><embed id="ZeroClipboardMovie_4" src="https://csdnimg.cn/public/highlighter/ZeroClipboard.swf" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="16" height="16" name="ZeroClipboardMovie_4" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=4&amp;width=16&amp;height=16" wmode="transparent"></div></span><span data-mod="popu_169"> <a href="#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command('PrintSource',this);return false;">print</a></span><a href="#" class="About" title="?" onclick="dp.sh.Toolbar.Command('About',this);return false;">?</a></div></div><ol start="1" class="dp-j"><li class="alt"><span><span>&nbsp;&nbsp;</span></span></li></ol></div><pre class="java" name="code" style="display: none;"></pre><pre style="background-color:#2b2b2b;color:#a9b7c6;font-family:'Courier New';font-size:11.3pt;"><span style="color:#cc7832;">protected synchronized </span>Class&lt;?&gt; <span style="color:#ffc66d;">loadClass</span>(String name<span style="color:#cc7832;">, </span>Boolean resolve) <span style="color:#cc7832;">throws </span>ClassNotFoundException{<br>    <span style="color:#808080;">//首先检查请求的类是否已经被加载过<br></span><span style="color:#808080;">    </span>Class c = findLoadedClass(name)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">    if</span>(c == <span style="color:#cc7832;">null</span>){<br><br>        <span style="color:#cc7832;">try</span>{<br>            <span style="color:#cc7832;">if</span>(parent != <span style="color:#cc7832;">null</span>){<span style="color:#808080;">//委派父类加载器加载<br></span><span style="color:#808080;">                </span>c = parent.loadClass(name<span style="color:#cc7832;">, false</span>)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">            </span>}<br>            <span style="color:#cc7832;">else</span>{<span style="color:#808080;">//委派启动类加载器加载<br></span><span style="color:#808080;">                </span>c = findBootstrapClassOrNull(name)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">            </span>}<br>        }<span style="color:#cc7832;">catch</span>(ClassNotFoundException e){<br>            <span style="color:#808080;">//父类加载器无法完成类加载请求<br></span><span style="color:#808080;">        </span>}<br>        <span style="color:#cc7832;">if</span>(c == <span style="color:#cc7832;">null</span>){<span style="color:#808080;">//本身类加载器进行类加载<br></span><span style="color:#808080;">            </span>c = findClass(name)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">        </span>}<br>    }<br>    <span style="color:#cc7832;">if</span>(resolve){<br>        resolveClass(c)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">    </span>}<br>    <span style="color:#cc7832;">return </span>c<span style="color:#cc7832;">;<br></span>}</pre><br>通过双亲委派模型我们就能很好解决文章开始我们自定义的类加载器所出现的问题。<p></p><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-family:Arial;line-height:26px;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;color:#ff0000;">这里需要注意的是<span style="font-family:Arial;line-height:26px;">在JDK1.2之前，类加载尚未引入双亲委派模式，因此实现自定义类加载器时常常重写loadClass方法，提供双亲委派逻辑，从JDK1.2之后，双亲委派模式已经被引入到类加载体系中，自定义类加载器时不需要在自己写双亲委派的逻辑，因此不鼓励重写loadClass方法，而推荐重写findClass方法。</span></span></span></span></span></p>            </div>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/05/04/HTTP浅析（二）HTTP结构/" itemprop="url">
                   HTTP浅析（二）HTTP结构
                 </a>
@@ -823,178 +930,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/04/12/JVM内存模型/" itemprop="url">
-                  JVM内存模型
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-04-12T14:49:40+08:00" content="2018-04-12">
-              2018-04-12
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/JVM/" itemprop="url" rel="index">
-                    <span itemprop="name">JVM</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="JVM内存模型"><a href="#JVM内存模型" class="headerlink" title="JVM内存模型"></a>JVM内存模型</h1><h2 id="简单来说JVM内存模型是什么样的？"><a href="#简单来说JVM内存模型是什么样的？" class="headerlink" title="简单来说JVM内存模型是什么样的？"></a>简单来说JVM内存模型是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB9b72e7ca84813b9d70d9e53b2337545f?method=download&amp;shareKey=c659a9b8ad449a74d3a92fd212f495e9" alt=""></p>
-<h3 id="线程私有区："><a href="#线程私有区：" class="headerlink" title="线程私有区："></a>线程私有区：</h3><ul>
-<li>程序计数器，记录正在执行的虚拟机字节码的地址；</li>
-<li>虚拟机栈，方法执行的内存区，每个方法执行时在虚拟机栈中创建栈帧；</li>
-<li>本地方法栈，虚拟机的Native方法执行的内存区；</li>
-</ul>
-<h3 id="线程共享区："><a href="#线程共享区：" class="headerlink" title="线程共享区："></a>线程共享区：</h3><ul>
-<li>Java堆：对象分配内存的区域；</li>
-<li>方法区：存放类信息、常量、静态变量、编译器编译后的代码等数据；<ul>
-<li>常量池：存放编译器生成的字面量和符号引用，是方法区的一部分。 </li>
-</ul>
-</li>
-</ul>
-<h3 id="通常所说的Java堆和Java栈是指什么？"><a href="#通常所说的Java堆和Java栈是指什么？" class="headerlink" title="通常所说的Java堆和Java栈是指什么？"></a>通常所说的Java堆和Java栈是指什么？</h3><p>通常所说的Java堆指的是共享数据区的堆，Java栈指的是线程私有的虚拟机栈。</p>
-<h2 id="JVM中更详细的内存模型是什么样的？"><a href="#JVM中更详细的内存模型是什么样的？" class="headerlink" title="JVM中更详细的内存模型是什么样的？"></a>JVM中更详细的内存模型是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB73bae4dd3b8c5e8b481d92d6cb8a07d5?method=download&amp;shareKey=d9f8bfec8cb4b4af1862d0a6e86bdeea" alt="JVM更详细的内存模型"></p>
-<h3 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h3><ol>
-<li>每个线程都有计数器，是私有内存空间，该区域是整个内存中较小的一块。</li>
-<li>当线程正在执行一个Java方法时，PC计数器记录的是正在执行的虚拟机字节码的地址。</li>
-<li>当线程正在执行Native方法时，PC计数器则为空</li>
-</ol>
-<h3 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h3><blockquote>
-<p>栈祯是用于支持虚拟机进行方法执行的数据结构，是属性运行时数据区的虚拟机的栈元素。</p>
-</blockquote>
-<ol>
-<li>局部变量表，一组变量存储空间，容量以slot为最小单位。</li>
-<li>操作栈（stack大小，编译器确定），操作栈元素的数据必须与字节码指令序列严格匹配。</li>
-<li>动态连接，指向运行时常量池中该栈所属方法的引用，为了动态连接使用。<ul>
-<li>前面的解析过程是静态解析</li>
-<li>对于运行期转化为直接引用，动态解析。</li>
-</ul>
-</li>
-<li>方法返回地址<ul>
-<li>正常退出，执行引擎遇到方法返回的字节码，将返回值传递给调用者。</li>
-<li>异常退出，遇到Exception，并且方法未捕获异常，不会有任何返回值。</li>
-</ul>
-</li>
-<li>额外附加信息，由具体虚拟机实现。</li>
-</ol>
-<p><strong>异常（Exception）</strong></p>
-<ul>
-<li>StackOverFlowError：当线程请求栈深度超出虚拟机栈允许深度时抛出</li>
-<li>OutOfMemoryError：当Java虚拟机动态扩展到无法申请足够内存时抛出</li>
-</ul>
-<h3 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h3><p>本地方法栈为虚拟机使用到的Native方法提供内存空间，而虚拟机栈则为Java方法提供内存空间。</p>
-<h3 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h3><p>Java堆是虚拟机管理的最大一块内存，也是GC的主战场，存放的是几乎所有的对象实例和数组数据。</p>
-<ul>
-<li>从内存回收角度，Java堆被分为新生代和老年代；为了更快地回收内存。</li>
-<li>从内存分配角度，Java堆可以划分出线程私有的分配缓冲区（Thread Local Allocation Buffer,TLAB），为了更快地分配内存。</li>
-</ul>
-<h3 id="对象实例结构是什么样的？"><a href="#对象实例结构是什么样的？" class="headerlink" title="对象实例结构是什么样的？"></a>对象实例结构是什么样的？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEBe2af8709014a9b7dc3005005fda1ea82?method=download&amp;shareKey=14e5e6c91dc5864b718ec8d95003351e" alt="对象实例结构"></p>
-<p>填充数据不一定存在，是为了字节对齐而存在的</p>
-<p>此区域可以抛出OOM Error异常</p>
-<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>主要存放被虚拟机加载的类信息、常量、静态变量、编译器编译后的代码数据。</p>
-<p>此区域可以抛出OOM Error异常</p>
-<h3 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h3><p>属于方法区的一部分，用于存放编译器生成的各种字面量和符号引用。运行时常量池除了编译器产生的Class文件的常量池，还可以在运行期，将新的常量加入常量池，比如String的intern()方法。</p>
-<ul>
-<li>字面量：与Java语言层面的常量概念相近，包含文本字符串，声明为final的常量值等等。</li>
-<li>符号引用：<ul>
-<li>类和接口的全限定名</li>
-<li>字段的名称和描述符</li>
-<li>方法的名称和描述符 </li>
-</ul>
-</li>
-</ul>
-<p>此区域<strong>不会</strong>抛出OOM Error异常</p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1040,7 +975,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">27</span>
+              <span class="site-state-item-count">28</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1057,7 +992,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

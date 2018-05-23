@@ -215,6 +215,179 @@
             
               
                 
+                <a class="post-title-link" href="/2018/05/23/《Android优化专题》——-优化下载效率/" itemprop="url">
+                  《Android优化专题》—— 优化下载效率
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-05-23T20:35:28+08:00" content="2018-05-23">
+              2018-05-23
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android优化专题/" itemprop="url" rel="index">
+                    <span itemprop="name">Android优化专题</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="《Android优化专题》——-优化下载效率"><a href="#《Android优化专题》——-优化下载效率" class="headerlink" title="《Android优化专题》—— 优化下载效率"></a>《Android优化专题》—— 优化下载效率</h1><h2 id="一、用有效率的网络访问方式来优化下载"><a href="#一、用有效率的网络访问方式来优化下载" class="headerlink" title="一、用有效率的网络访问方式来优化下载"></a>一、用有效率的网络访问方式来优化下载</h2><h3 id="1-无线电状态机"><a href="#1-无线电状态机" class="headerlink" title="1.无线电状态机"></a>1.无线电状态机</h3><ul>
+<li>Full power：当无线连接被激活的时候，允许设备以最大的传输速率进行操作。</li>
+<li>Low power：相对Full power来说，算是一种中间状态，差不多50%的传输速率。</li>
+<li>Standby：最低的状态，没有数据连接需要传输。</li>
+</ul>
+<p>典型的3G无线电波状态机图示：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB67e9adfaac62ea0736d6f24b4cc0f165?method=download&amp;shareKey=dc3ce6fbd2dec3ee1b1fd82ae1605f1f" alt=""></p>
+<h3 id="2-apps如何影响无线状态机"><a href="#2-apps如何影响无线状态机" class="headerlink" title="2. apps如何影响无线状态机"></a>2. apps如何影响无线状态机</h3><h4 id="创建新连接"><a href="#创建新连接" class="headerlink" title="创建新连接"></a>创建新连接</h4><p>每次创建一个网络连接，无线电波就会切换到full power状态（这也是为什么降低连接数可以更省电量以及省流量的原因），结束之后会有一个附加的5s时间切换到low power，再之后会经过12s进入到low energy状态，每次数据传输的会话都会引起无线电波持续消耗大概20s的能量。</p>
+<h4 id="传输bundle（序列化）与unbundled（未序列化）数据差别"><a href="#传输bundle（序列化）与unbundled（未序列化）数据差别" class="headerlink" title="传输bundle（序列化）与unbundled（未序列化）数据差别"></a>传输bundle（序列化）与unbundled（未序列化）数据差别</h4><p><img src="https://note.youdao.com/yws/api/personal/file/WEB7ab6e5aa0af3cc84fbf0e5e5bde4be5e?method=download&amp;shareKey=1e98b1be3b6eb2e4299ee7522bdffeb5" alt=""></p>
+<p>一个app传递1秒钟的unbundled data会使得无线电波持续活动18秒【18=1秒的传输数据+5秒过渡时间回到low power+12秒过渡时间回到standby】。因此每一分钟，它会消耗18秒high power的电量，42秒的low power的电量。</p>
+<p>如果每分钟app会传输bundle的data持续3秒的话，其中会使得无线电波持续在high power状态仅仅8秒钟，在low power状态仅仅12秒钟。 上面第二种传输bundle data的例子，可以看到减少了大量的电量消耗。</p>
+<h3 id="3-预取数据"><a href="#3-预取数据" class="headerlink" title="3. 预取数据"></a>3. 预取数据</h3><blockquote>
+<p>预取数据是一种减少独立数据传输会话数量的有效方法。在单次操作的时候，通过一次连接，在最大能力下，根据给出的时间下载到所有的数据。</p>
+</blockquote>
+<p>对于预取，取太多，不仅用户可能根本用不到那么多，而且还耗费了电量和流量。取太少，达不到预取的效果。</p>
+<p>如何控制预取的大小？</p>
+<p>这需要根据正在下载的数据大小与可能被用到的数据量来决定。一个基于上面状态机情况的比较大概的建议是：对于数据来说，大概有50%的机会可能用在当前用户的会话中，那么我们可以预取大约6秒(大约1-2Mb)，这大概使得潜在可能要用的数据量与可能已经下载好的数据量相一致。</p>
+<p>通常来说，预取1-5Mb会比较好，这种情况下，我们仅仅只需要每隔2-5分钟开始另一段下载。根据这个原理，大数据的下载，比如视频文件，应该每隔2-5秒开始另一段下载，这样能有效的预取到下面几分钟内的数据进行预览。</p>
+<h3 id="4-批量传输与连接"><a href="#4-批量传输与连接" class="headerlink" title="4. 批量传输与连接"></a>4. 批量传输与连接</h3><p>每次初始化一个连接（与需要传输的数据量无关），有可能导致无线电波持续花费20s的电量。</p>
+<p>对于数据进行bundle操作，并且创建一个序列可以使得大量数据集中进行发送，这样可以使得无线电波的激活时间尽可能的少，同事减少大部分的电量花费。</p>
+<h3 id="5-减少连接次数"><a href="#5-减少连接次数" class="headerlink" title="5. 减少连接次数"></a>5. 减少连接次数</h3><p>重用之前存在的网络连接比重新创建一个连接是更有效率的。当可以用一个GET请求解决的情况下，不要同时创建多个网络连接。</p>
+<p>可以在一个连接要关闭时，不要立即关闭，而是在timeout之前关闭。</p>
+<p>使用HttpUrlConnection，而不是HttpClient，前者做了response cache</p>
+<h3 id="6-使用DDMS（Dalvik-Debug-Monitor-Server）网络通信工具来检测网络使用情况"><a href="#6-使用DDMS（Dalvik-Debug-Monitor-Server）网络通信工具来检测网络使用情况" class="headerlink" title="6. 使用DDMS（Dalvik Debug Monitor Server）网络通信工具来检测网络使用情况"></a>6. 使用DDMS（Dalvik Debug Monitor Server）网络通信工具来检测网络使用情况</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6200ba40b6d05b617272f233ce870afc?method=download&amp;shareKey=dbfc00a9fc45b3d02971ddadca2c65d4" alt=""></p>
+<p>通过监测数据传输的频率和每次传输的数据量，可以看出哪些地方可以进行优化。类似于图中短小钉子形状的地方，可以和附近位置的请求进行merge操作。</p>
+<p>Traffic Status API可以使用TrafficStats.setThreadStatsTag()的方法标记数据传输发生在某个Thread里面。可以手动使用tagSocket()进行标记或者untagSocket()来取消标记。</p>
+<h2 id="二、调整更新的频率"><a href="#二、调整更新的频率" class="headerlink" title="二、调整更新的频率"></a>二、调整更新的频率</h2><h3 id="1-使用C2DM作为轮询方式之一"><a href="#1-使用C2DM作为轮询方式之一" class="headerlink" title="1.使用C2DM作为轮询方式之一"></a>1.使用C2DM作为轮询方式之一</h3><blockquote>
+<p>C2DM是一个用来从server到特定app传输数据的轻量级机制。使用C2DM，server会在某个app有需要获取新数据的时候通知app有这个消息。</p>
+</blockquote>
+<p>但中国大陆的Google框架通常会被移除，使得C2DM没法在中国大陆的App上使用。</p>
+<p>可参考各大厂商的推送定制。</p>
+<h3 id="2-通过不定时的重复提醒和指数退避来优化轮询操作"><a href="#2-通过不定时的重复提醒和指数退避来优化轮询操作" class="headerlink" title="2.通过不定时的重复提醒和指数退避来优化轮询操作"></a>2.通过不定时的重复提醒和指数退避来优化轮询操作</h3><p>如果必须要使用轮询机制，可以考虑以下几个方面的优化：</p>
+<ol>
+<li>如果多个提醒都安排在某个小的时间段内，考虑把这多个操作在一个无线电状态下操作完。</li>
+<li>使用Alarm时，设置的提醒类型为非wake类型（对于非紧急通知消息时，避免在屏幕熄灭状态下，将设备唤醒），减少电量的损耗。</li>
+<li>在app上一次更新操作之后还未被使用的情况下，使用指数退避算法（exponential back-off algorithm）来减少更新频率。</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">private void retryIn(long interval) &#123;</span><br><span class="line">  boolean success = attemptTransfer();</span><br><span class="line"></span><br><span class="line">  if (!success) &#123;</span><br><span class="line">    retryIn(interval*2 &lt; MAX_RETRY_INTERVAL ?</span><br><span class="line">            interval*2 : MAX_RETRY_INTERVAL);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="二进制退避算法"><a href="#二进制退避算法" class="headerlink" title="二进制退避算法"></a>二进制退避算法</h4><ol>
+<li>确定基本退避时间，一般为端到端的往返时间为2t，2t也成为冲突窗口或争用期。</li>
+<li>定义参数k，k与冲突次数有关，规定k不能超过10，k=Min[冲突次数，10]。在冲突次数大于10，小于16时，k不再增大，一直取值为10。</li>
+<li>从离散的整数集合[0,1,2，……，(2k-1)]中随机的取出一个数r，等待的时延为r倍的基本退避时间，等于r x 2t。r的取值范围与冲突次数k有关，r可选的随机取值为2k个、这也是称为二进制退避算法的起因。</li>
+<li>当冲突次数大于10以后，都是从0—210-1个2t中随机选择一个作为等待时间。</li>
+<li>当冲突次数超过16次后，发送失败，丢弃传输的帧，发送错误报告。</li>
+</ol>
+<h2 id="三、使用缓存来避免重复下载"><a href="#三、使用缓存来避免重复下载" class="headerlink" title="三、使用缓存来避免重复下载"></a>三、使用缓存来避免重复下载</h2><blockquote>
+<p>减少下载的最基本方法是仅仅下载你想要的数据，通过类似上次更新时间来制定查询数据的条件。在下载图片时，server尽量减少图片的大小，比如对图片进行剪裁等处理。</p>
+</blockquote>
+<h3 id="1-缓存到本地"><a href="#1-缓存到本地" class="headerlink" title="1. 缓存到本地"></a>1. 缓存到本地</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">long currentTime = System.currentTimeMillis());</span><br><span class="line"></span><br><span class="line">HttpURLConnection conn = (HttpURLConnection) url.openConnection();</span><br><span class="line"></span><br><span class="line">long expires = conn.getHeaderFieldDate(&quot;Expires&quot;, currentTime);</span><br><span class="line">long lastModified = conn.getHeaderFieldDate(&quot;Last-Modified&quot;, currentTime);</span><br><span class="line"></span><br><span class="line">setDataExpirationDate(expires);</span><br><span class="line"></span><br><span class="line">if (lastModified &lt; lastUpdateTime) &#123;</span><br><span class="line">  // Skip update  </span><br><span class="line">&#125; else &#123;</span><br><span class="line">  // Parse update  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以使用下面的方法获取External缓存目录：目录是Android/data/data/com.xxx.xxx/cache</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Context.getExternalCacheDir();</span><br></pre></td></tr></table></figure>
+<p>获取内部缓存的方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Context.getCache()</span><br></pre></td></tr></table></figure>
+<p>这里注意不要随便在sdcard下创建目录存放缓存，因为这个文件夹不会随着程序的卸载而删除。既影响用户体验，又会把一些不想让用户知道的数据泄露出去。</p>
+<h3 id="2-使用HttpUrlConnect-Response缓存"><a href="#2-使用HttpUrlConnect-Response缓存" class="headerlink" title="2. 使用HttpUrlConnect Response缓存"></a>2. 使用HttpUrlConnect Response缓存</h3><p>我们可以通过反射机制开启HTTP response cache</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">private void enableHttpResponseCache() &#123;</span><br><span class="line">  try &#123;</span><br><span class="line">    long httpCacheSize = 10 * 1024 * 1024; // 10 MiB  </span><br><span class="line">    File httpCacheDir = new File(getCacheDir(), &quot;http&quot;);</span><br><span class="line">    Class.forName(&quot;android.net.http.HttpResponseCache&quot;)</span><br><span class="line">         .getMethod(&quot;install&quot;, File.class, long.class)</span><br><span class="line">         .invoke(null, httpCacheDir, httpCacheSize);</span><br><span class="line">  &#125; catch (Exception httpResponseCacheNotAvailable) &#123;</span><br><span class="line">    Log.d(TAG, &quot;HTTP response cache is unavailable.&quot;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也可以在onCreate中加入以下代码开启</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">protected void onCreate(Bundle savedInstanceState) &#123;</span><br><span class="line">     ...</span><br><span class="line"></span><br><span class="line">     try &#123;</span><br><span class="line">         File httpCacheDir = new File(context.getCacheDir(), &quot;http&quot;);</span><br><span class="line">         long httpCacheSize = 10 * 1024 * 1024; // 10 MiB</span><br><span class="line">         HttpResponseCache.install(httpCacheDir, httpCacheSize);</span><br><span class="line">     &#125; catch (IOException e) &#123;</span><br><span class="line">         Log.i(TAG, &quot;HTTP response cache installation failed:&quot; + e);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> protected void onStop() &#123;</span><br><span class="line">     ...</span><br><span class="line"></span><br><span class="line">     HttpResponseCache cache = HttpResponseCache.getInstalled();</span><br><span class="line">     if (cache != null) &#123;</span><br><span class="line">         cache.flush();</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>以上代码会在Android4.0以上开启response code，所有cache中的HTTP请求都可以直接在本地存储中响应，就不需要开启一个新的网络连接。被cache起来的response可以被server确保没有过期，这样减少了带宽。</p>
+<h2 id="四、根据网络类型来切换下载模式"><a href="#四、根据网络类型来切换下载模式" class="headerlink" title="四、根据网络类型来切换下载模式"></a>四、根据网络类型来切换下载模式</h2><blockquote>
+<p>WIFI要比无线电波消耗的电量要少很多，而且对于无线电波而言（3G,2G,LTE等）也存在不同电量的区别。</p>
+</blockquote>
+<h3 id="1-尽量WIFI"><a href="#1-尽量WIFI" class="headerlink" title="1. 尽量WIFI"></a>1. 尽量WIFI</h3><p>我们尽量要在连接WIFI的时候进行下载，更新数据等操作。</p>
+<h3 id="2-尽量使用更大的带宽下载更多的数据，而不是经常去下载"><a href="#2-尽量使用更大的带宽下载更多的数据，而不是经常去下载" class="headerlink" title="2. 尽量使用更大的带宽下载更多的数据，而不是经常去下载"></a>2. 尽量使用更大的带宽下载更多的数据，而不是经常去下载</h3><p>相对更宽的带宽会有更长的状态切换时间（从full power过渡到standby有更长一段时间的延迟），过渡时间的电量通常是固定的，每次传输会话过程中尽量一次性把事情做完，而不是断断续续请求就更有效率了。</p>
+<p>如果LTE无线电的带宽与电量消耗都是3G无线电的2倍，我们应该在每次会话的时候都下载4倍于3G的数据量，或者是差不多10Mb</p>
+<p>我们可以根据connectivity manager来判断当前激活的无线电波，根据结果来做prefetch。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">ConnectivityManager cm =</span><br><span class="line"> (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);</span><br><span class="line"></span><br><span class="line">TelephonyManager tm =</span><br><span class="line">  (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);</span><br><span class="line"></span><br><span class="line">NetworkInfo activeNetwork = cm.getActiveNetworkInfo();</span><br><span class="line"></span><br><span class="line">int PrefetchCacheSize = DEFAULT_PREFETCH_CACHE;</span><br><span class="line"></span><br><span class="line">switch (activeNetwork.getType()) &#123;</span><br><span class="line">  case (ConnectivityManager.TYPE_WIFI):</span><br><span class="line">    PrefetchCacheSize = MAX_PREFETCH_CACHE; break;</span><br><span class="line">  case (ConnectivityManager.TYPE_MOBILE): &#123;</span><br><span class="line">    switch (tm.getNetworkType()) &#123;</span><br><span class="line">      case (TelephonyManager.NETWORK_TYPE_LTE |</span><br><span class="line">            TelephonyManager.NETWORK_TYPE_HSPAP):</span><br><span class="line">        PrefetchCacheSize *= 4;</span><br><span class="line">        break;</span><br><span class="line">      case (TelephonyManager.NETWORK_TYPE_EDGE |</span><br><span class="line">            TelephonyManager.NETWORK_TYPE_GPRS):</span><br><span class="line">        PrefetchCacheSize /= 2;</span><br><span class="line">        break;</span><br><span class="line">      default: break;</span><br><span class="line">    &#125;</span><br><span class="line">    break;</span><br><span class="line">  &#125;</span><br><span class="line">  default: break;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/05/06/Java虚拟机——双亲委派模型/" itemprop="url">
                   Java虚拟机——双亲委派模型
                 </a>
@@ -795,141 +968,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/04/15/《Android优化专题》——音频播放/" itemprop="url">
-                  《Android优化专题》——音频播放
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-04-15T15:37:51+08:00" content="2018-04-15">
-              2018-04-15
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Android优化/" itemprop="url" rel="index">
-                    <span itemprop="name">Android优化</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="《Android优化专题》——音频播放"><a href="#《Android优化专题》——音频播放" class="headerlink" title="《Android优化专题》——音频播放"></a>《Android优化专题》——音频播放</h1><h2 id="一、控制app的音量与播放"><a href="#一、控制app的音量与播放" class="headerlink" title="一、控制app的音量与播放"></a>一、控制app的音量与播放</h2><h3 id="使用硬件音量键来控制音量"><a href="#使用硬件音量键来控制音量" class="headerlink" title="使用硬件音量键来控制音量"></a>使用硬件音量键来控制音量</h3><p>需要在Activity或者Fragment创建的时候就设置音量控制，这样确保不管App是否可见，音频控制功能都正常工作。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setVolumeControlStream(AudioManager.STREAM_MUSIC);</span><br></pre></td></tr></table></figure>
-<h3 id="使用硬件的播放控制按键来控制App的音频播放"><a href="#使用硬件的播放控制按键来控制App的音频播放" class="headerlink" title="使用硬件的播放控制按键来控制App的音频播放"></a>使用硬件的播放控制按键来控制App的音频播放</h3><p>无论用户通过手机或者线控耳机等按下哪些控制按钮，比如播放、暂停，系统都会广播一个带有ACTION_MEDIA_BUTTON的Intent。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;receiver android:name=&quot;.RemoteControlReceiver&quot;&gt;</span><br><span class="line">    &lt;intent-filter&gt;</span><br><span class="line">        &lt;action android:name=&quot;android.intent.action.MEDIA_BUTTON&quot; /&gt;</span><br><span class="line">    &lt;/intent-filter&gt;</span><br><span class="line">&lt;/receiver&gt;</span><br></pre></td></tr></table></figure>
-<p>Receiver需要判断广播来自哪个按钮</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class RemoteControlReceiver extends BroadcastReceiver &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onReceive(Context context, Intent intent) &#123;</span><br><span class="line">        if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) &#123;</span><br><span class="line">            KeyEvent event = (KeyEvent)intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);</span><br><span class="line">            if (KeyEvent.KEYCODE_MEDIA_PLAY == event.getKeyCode()) &#123;</span><br><span class="line">                // Handle key press.  </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="如何注册监听和取消监听"><a href="#如何注册监听和取消监听" class="headerlink" title="如何注册监听和取消监听"></a>如何注册监听和取消监听</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">AudioManager am = mContext.getSystemService(Context.AUDIO_SERVICE);</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">// Start listening for button presses</span><br><span class="line">am.registerMediaButtonEventReceiver(RemoteControlReceiver);</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">// Stop listening for button presses</span><br><span class="line">am.unregisterMediaButtonEventReceiver(RemoteControlReceiver);</span><br></pre></td></tr></table></figure>
-<h2 id="二、管理音频焦点"><a href="#二、管理音频焦点" class="headerlink" title="二、管理音频焦点"></a>二、管理音频焦点</h2><h3 id="请求获取音频焦点"><a href="#请求获取音频焦点" class="headerlink" title="请求获取音频焦点"></a>请求获取音频焦点</h3><p>requestAudioFocus() 来获取到音频流焦点。</p>
-<ul>
-<li>短暂的焦点锁定：当期待播放一个短暂的音频时候（比如推送声音）</li>
-<li>永久的焦点锁定：当计划播放可预期到的较长的音频时候（比如播放音乐）</li>
-</ul>
-<p>我们必须在开始播放前请求音频焦点，比如用户此时点击了播放按钮</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">AudioManager am = mContext.getSystemService(Context.AUDIO_SERVICE);</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">// Request audio focus for playback  </span><br><span class="line">int result = am.requestAudioFocus(afChangeListener,</span><br><span class="line">                                 // Use the music stream.  </span><br><span class="line">                                 AudioManager.STREAM_MUSIC,</span><br><span class="line">                                 // Request permanent focus.  </span><br><span class="line">                                 AudioManager.AUDIOFOCUS_GAIN);</span><br><span class="line"></span><br><span class="line">if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) &#123;</span><br><span class="line">    am.unregisterMediaButtonEventReceiver(RemoteControlReceiver);</span><br><span class="line">    // Start playback.  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>一旦结束播放，需要调用abandonAudioFocus()方法，通知系统说不再需要获取焦点并且取消注册AudioManager.OnAudioFocusChangeListener的焦点。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// Abandon audio focus when playback complete</span><br><span class="line">am.abandonAudioFocus(afChangeListener);</span><br></pre></td></tr></table></figure>
-<p>当请求短暂音频焦点，我们可以选择是否开启”ducking”，Ducking机制可以允许音频间歇性短暂播放。可以让其他App继续播放，仅在短暂的时间内降低自己的音量。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// Request audio focus for playback  </span><br><span class="line">int result = am.requestAudioFocus(afChangeListener,</span><br><span class="line">                             // Use the music stream.  </span><br><span class="line">                             AudioManager.STREAM_MUSIC,</span><br><span class="line">                             // Request permanent focus.  </span><br><span class="line">                             AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);</span><br><span class="line"></span><br><span class="line">if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) &#123;</span><br><span class="line">    // Start playback.  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="处理失去音频焦点"><a href="#处理失去音频焦点" class="headerlink" title="处理失去音频焦点"></a>处理失去音频焦点</h3><ul>
-<li>失去短暂焦点：在这种情况下，暂停当前音频的播放或者降低音量，需要准备恢复播放在重新获取到焦点之后。</li>
-<li>失去永久焦点：假设另一个程序开始播放音乐，此时我们的程序就应该彻底结束。停止播放，放弃自己的音频焦点。</li>
-<li>Ducking：降低音量，让其余短暂声音突出，之后恢复原音量。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">OnAudioFocusChangeListener afChangeListener = new OnAudioFocusChangeListener() &#123;</span><br><span class="line">    public void onAudioFocusChange(int focusChange) &#123;</span><br><span class="line">        if (focusChange == AUDIOFOCUS_LOSS_TRANSIENT</span><br><span class="line">            // Pause playback  </span><br><span class="line">            //失去短暂焦点</span><br><span class="line">        &#125; else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) &#123;</span><br><span class="line">            // Resume playback</span><br><span class="line">            //恢复焦点   </span><br><span class="line">        &#125; else if (focusChange==AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK</span><br><span class="line">            // Lower the volume  </span><br><span class="line">        &#125; else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) &#123;</span><br><span class="line">    am.unregisterMediaButtonEventReceiver(RemoteControlReceiver);</span><br><span class="line">            am.abandonAudioFocus(afChangeListener);</span><br><span class="line">            // Stop playback  </span><br><span class="line">            // 失去永久焦点</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h2 id="三、音频设备的相关问题"><a href="#三、音频设备的相关问题" class="headerlink" title="三、音频设备的相关问题"></a>三、音频设备的相关问题</h2><h3 id="检测目前正在使用的硬件设备"><a href="#检测目前正在使用的硬件设备" class="headerlink" title="检测目前正在使用的硬件设备"></a>检测目前正在使用的硬件设备</h3><p>可以使用AudioManager来查询某个音频是否输出到扬声器，有线耳机还是蓝牙上。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">if (isBluetoothA2dpOn()) &#123;</span><br><span class="line">    // Adjust output for Bluetooth.  </span><br><span class="line">&#125; else if (isSpeakerphoneOn()) &#123;</span><br><span class="line">    // Adjust output for Speakerphone.  </span><br><span class="line">&#125; else if (isWiredHeadsetOn()) &#123;</span><br><span class="line">    // Adjust output for headsets  </span><br><span class="line">&#125; else &#123;</span><br><span class="line">    // If audio plays and noone can hear it, is it still playing?  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="处理音频输出设备的改变"><a href="#处理音频输出设备的改变" class="headerlink" title="处理音频输出设备的改变"></a>处理音频输出设备的改变</h3><p>当耳机线被拔出，或者蓝牙耳机连接断开时，如果在播放音乐/视频，为了用户体验，避免突如其来的扬声器播放，我们通常做法是暂停此时正在播放的音乐/视频。</p>
-<p>在这种情况下，系统会广播带有ACTION_AUDIO_BECOMING_NOISY的intent。我们只需要接受这种广播，对其进行处理即可。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">private class NoisyAudioStreamReceiver extends BroadcastReceiver &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onReceive(Context context, Intent intent) &#123;</span><br><span class="line">        if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) &#123;</span><br><span class="line">            // Pause the playback  </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);</span><br><span class="line"></span><br><span class="line">private void startPlayback() &#123;</span><br><span class="line">    registerReceiver(myNoisyAudioStreamReceiver(), intentFilter);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private void stopPlayback() &#123;</span><br><span class="line">    unregisterReceiver(myNoisyAudioStreamReceiver);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -975,7 +1013,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">28</span>
+              <span class="site-state-item-count">29</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -992,7 +1030,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-count">18</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

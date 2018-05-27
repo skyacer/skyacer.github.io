@@ -41,7 +41,7 @@
 <link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="设计模式," />
+  <meta name="keywords" content="数据结构与算法," />
 
 
 
@@ -57,20 +57,18 @@
 
 
 
-<meta name="description" content="责任链模式什么是责任链模式？责任链模式（Chain of Responsibility）是一种对象的行为模式。在责任链模式里，很多对象由每一个对象对其下家的引用而连接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。发出这个请求的客户端并不知道链上的哪一个对象最终处理这个请求，这使得系统可以在不影响客户端的情况下动态地重新组织和分配责任。 类图 Handler接口123456">
-<meta name="keywords" content="设计模式">
+<meta name="description" content="简单易懂的堆排序网上已经有很多文章都在介绍堆排序的原理，这里记录下比较容易理解的代码思路，通过元素下沉的方式，构建大根堆，以及将首尾元素互换后的调整过程。 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354public class HeapSort &amp;">
+<meta name="keywords" content="数据结构与算法">
 <meta property="og:type" content="article">
-<meta property="og:title" content="责任链模式">
-<meta property="og:url" content="http://skyacer.github.io/2018/03/16/责任链模式/index.html">
+<meta property="og:title" content="简单易懂的堆排序">
+<meta property="og:url" content="http://skyacer.github.io/2018/05/27/简单易懂的堆排序/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
-<meta property="og:description" content="责任链模式什么是责任链模式？责任链模式（Chain of Responsibility）是一种对象的行为模式。在责任链模式里，很多对象由每一个对象对其下家的引用而连接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。发出这个请求的客户端并不知道链上的哪一个对象最终处理这个请求，这使得系统可以在不影响客户端的情况下动态地重新组织和分配责任。 类图 Handler接口123456">
+<meta property="og:description" content="简单易懂的堆排序网上已经有很多文章都在介绍堆排序的原理，这里记录下比较容易理解的代码思路，通过元素下沉的方式，构建大根堆，以及将首尾元素互换后的调整过程。 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354public class HeapSort &amp;">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB2f74e00f1f1a7694b473eaf7ecbc01e6?method=download&shareKey=b998dd209a69d50e3ee4e5f4c884d60b">
-<meta property="og:updated_time" content="2018-03-16T11:42:44.000Z">
+<meta property="og:updated_time" content="2018-05-27T11:12:05.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="责任链模式">
-<meta name="twitter:description" content="责任链模式什么是责任链模式？责任链模式（Chain of Responsibility）是一种对象的行为模式。在责任链模式里，很多对象由每一个对象对其下家的引用而连接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。发出这个请求的客户端并不知道链上的哪一个对象最终处理这个请求，这使得系统可以在不影响客户端的情况下动态地重新组织和分配责任。 类图 Handler接口123456">
-<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB2f74e00f1f1a7694b473eaf7ecbc01e6?method=download&shareKey=b998dd209a69d50e3ee4e5f4c884d60b">
+<meta name="twitter:title" content="简单易懂的堆排序">
+<meta name="twitter:description" content="简单易懂的堆排序网上已经有很多文章都在介绍堆排序的原理，这里记录下比较容易理解的代码思路，通过元素下沉的方式，构建大根堆，以及将首尾元素互换后的调整过程。 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354public class HeapSort &amp;">
 
 
 
@@ -88,7 +86,7 @@
   };
 </script>
 
-  <title> 责任链模式 | SkyAcer's blog </title>
+  <title> 简单易懂的堆排序 | SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -216,7 +214,7 @@
             
             
               
-                责任链模式
+                简单易懂的堆排序
               
             
           </h1>
@@ -228,8 +226,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-16T19:34:14+08:00" content="2018-03-16">
-              2018-03-16
+            <time itemprop="dateCreated" datetime="2018-05-27T19:11:30+08:00" content="2018-05-27">
+              2018-05-27
             </time>
           </span>
 
@@ -242,8 +240,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/设计模式/" itemprop="url" rel="index">
-                    <span itemprop="name">设计模式</span>
+                  <a href="/categories/基础知识/" itemprop="url" rel="index">
+                    <span itemprop="name">基础知识</span>
                   </a>
                 </span>
 
@@ -274,11 +272,8 @@
       
 
       
-        <h1 id="责任链模式"><a href="#责任链模式" class="headerlink" title="责任链模式"></a>责任链模式</h1><h2 id="什么是责任链模式？"><a href="#什么是责任链模式？" class="headerlink" title="什么是责任链模式？"></a>什么是责任链模式？</h2><p>责任链模式（Chain of Responsibility）是一种对象的行为模式。在责任链模式里，很多对象由每一个对象对其下家的引用而连接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。发出这个请求的客户端并不知道链上的哪一个对象最终处理这个请求，这使得系统可以在不影响客户端的情况下动态地重新组织和分配责任。</p>
-<h2 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB2f74e00f1f1a7694b473eaf7ecbc01e6?method=download&amp;shareKey=b998dd209a69d50e3ee4e5f4c884d60b" alt="责任链模式类图"></p>
-<h2 id="Handler接口"><a href="#Handler接口" class="headerlink" title="Handler接口"></a>Handler接口</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public abstract class Handler &#123;</span><br><span class="line">    protected Handler nextHandler;</span><br><span class="line">    public void setHandler(Handler nextHandler)&#123;</span><br><span class="line">        this.nextHandler = nextHandler;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public abstract void handle(int request);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="ConcreteHandler实现类"><a href="#ConcreteHandler实现类" class="headerlink" title="ConcreteHandler实现类"></a>ConcreteHandler实现类</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class ConcreteHandler1 extends Handler &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void handle(int request) &#123;</span><br><span class="line">        if (request&lt;10)&#123;</span><br><span class="line">            System.out.println(&quot;handler1 receive:&quot;+request);</span><br><span class="line">        &#125;else &#123;</span><br><span class="line">            nextHandler.handle(request);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="Client调用类"><a href="#Client调用类" class="headerlink" title="Client调用类"></a>Client调用类</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class Client &#123;</span><br><span class="line">    public static void main(String[] args)&#123;</span><br><span class="line">        Handler handler1 = new ConcreteHandler1();</span><br><span class="line">        Handler handler2 = new ConcreteHandler2();</span><br><span class="line">        Handler handler3 = new ConcreteHandler3();</span><br><span class="line"></span><br><span class="line">        handler1.setHandler(handler2);</span><br><span class="line">        handler2.setHandler(handler3);</span><br><span class="line"></span><br><span class="line">        int[] n=&#123;1,23,4,5,6,12,15,16,18,21,25,32,36&#125;;</span><br><span class="line"></span><br><span class="line">        for (int i=0;i&lt;n.length;i++)&#123;</span><br><span class="line">            handler1.handle(n[i]);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <h1 id="简单易懂的堆排序"><a href="#简单易懂的堆排序" class="headerlink" title="简单易懂的堆排序"></a>简单易懂的堆排序</h1><p>网上已经有很多文章都在介绍堆排序的原理，这里记录下比较容易理解的代码思路，通过元素下沉的方式，构建大根堆，以及将首尾元素互换后的调整过程。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">public class HeapSort &#123;</span><br><span class="line">    public static void main(String []args)&#123;</span><br><span class="line">        int []arr = &#123;8,9,6,5,10,2,3,2,1&#125;;</span><br><span class="line">        sort(arr);</span><br><span class="line">        System.out.println(Arrays.toString(arr));</span><br><span class="line">    &#125;</span><br><span class="line">    public static void sort(int []arr)&#123;</span><br><span class="line">        //1.构建大顶堆</span><br><span class="line">        for(int i=(arr.length-1)/2;i&gt;=0;i--)&#123;</span><br><span class="line">            //从第一个非叶子结点从下至上，从右至左调整结构</span><br><span class="line">            nodeDown(arr,i,arr.length);</span><br><span class="line">        &#125;</span><br><span class="line">        //2.调整堆结构+交换堆顶元素与末尾元素</span><br><span class="line">        for(int j=arr.length-1;j&gt;0;j--)&#123;</span><br><span class="line">            swap(arr,0,j);//将堆顶元素与末尾元素进行交换</span><br><span class="line">            nodeDown(arr,0,j);//重新对堆进行调整</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 调整大顶堆（仅是调整过程，建立在大顶堆已构建的基础上),即元素下沉,对于2i+1为左子节点</span><br><span class="line">     * 2i+2为右子节点,在子节点中找出最大的一个,并交换,如此一步步下沉到最底部</span><br><span class="line">     * @param arr</span><br><span class="line">     * @param i 需要调整的节点序列</span><br><span class="line">     * @param length</span><br><span class="line">     */</span><br><span class="line">    public static void nodeDown(int []arr, int i, int length)&#123;</span><br><span class="line">        for(int k=i*2+1;k&lt;length;k=k*2+1)&#123;//从i结点的左子结点开始，也就是2i+1处开始</span><br><span class="line">            int temp = arr[i];//先取出当前元素i</span><br><span class="line">            if(k+1&lt;length &amp;&amp; arr[k]&lt;arr[k+1])&#123;//如果左子结点小于右子结点，k指向右子结点</span><br><span class="line">                k++;</span><br><span class="line">            &#125;</span><br><span class="line">            if(arr[k] &gt;temp)&#123;//如果子节点大于父节点，将子节点值赋给父节点（不用进行交换）</span><br><span class="line">                swap(arr, i, k);</span><br><span class="line">                i = k;</span><br><span class="line">            &#125;else&#123;</span><br><span class="line">                break;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 交换元素</span><br><span class="line">     * @param arr</span><br><span class="line">     * @param a</span><br><span class="line">     * @param b</span><br><span class="line">     */</span><br><span class="line">    public static void swap(int []arr,int a ,int b)&#123;</span><br><span class="line">        int temp=arr[a];</span><br><span class="line">        arr[a] = arr[b];</span><br><span class="line">        arr[b] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       
     </div>
 
@@ -292,7 +287,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/设计模式/" rel="tag">#设计模式</a>
+            <a href="/tags/数据结构与算法/" rel="tag">#数据结构与算法</a>
           
         </div>
       
@@ -301,17 +296,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/03/15/Smali浅析及dex-java互转/" rel="next" title="Smali浅析及dex,java互转">
-                <i class="fa fa-chevron-left"></i> Smali浅析及dex,java互转
+              <a href="/2018/05/26/Android-View分发机制及解决滑动冲突方案/" rel="next" title="Android View分发机制及解决滑动冲突方案">
+                <i class="fa fa-chevron-left"></i> Android View分发机制及解决滑动冲突方案
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/03/23/Android主流视频播放及缓存实现原理调研/" rel="prev" title="Android主流视频播放及缓存实现原理调研">
-                Android主流视频播放及缓存实现原理调研 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -429,7 +420,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#责任链模式"><span class="nav-number">1.</span> <span class="nav-text">责任链模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是责任链模式？"><span class="nav-number">1.1.</span> <span class="nav-text">什么是责任链模式？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类图"><span class="nav-number">1.2.</span> <span class="nav-text">类图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Handler接口"><span class="nav-number">1.3.</span> <span class="nav-text">Handler接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConcreteHandler实现类"><span class="nav-number">1.4.</span> <span class="nav-text">ConcreteHandler实现类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Client调用类"><span class="nav-number">1.5.</span> <span class="nav-text">Client调用类</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简单易懂的堆排序"><span class="nav-number">1.</span> <span class="nav-text">简单易懂的堆排序</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">

@@ -215,6 +215,114 @@
             
               
                 
+                <a class="post-title-link" href="/2018/05/27/简单易懂的堆排序/" itemprop="url">
+                  简单易懂的堆排序
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-05-27T19:11:30+08:00" content="2018-05-27">
+              2018-05-27
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/基础知识/" itemprop="url" rel="index">
+                    <span itemprop="name">基础知识</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="简单易懂的堆排序"><a href="#简单易懂的堆排序" class="headerlink" title="简单易懂的堆排序"></a>简单易懂的堆排序</h1><p>网上已经有很多文章都在介绍堆排序的原理，这里记录下比较容易理解的代码思路，通过元素下沉的方式，构建大根堆，以及将首尾元素互换后的调整过程。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">public class HeapSort &#123;</span><br><span class="line">    public static void main(String []args)&#123;</span><br><span class="line">        int []arr = &#123;8,9,6,5,10,2,3,2,1&#125;;</span><br><span class="line">        sort(arr);</span><br><span class="line">        System.out.println(Arrays.toString(arr));</span><br><span class="line">    &#125;</span><br><span class="line">    public static void sort(int []arr)&#123;</span><br><span class="line">        //1.构建大顶堆</span><br><span class="line">        for(int i=(arr.length-1)/2;i&gt;=0;i--)&#123;</span><br><span class="line">            //从第一个非叶子结点从下至上，从右至左调整结构</span><br><span class="line">            nodeDown(arr,i,arr.length);</span><br><span class="line">        &#125;</span><br><span class="line">        //2.调整堆结构+交换堆顶元素与末尾元素</span><br><span class="line">        for(int j=arr.length-1;j&gt;0;j--)&#123;</span><br><span class="line">            swap(arr,0,j);//将堆顶元素与末尾元素进行交换</span><br><span class="line">            nodeDown(arr,0,j);//重新对堆进行调整</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 调整大顶堆（仅是调整过程，建立在大顶堆已构建的基础上),即元素下沉,对于2i+1为左子节点</span><br><span class="line">     * 2i+2为右子节点,在子节点中找出最大的一个,并交换,如此一步步下沉到最底部</span><br><span class="line">     * @param arr</span><br><span class="line">     * @param i 需要调整的节点序列</span><br><span class="line">     * @param length</span><br><span class="line">     */</span><br><span class="line">    public static void nodeDown(int []arr, int i, int length)&#123;</span><br><span class="line">        for(int k=i*2+1;k&lt;length;k=k*2+1)&#123;//从i结点的左子结点开始，也就是2i+1处开始</span><br><span class="line">            int temp = arr[i];//先取出当前元素i</span><br><span class="line">            if(k+1&lt;length &amp;&amp; arr[k]&lt;arr[k+1])&#123;//如果左子结点小于右子结点，k指向右子结点</span><br><span class="line">                k++;</span><br><span class="line">            &#125;</span><br><span class="line">            if(arr[k] &gt;temp)&#123;//如果子节点大于父节点，将子节点值赋给父节点（不用进行交换）</span><br><span class="line">                swap(arr, i, k);</span><br><span class="line">                i = k;</span><br><span class="line">            &#125;else&#123;</span><br><span class="line">                break;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 交换元素</span><br><span class="line">     * @param arr</span><br><span class="line">     * @param a</span><br><span class="line">     * @param b</span><br><span class="line">     */</span><br><span class="line">    public static void swap(int []arr,int a ,int b)&#123;</span><br><span class="line">        int temp=arr[a];</span><br><span class="line">        arr[a] = arr[b];</span><br><span class="line">        arr[b] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/05/26/Android-View分发机制及解决滑动冲突方案/" itemprop="url">
                   Android View分发机制及解决滑动冲突方案
                 </a>
@@ -889,161 +997,11 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/04/24/《Android优化专题》——优化电池续航能力/" itemprop="url">
-                  《Android优化专题》——优化电池续航能力
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-04-24T17:18:56+08:00" content="2018-04-24">
-              2018-04-24
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Android优化专题/" itemprop="url" rel="index">
-                    <span itemprop="name">Android优化专题</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="《Android优化专题》——优化电池续航能力"><a href="#《Android优化专题》——优化电池续航能力" class="headerlink" title="《Android优化专题》——优化电池续航能力"></a>《Android优化专题》——优化电池续航能力</h1><h2 id="一、监测设备的电量和充电状态"><a href="#一、监测设备的电量和充电状态" class="headerlink" title="一、监测设备的电量和充电状态"></a>一、监测设备的电量和充电状态</h2><blockquote>
-<p>在用户充电时，程序做任何操作都不会太受到电量影响，此时就适合做一些下载，刷新数据等耗电操作。</p>
-</blockquote>
-<h3 id="1-判断当前充电状态"><a href="#1-判断当前充电状态" class="headerlink" title="1. 判断当前充电状态"></a>1. 判断当前充电状态</h3><p>BatteryManager会广播Sticky intent，我们不需要注册BroadcastReiver，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);</span><br><span class="line">Intent batteryStatus = context.registerReceiver(null, ifilter);</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// Are we charging / charged?  </span><br><span class="line">int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);</span><br><span class="line">boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||</span><br><span class="line">                     status == BatteryManager.BATTERY_STATUS_FULL;</span><br><span class="line"></span><br><span class="line">// How are we charging?  </span><br><span class="line">int chargePlug = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);</span><br><span class="line">boolean usbCharge = chargePlug == BATTERY_PLUGGED_USB;</span><br><span class="line">boolean acCharge = chargePlug == BATTERY_PLUGGED_AC;</span><br></pre></td></tr></table></figure>
-<p>通过判断设备此时是不是通过AC充电器，USB充电，不在充电状态三种情况来进行是否耗电操作，通常做法是，在使用AC充电时最大化后台更新操作，在使用USB充电时降低更新操作，不在充电状态时，最小化更新操作。</p>
-<h3 id="2-监测充电状态的改变"><a href="#2-监测充电状态的改变" class="headerlink" title="2. 监测充电状态的改变"></a>2. 监测充电状态的改变</h3><p>充电状态随时改变，通过检查充电状态的改变，来改变App的某些行为。我们需要在Manifest文件里面注册一个监听来接收ACTION_POWER_CONNECTED and ACTION_POWER_DISCONNECTED的intent。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;receiver android:name=&quot;.PowerConnectionReceiver&quot;&gt;</span><br><span class="line">  &lt;intent-filter&gt;</span><br><span class="line">    &lt;action android:name=&quot;android.intent.action.ACTION_POWER_CONNECTED&quot;/&gt;</span><br><span class="line">    &lt;action android:name=&quot;android.intent.action.ACTION_POWER_DISCONNECTED&quot;/&gt;</span><br><span class="line">  &lt;/intent-filter&gt;</span><br><span class="line">&lt;/receiver&gt;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class PowerConnectionReceiver extends BroadcastReceiver &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onReceive(Context context, Intent intent) &#123;</span><br><span class="line">        int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);</span><br><span class="line">        boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||</span><br><span class="line">                            status == BatteryManager.BATTERY_STATUS_FULL;</span><br><span class="line"></span><br><span class="line">        int chargePlug = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);</span><br><span class="line">        boolean usbCharge = chargePlug == BATTERY_PLUGGED_USB;</span><br><span class="line">        boolean acCharge = chargePlug == BATTERY_PLUGGED_AC;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="3-判断当前电池电量"><a href="#3-判断当前电池电量" class="headerlink" title="3. 判断当前电池电量"></a>3. 判断当前电池电量</h3><p>对于一些情况，获取当前电量对于我们是否要进行某个级别的后台操作十分有意义。我们可以从获取电池状态的intent中提取电池电量和容量信息。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int level = battery.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);</span><br><span class="line">int scale = battery.getIntExtra(BatteryManager.EXTRA_SCALE, -1);</span><br><span class="line">float batteryPct = level / (float)scale;</span><br></pre></td></tr></table></figure>
-<h3 id="4-检测电量的有效改变"><a href="#4-检测电量的有效改变" class="headerlink" title="4. 检测电量的有效改变"></a>4. 检测电量的有效改变</h3><p>检测电量的有效改变，包括电量进入低电量模式，充电后离开低电量模式，这两种状态的变更是值得我们关注的。我们仅仅需要监听ACTION_BATTERY_LOW与ACTION_BATTERY_OKAY.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;receiver android:name=&quot;.BatteryLevelReceiver&quot;&gt;</span><br><span class="line">&lt;intent-filter&gt;</span><br><span class="line">  &lt;action android:name=&quot;android.intent.action.ACTION_BATTERY_LOW&quot;/&gt;</span><br><span class="line">  &lt;action android:name=&quot;android.intent.action.ACTION_BATTERY_OKAY&quot;/&gt;</span><br><span class="line">  &lt;/intent-filter&gt;</span><br><span class="line">&lt;/receiver&gt;</span><br></pre></td></tr></table></figure>
-<p>对于设备进入低电量模式我们要尤其注意，这个时候的任何更新、下载等操作是非常影响用户体验，尤其还有可能下载到一半设备就已经关机了。</p>
-<h2 id="二、判断设备的停驻模式"><a href="#二、判断设备的停驻模式" class="headerlink" title="二、判断设备的停驻模式"></a>二、判断设备的停驻模式</h2><blockquote>
-<p>Android设备有好几种停驻状态，为设备充电，包括车载模式，家庭模式，数字对战模拟模式。停驻状态与充电状态是非常密切相关联的。</p>
-</blockquote>
-<h3 id="1-判断当前停驻状态"><a href="#1-判断当前停驻状态" class="headerlink" title="1. 判断当前停驻状态"></a>1. 判断当前停驻状态</h3><p>停驻状态的广播内容是sticky intent，所以不需要注册广播</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">IntentFilter ifilter = new IntentFilter(Intent.ACTION_DOCK_EVENT);</span><br><span class="line">Intent dockStatus = context.registerReceiver(null, ifilter);</span><br><span class="line"></span><br><span class="line">int dockState = battery.getIntExtra(EXTRA_DOCK_STATE, -1);</span><br><span class="line">boolean isDocked = dockState != Intent.EXTRA_DOCK_STATE_UNDOCKED;</span><br></pre></td></tr></table></figure>
-<h3 id="2-判断当前停驻类型"><a href="#2-判断当前停驻类型" class="headerlink" title="2. 判断当前停驻类型"></a>2. 判断当前停驻类型</h3><ul>
-<li>Car</li>
-<li>Desk</li>
-<li>Low-End (Analog) Desk：API level 11开始才有</li>
-<li>High-End (Digital) Desk：API level 11开始才有</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">boolean isCar = dockState == EXTRA_DOCK_STATE_CAR;</span><br><span class="line">boolean isDesk = dockState == EXTRA_DOCK_STATE_DESK ||</span><br><span class="line">                 dockState == EXTRA_DOCK_STATE_LE_DESK ||</span><br><span class="line">                 dockState == EXTRA_DOCK_STATE_HE_DESK;</span><br></pre></td></tr></table></figure>
-<h3 id="3-监测停驻状态或者类型改变"><a href="#3-监测停驻状态或者类型改变" class="headerlink" title="3. 监测停驻状态或者类型改变"></a>3. 监测停驻状态或者类型改变</h3><p>只需要像下面一样注册监听器</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;action android:name=&quot;android.intent.action.ACTION_DOCK_EVENT&quot;/&gt;</span><br></pre></td></tr></table></figure>
-<h2 id="三、判断并监测网络连接状态"><a href="#三、判断并监测网络连接状态" class="headerlink" title="三、判断并监测网络连接状态"></a>三、判断并监测网络连接状态</h2><blockquote>
-<p>通过网络的连接状况改变，相应改变app的行为，减少无谓的操作，从而延长设备的续航能力。</p>
-</blockquote>
-<h3 id="1-判断当前是否有网络连接"><a href="#1-判断当前是否有网络连接" class="headerlink" title="1. 判断当前是否有网络连接"></a>1. 判断当前是否有网络连接</h3><p>检查是否有网络连接</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ConnectivityManager cm =</span><br><span class="line">        (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);</span><br><span class="line"></span><br><span class="line">NetworkInfo activeNetwork = cm.getActiveNetworkInfo();</span><br><span class="line">boolean isConnected = activeNetwork.isConnectedOrConnecting();</span><br></pre></td></tr></table></figure>
-<h3 id="2-判断连接网络的类型"><a href="#2-判断连接网络的类型" class="headerlink" title="2. 判断连接网络的类型"></a>2. 判断连接网络的类型</h3><p>分为移动网络，WiMax，Wi-Fi，以太网等连接类型</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">boolean isWiFi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;</span><br></pre></td></tr></table></figure>
-<p>使用移动网络比WI-FI代价更大，多数情况下，移动网络下减少一些数据的获取操作，在有WIFI的情况下才开始。</p>
-<h3 id="3-监测网络连接的切换"><a href="#3-监测网络连接的切换" class="headerlink" title="3. 监测网络连接的切换"></a>3. 监测网络连接的切换</h3><p>在manifest文件中注册一个带有action的Receiver</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;action android:name=&quot;android.net.conn.CONNECTIVITY_CHANGE&quot;/&gt;</span><br></pre></td></tr></table></figure>
-<p>当然我们也没必要不间断地监听网络改变，我们只需要在完成某件任务时而进行监测即可。</p>
-<h3 id="4-切换是否开启这些Receivers来提高效率"><a href="#4-切换是否开启这些Receivers来提高效率" class="headerlink" title="4. 切换是否开启这些Receivers来提高效率"></a>4. 切换是否开启这些Receivers来提高效率</h3><p>通过使用PackageManager来切换任何一个在mainfest定义好的组件开启状态，可以使用下面的方法来开启或者关闭任何一个broadcast receiver：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ComponentName receiver = new ComponentName(context, myReceiver.class);</span><br><span class="line"></span><br><span class="line">PackageManager pm = context.getPackageManager();</span><br><span class="line"></span><br><span class="line">pm.setComponentEnabledSetting(receiver,</span><br><span class="line">        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,</span><br><span class="line">        PackageManager.DONT_KILL_APP)</span><br></pre></td></tr></table></figure>
-<p>如果判断到了网络连接已经断开，可以在这个时候关闭除了网络环境改变之外的所有Receivers</p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1084,7 +1042,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">30</span>
+              <span class="site-state-item-count">31</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1101,7 +1059,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-count">19</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

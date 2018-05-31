@@ -215,6 +215,178 @@
             
               
                 
+                <a class="post-title-link" href="/2018/05/04/HTTP浅析（二）HTTP结构/" itemprop="url">
+                  HTTP浅析（二）HTTP结构
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-05-04T14:33:40+08:00" content="2018-05-04">
+              2018-05-04
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/基础知识/" itemprop="url" rel="index">
+                    <span itemprop="name">基础知识</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="HTTP浅析（二）HTTP结构"><a href="#HTTP浅析（二）HTTP结构" class="headerlink" title="HTTP浅析（二）HTTP结构"></a>HTTP浅析（二）HTTP结构</h1><blockquote>
+<p>本篇主要介绍HTTP服务器、代理、缓存等</p>
+</blockquote>
+<h2 id="web服务器主流有哪几种？"><a href="#web服务器主流有哪几种？" class="headerlink" title="web服务器主流有哪几种？"></a>web服务器主流有哪几种？</h2><ul>
+<li>免费的Apache软件占据了所有web服务器大约60%的市场</li>
+<li>微软的Web服务器占据了另外30%</li>
+<li>Sun的iPlanet占据了另外的3%</li>
+</ul>
+<p><strong>数据仅供参考</strong></p>
+<h2 id="web服务器会做些什么？"><a href="#web服务器会做些什么？" class="headerlink" title="web服务器会做些什么？"></a>web服务器会做些什么？</h2><ol>
+<li>建立连接——接受一个客户端连接，如果不希望与这个客户端连接，就将其关闭。</li>
+<li>接收请求——从网络中读取一条HTTP请求报文</li>
+<li>处理请求——对请求报文进行解释，并采取行动。</li>
+<li>访问资源——访问报文中指定的资源。</li>
+<li>构建资源——创建带有正确首部的HTTP响应报文。</li>
+<li>发送响应——将响应回送给客户端</li>
+<li>记录事物处理过程——将与已完成事物有关的内容记录在一个日志文件中。</li>
+</ol>
+<h2 id="代理和网关有什么区别？"><a href="#代理和网关有什么区别？" class="headerlink" title="代理和网关有什么区别？"></a>代理和网关有什么区别？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB53413a837c5da0d75510df33c6728a07?method=download&amp;shareKey=fc560d0b484a2350a1895cd1bc2ff918" alt="代理和网关的区别"></p>
+<p>代理连接的是两个或多个使用相同协议的应用程序，而网关连接的是两个或者多个不同协议的端点。<strong>区别在于网关的前后协议不同</strong></p>
+<h2 id="我们为什么要使用代理？"><a href="#我们为什么要使用代理？" class="headerlink" title="我们为什么要使用代理？"></a>我们为什么要使用代理？</h2><ul>
+<li>儿童过滤器，可以利用过滤器代理来阻止儿童访问成人内容</li>
+<li>文档访问控制，可以用代理服务器在大量Web服务器和Web资源之间实现统一的访问控制策略，创建审核跟踪机制。</li>
+<li>安全防火墙，网络安全工程师会使用代理服务器来提高安全性。</li>
+<li>Web缓存，代理缓存维护了常用文档的本地副本，将它们按需提供，减少缓慢且昂贵的因特网通信。</li>
+<li>反向代理，代理可以假扮Web服务器。这些被称为替代物或者反向代理的代理接收发给Web服务器的真实请求，它们可以发起与其他服务器的通信，以便按需定位所请求的内容。<img src="https://note.youdao.com/yws/api/personal/file/WEB6203273834d2ab2ca34dc6925e688d16?method=download&amp;shareKey=be2b266753fa27bcb7c3bd3ea0305295" alt="反向代理"></li>
+<li>内容路由器，代理服务器可以作为“内容路由器”使用，根据因特网流量状况以及内容类型将请求导向特定的Web服务器。</li>
+<li>转码器，可以修改内容的主体格式。在这些数据表示法之间进行的透明转换被称为转码。</li>
+</ul>
+<h2 id="代理是如何获取流量的？"><a href="#代理是如何获取流量的？" class="headerlink" title="代理是如何获取流量的？"></a>代理是如何获取流量的？</h2><ul>
+<li>修改客户端，支持手工和自动的代理配置，将客户端的HTTP请求有意地发送给代理，而不是原始服务器。</li>
+<li>修改网络，网络基础设施在客户端不知情的情况，对其进行拦截，这种代理称为“拦截代理”。</li>
+<li>修改DNS的命名空间，放在Web服务器的代理服务器——替代物，假扮服务器的host和ip地址，所有的请求就会发送给替代物，通过编辑DNS名称列表。</li>
+<li>修改Web服务器，通过HTTP重定向命令，将HTTP请求重定向到代理上去。</li>
+</ul>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBe669168e6c40e032e8eebfb03fa00399?method=download&amp;shareKey=019b8fac2e513182bca57a96d8fefbbc" alt="代理是如何获取流量"></p>
+<h2 id="客户端发给代理的URL与发给服务器的URL有什么不同？"><a href="#客户端发给代理的URL与发给服务器的URL有什么不同？" class="headerlink" title="客户端发给代理的URL与发给服务器的URL有什么不同？"></a>客户端发给代理的URL与发给服务器的URL有什么不同？</h2><ol>
+<li>没有设置客户端使用代理时，它会发送部分URI</li>
+<li>设置客户端使用代理时，它会发送完整URI</li>
+</ol>
+<h2 id="Web缓存有哪些好处？"><a href="#Web缓存有哪些好处？" class="headerlink" title="Web缓存有哪些好处？"></a>Web缓存有哪些好处？</h2><ul>
+<li>缓存减少了冗余的数据传输，节省了你的网络费用。</li>
+<li>缓存缓解了网络瓶颈的问题。不需要更多的带宽就能够更快地加载页面。</li>
+<li>缓存降低了对原始服务器的要求。服务器可以更快地响应，避免过载的出现。</li>
+<li>缓存降低了距离时延，因为从较远的地方加载页面会更慢一些。</li>
+<li>缓存在解决瞬间拥塞时显得很重要，类似场景比如突发的新闻事件，大量的人几乎同时搜索一个事件，过多的流量峰值可能会造成Web服务器瞬间瘫痪。</li>
+</ul>
+<h2 id="缓存分为哪两种？"><a href="#缓存分为哪两种？" class="headerlink" title="缓存分为哪两种？"></a>缓存分为哪两种？</h2><ul>
+<li>缓存命中，直接取缓存数据。</li>
+<li>缓存未命中，需要从原始服务器获取数据。</li>
+</ul>
+<h2 id="缓存再验证是什么？"><a href="#缓存再验证是什么？" class="headerlink" title="缓存再验证是什么？"></a>缓存再验证是什么？</h2><p>原始服务器的内容可能会发生变化，缓存需要时不时对其进行检测，看看保存的副本是否仍然是服务器的最新副本。“新鲜度检测”被称为HTTP再验证。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB3d4f91be96f1c4293b99bb891dfd783e?method=download&amp;shareKey=cc7737dd187bdc1c61d54d81d335a877" alt="缓存再验证"></p>
+<p>缓存再验证时，这种方式确实比和原始服务器核对要慢，因为没有从服务器中获取数据，又比未命中情况要快。</p>
+<h2 id="缓存的命中率一般是多少？"><a href="#缓存的命中率一般是多少？" class="headerlink" title="缓存的命中率一般是多少？"></a>缓存的命中率一般是多少？</h2><p>都希望缓存命中率越高越好，实际上对于现在中等规模的缓存来说，40%已经很不错了，能够显著地提升性能，减少流量了。</p>
+<h2 id="if-modified-since失败会怎么样？"><a href="#if-modified-since失败会怎么样？" class="headerlink" title="if-modified-since失败会怎么样？"></a>if-modified-since失败会怎么样？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB18a92614cfebb53440fd75c7af210d1a?method=download&amp;shareKey=949295f354ec7d9af6f2a7f98f12acf6" alt="if-modified-since失败"></p>
+<h2 id="网关有什么用？"><a href="#网关有什么用？" class="headerlink" title="网关有什么用？"></a>网关有什么用？</h2><p>网关可以作为某种翻译器使用，网关是资源和应用程序之间的粘合剂。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB8998a6d50acb662be32a0c2b6dbd4ccb?method=download&amp;shareKey=1a834af067bc263ad9dc026c265a0674" alt=""></p>
+<h2 id="为什么SSL需要搭载HTTP进行传输？"><a href="#为什么SSL需要搭载HTTP进行传输？" class="headerlink" title="为什么SSL需要搭载HTTP进行传输？"></a>为什么SSL需要搭载HTTP进行传输？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6b10bdf7dc7589c88d9815ca57e2c65a?method=download&amp;shareKey=01d6de53e06328f1422e6550ed536df5" alt=""></p>
+<h2 id="HTTP在发展中存在哪些问题？"><a href="#HTTP在发展中存在哪些问题？" class="headerlink" title="HTTP在发展中存在哪些问题？"></a>HTTP在发展中存在哪些问题？</h2><ul>
+<li>复杂性，HTTP相当复杂，而且特性之间是相互依存的，比如处理连接管理，报文处理等等。</li>
+<li>可扩展性，HTTP很难实现增式扩展。很多传下来的HTTP都没有自助的功能性扩展，使协议的扩展无法兼容。</li>
+<li>有些部分效率不高，其中很多低效特性会随着高时延，低吞吐量的无线访问技术而变得更加严重。</li>
+<li>传输依赖性，HTTP对于底层替换TCP/IP有很大的依赖性，想要替换底层的传输协议并没有什么很好的办法。</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/04/24/《Android优化专题》——优化电池续航能力/" itemprop="url">
                   《Android优化专题》——优化电池续航能力
                 </a>
@@ -823,145 +995,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/04/11/Android窗口管理分析（一）——View是如何绘制到屏幕上的/" itemprop="url">
-                  Android窗口管理分析（一）——View是如何绘制到屏幕上的
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-04-11T15:42:02+08:00" content="2018-04-11">
-              2018-04-11
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/framework/" itemprop="url" rel="index">
-                    <span itemprop="name">framework</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Android窗口管理分析（一）——View是如何绘制到屏幕上的"><a href="#Android窗口管理分析（一）——View是如何绘制到屏幕上的" class="headerlink" title="Android窗口管理分析（一）——View是如何绘制到屏幕上的"></a>Android窗口管理分析（一）——View是如何绘制到屏幕上的</h1><blockquote>
-<p>窗口管理涉及到的模块很多，除了WindowManagerService还包括SurfaceFlinger服务、Linux的共享内存及tmpfs文件系统、Binder通信、InputManagerService、VSYNC同步技术等。</p>
-</blockquote>
-<h2 id="View的窗口管理分为哪些部分？"><a href="#View的窗口管理分为哪些部分？" class="headerlink" title="View的窗口管理分为哪些部分？"></a>View的窗口管理分为哪些部分？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBdb44b5849365c6f181d3c424dc60e1ab?method=download&amp;shareKey=30075989c77b1a06262ff679ef2ed252" alt="窗口管理"></p>
-<h2 id="WMS是负责View绘制的吗？"><a href="#WMS是负责View绘制的吗？" class="headerlink" title="WMS是负责View绘制的吗？"></a>WMS是负责View绘制的吗？</h2><p><strong>WMS的作用是窗口管理，不负责View的绘制，真正完成图像绘制的是SurfaceFlinger服务</strong></p>
-<p>WMS（WindowManagerService）是负责Android的窗口的管理，比如窗口的添加、移除、调整顺序等等。至于图像的绘制和合成都不是WMS管理的范畴。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">TextView mview=new TextView(context);</span><br><span class="line">    ...&lt;!--设置颜色 样式--&gt;</span><br><span class="line">    WindowManager mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);</span><br><span class="line">    WindowManager.LayoutParams wmParams = new WindowManager.LayoutParams();</span><br><span class="line">    wmParams.type = WindowManager.LayoutParams.TYPE_TOAST;</span><br><span class="line">    wmParams.format = PixelFormat.RGBA_8888;</span><br><span class="line">    wmParams.width = 800;</span><br><span class="line">    wmParams.height = 800;</span><br><span class="line">    mWindowManager.addView(mview, wmParams);</span><br></pre></td></tr></table></figure>
-<ol>
-<li>在利用WindowManager.addView添加窗口之前，TextView的onDraw不会被调用，也就是说View必须被添加到窗口中，才会被绘制。换句话说，<strong>只有申请了依附窗口，View才会有可以绘制的目标内存。</strong></li>
-<li>在添加窗口的时候，除了WMS自己进行注册整理，还需要向SurfaceFlinger服务申请一块Surface画布，对应的是一块内存。</li>
-<li>只有这块内存申请成功之后，APP才会有绘画的目标，这块内存是APP和SurfaceFlinger服务端共享的，省去了绘图资源的拷贝。</li>
-</ol>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB552342f685a75dfac6192a6898c70c21?method=download&amp;shareKey=9b0c041e0aa0a537614211820967f4ce" alt="Android绘图原理"></p>
-<p><strong>可以看到App通过unLockCanvasAndPost直接和SurfaceFlinger通信进行重绘的。WMS只负责窗口的管理，不负责绘制。</strong></p>
-<h2 id="窗口分组是什么样的？"><a href="#窗口分组是什么样的？" class="headerlink" title="窗口分组是什么样的？"></a>窗口分组是什么样的？</h2><p>Android中的窗口主要分为三种：</p>
-<ol>
-<li>系统窗口——Toast</li>
-<li>应用窗口——Dialog、Activity。不过Dialog必须依附Activity才能存在</li>
-<li>子窗口——PopupWindow，必须依附其他窗口，依附的窗口只能是1，2而不能是3</li>
-</ol>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB98371b5048dfa8b7fe0142093823d404?method=download&amp;shareKey=fba43e8d94e0d2b4d30cb2f10704f573" alt="窗口组织形式"></p>
-<p>WMS不仅只是管理窗口，还负责窗口动画，Touch事件等等。</p>
-<h2 id="View绘制的内存分配是什么机制？"><a href="#View绘制的内存分配是什么机制？" class="headerlink" title="View绘制的内存分配是什么机制？"></a>View绘制的内存分配是什么机制？</h2><p>每个Activity看做一个图层，对应一块Surface，Surface绘图表面对应的内存是SurfaceFlinger申请的，内存是APP与SurfaceFlinger间进程共享的，所以APP和SurfaceFlinger的通信基于<strong>共享内存</strong>实现的。</p>
-<h2 id="共享内存的具体实现是什么样的？"><a href="#共享内存的具体实现是什么样的？" class="headerlink" title="共享内存的具体实现是什么样的？"></a>共享内存的具体实现是什么样的？</h2><p>共享内存是基于MAP+tmpfs文件系统实现，可以理解为SF为APP申请一块内存，然后通过binder将内存相关的信息传递给APP，APP端在这块内存中绘制内容，绘制完毕后通知SF图层混排，再由SF将数据渲染到屏幕上，这么做的目的主要考虑图像内存比较大，用socket,binder方式传递效率上无法满足要求。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBe00aaff15eaf1ac892950c9e4c6fd4b4?method=download&amp;shareKey=e57fbd76b670782fb8bb85869ec2d0d3" alt="共享内存具体实现"></p>
-<ol>
-<li>SurfaceFlinger服务属于系统服务，主要用于将APP绘制完毕的数据渲染到屏幕上。</li>
-<li>各应用的View的绘制都需要经过SurfaceFlinger服务。</li>
-<li>WindowManagerService：WMS控制Surface画布的添加和次序，动画还有触摸事件。</li>
-<li>每个App进程负责相应图层的绘制。</li>
-<li>App与SurfaceFlinger通信是通过匿名内存来实现的。</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1007,7 +1040,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">31</span>
+              <span class="site-state-item-count">32</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1015,7 +1048,7 @@
           
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-count">18</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -1024,7 +1057,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-count">20</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

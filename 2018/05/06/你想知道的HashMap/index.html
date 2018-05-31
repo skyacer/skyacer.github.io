@@ -1,0 +1,753 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="容器," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="你想知道的HashMap，ConcurrentHashMap,锁机制为什么HashMap线程不安全？ 如果此时正好存在两个 put 的 key 发生了碰撞(根据 hash 值计算的 bucket 一样)，那么根据 HashMap 的实现，这两个 key 会添加到数组的同一个位置，这样最终就会发生其中一个线程的 put 的数据被覆盖。 如果多个线程同时检测到元素个数超过数组大小* loadFacto">
+<meta name="keywords" content="容器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="你想知道的HashMap">
+<meta property="og:url" content="http://skyacer.github.io/2018/05/06/你想知道的HashMap/index.html">
+<meta property="og:site_name" content="SkyAcer&#39;s blog">
+<meta property="og:description" content="你想知道的HashMap，ConcurrentHashMap,锁机制为什么HashMap线程不安全？ 如果此时正好存在两个 put 的 key 发生了碰撞(根据 hash 值计算的 bucket 一样)，那么根据 HashMap 的实现，这两个 key 会添加到数组的同一个位置，这样最终就会发生其中一个线程的 put 的数据被覆盖。 如果多个线程同时检测到元素个数超过数组大小* loadFacto">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBb5a0f030f26093770b46ab0ce5441e12?method=download&shareKey=9849ad8d9e67a5002373acadc1bcd37b">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB0bc80d064a1d7246a6b74d5ba08f2e74?method=download&shareKey=dcc5a2b85ccd2b559a3453defb55dba9">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB286b40b60817b00ca67708af92bd6cdd?method=download&shareKey=0412c14a50b377a1fd6ff6e8bdb717cb">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB04e8367bff6229238de7ab2abdb9ce4d?method=download&shareKey=0edc15e5ec1d9c83ef2d1e911fb0cc00">
+<meta property="og:updated_time" content="2018-05-31T08:08:05.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="你想知道的HashMap">
+<meta name="twitter:description" content="你想知道的HashMap，ConcurrentHashMap,锁机制为什么HashMap线程不安全？ 如果此时正好存在两个 put 的 key 发生了碰撞(根据 hash 值计算的 bucket 一样)，那么根据 HashMap 的实现，这两个 key 会添加到数组的同一个位置，这样最终就会发生其中一个线程的 put 的数据被覆盖。 如果多个线程同时检测到元素个数超过数组大小* loadFacto">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEBb5a0f030f26093770b46ab0ce5441e12?method=download&shareKey=9849ad8d9e67a5002373acadc1bcd37b">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 你想知道的HashMap | SkyAcer's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SkyAcer's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Hacking,Thoughts.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-heartbeat fa-fw"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                你想知道的HashMap
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-05-06T16:06:59+08:00" content="2018-05-06">
+              2018-05-06
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/JAVA/" itemprop="url" rel="index">
+                    <span itemprop="name">JAVA</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="你想知道的HashMap，ConcurrentHashMap-锁机制"><a href="#你想知道的HashMap，ConcurrentHashMap-锁机制" class="headerlink" title="你想知道的HashMap，ConcurrentHashMap,锁机制"></a>你想知道的HashMap，ConcurrentHashMap,锁机制</h1><h2 id="为什么HashMap线程不安全？"><a href="#为什么HashMap线程不安全？" class="headerlink" title="为什么HashMap线程不安全？"></a>为什么HashMap线程不安全？</h2><ol>
+<li>如果此时正好存在两个 put 的 key 发生了碰撞(根据 hash 值计算的 bucket 一样)，那么根据 HashMap 的实现，这两个 key 会添加到数组的同一个位置，这样最终就会发生其中一个线程的 put 的数据被覆盖。</li>
+<li>如果多个线程同时检测到元素个数超过数组大小* loadFactor ，这样就会发生多个线程同时对 Node 数组进行扩容，都在重新计算元素位置以及复制数据，但是最终只有一个线程扩容后的数组会赋给 table，也就是说其他线程的都会丢失，并且各自线程 put 的数据也丢失。</li>
+</ol>
+<h2 id="HashMap工作原理是什么？"><a href="#HashMap工作原理是什么？" class="headerlink" title="HashMap工作原理是什么？"></a>HashMap工作原理是什么？</h2><p>通过hash的方法，通过put和get存储和获取对象。存储对象时，我们将K/V传给put方法时，它调用hashCode计算hash从而得到bucket位置，进一步存储，HashMap会根据当前bucket的占用情况自动调整容量(超过Load Facotr则resize为原来的2倍)。获取对象时，我们将K传给get，它调用hashCode计算hash从而得到bucket位置，并进一步调用equals()方法确定键值对。如果发生碰撞的时候，Hashmap通过链表将产生碰撞冲突的元素组织起来，在Java 8中，如果一个bucket中碰撞冲突的元素超过某个限制(默认是8)，则使用红黑树来替换链表，从而提高速度。</p>
+<h2 id="HashMap的hash函数是怎么实现的？"><a href="#HashMap的hash函数是怎么实现的？" class="headerlink" title="HashMap的hash函数是怎么实现的？"></a>HashMap的hash函数是怎么实现的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBb5a0f030f26093770b46ab0ce5441e12?method=download&amp;shareKey=9849ad8d9e67a5002373acadc1bcd37b" alt="hash过程"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">static final int hash(Object key) &#123;</span><br><span class="line">    int h;</span><br><span class="line">    return (key == null) ? 0 : (h = key.hashCode()) ^ (h &gt;&gt;&gt; 16);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="HashMap的Resize实现是什么？"><a href="#HashMap的Resize实现是什么？" class="headerlink" title="HashMap的Resize实现是什么？"></a>HashMap的Resize实现是什么？</h2><p>当put时，如果发现目前的bucket占用程度已经超过了Load Factor所希望的比例（默认是0.75），那么就会发生resize。在resize的过程，简单的说就是把bucket扩充为2倍，之后重新计算index，把节点再放到新的bucket中。resize的注释是这样描述的：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB0bc80d064a1d7246a6b74d5ba08f2e74?method=download&amp;shareKey=dcc5a2b85ccd2b559a3453defb55dba9" alt=""></p>
+<p>因此元素在重新计算hash之后，因为n变为2倍，那么n-1的mask范围在高位多1bit(红色)，因此新的index就会发生这样的变化：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB286b40b60817b00ca67708af92bd6cdd?method=download&amp;shareKey=0412c14a50b377a1fd6ff6e8bdb717cb" alt=""></p>
+<p>因此，我们在扩充HashMap的时候，不需要重新计算hash，只需要看看原来的hash值新增的那个bit是1还是0就好了，是0的话索引没变，是1的话索引变成“原索引+oldCap”。可以看看下图为16扩充为32的resize示意图：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB04e8367bff6229238de7ab2abdb9ce4d?method=download&amp;shareKey=0edc15e5ec1d9c83ef2d1e911fb0cc00" alt=""></p>
+<p>这个设计确实非常的巧妙，既省去了重新计算hash值的时间，而且同时，由于新增的1bit是0还是1可以认为是随机的，因此resize的过程，均匀的把之前的冲突的节点分散到新的bucket了。</p>
+<p><strong>注意HashMap可存储的最大容量是有限的，最大为2的30次方。</strong></p>
+<h2 id="重入锁是什么？"><a href="#重入锁是什么？" class="headerlink" title="重入锁是什么？"></a>重入锁是什么？</h2><p>当一个线程得到一个对象后，再次请求该对象锁时是可以再次得到该对象的锁的。</p>
+<p>简而言之：自己可以再次获取自己的内部锁</p>
+<p>在Java中，sychronized和ReetranLock都是可重入的。</p>
+<p>例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class SynchronizedTest &#123;</span><br><span class="line">    public void method1() &#123;</span><br><span class="line">        synchronized (SynchronizedTest.class) &#123;</span><br><span class="line">            System.out.println(&quot;方法1获得ReentrantTest的锁运行了&quot;);</span><br><span class="line">            method2();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public void method2() &#123;</span><br><span class="line">        synchronized (SynchronizedTest.class) &#123;</span><br><span class="line">            System.out.println(&quot;方法1里面调用的方法2重入锁,也正常运行了&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        new SynchronizedTest().method1();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面便是synchronized的重入锁特性，即调用method1()方法时，已经获得了锁，此时内部调用method2()方法时，由于本身已经具有该锁，所以可以再次获取。</p>
+<p>ReentrantLock锁类似，代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">public class ReentrantLockTest &#123;</span><br><span class="line">    private Lock lock = new ReentrantLock();</span><br><span class="line">    public void method1() &#123;</span><br><span class="line">        lock.lock();</span><br><span class="line">        try &#123;</span><br><span class="line">            System.out.println(&quot;方法1获得ReentrantLock锁运行了&quot;);</span><br><span class="line">            method2();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public void method2() &#123;</span><br><span class="line">        lock.lock();</span><br><span class="line">        try &#123;</span><br><span class="line">            System.out.println(&quot;方法1里面调用的方法2重入ReentrantLock锁,也正常运行了&quot;);</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        new ReentrantLockTest().method1();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="公平锁是什么？"><a href="#公平锁是什么？" class="headerlink" title="公平锁是什么？"></a>公平锁是什么？</h2><p>CPU在调度线程的时候是在等待队列里随机挑选一个线程，由于这种随机性所以是无法保证线程先到先得的（synchronized控制的锁就是这种非公平锁）。但这样就会产生饥饿现象，即有些线程（优先级较低的线程）可能永远也无法获取CPU的执行权，优先级高的线程会不断的强制它的资源。那么如何解决饥饿问题呢，这就需要公平锁了。公平锁可以保证线程<strong>按照时间的先后顺序</strong>执行，避免饥饿现象的产生。但公平锁的效率比较低，因为要实现顺序执行，需要维护一个有序队列。</p>
+<p>ReentrantLock同样支持公平锁，在构造函数中，传入true就是公平锁</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public ReentrantLock(boolean fair) &#123;</span><br><span class="line">        sync = fair ? new FairSync() : new NonfairSync();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="synchronized和ReentrantLock有什么区别呢？"><a href="#synchronized和ReentrantLock有什么区别呢？" class="headerlink" title="synchronized和ReentrantLock有什么区别呢？"></a>synchronized和ReentrantLock有什么区别呢？</h2><ol>
+<li>Lock是一个接口，而synchronized是Java中的关键字，synchronized是内置的语言实现；</li>
+<li>synchronized在发生异常时，会自动释放线程占有的锁，因此不会导致死锁现象发生；而Lock在发生异常时，如果没有主动通过unLock()去释放锁，则很可能造成死锁现象，因此使用Lock时需要在finally块中释放锁；</li>
+<li>Lock可以让等待锁的线程响应中断，而synchronized却不行，使用synchronized时，等待的线程会一直等待下去，不能够响应中断；</li>
+<li>通过Lock可以知道有没有成功获取锁，而synchronized却无法办到。</li>
+<li>Lock可以提高多个线程进行读操作的效率。</li>
+<li>synchronized就不是可中断锁，而Lock是可中断锁。</li>
+<li>synchronized就是非公平锁，它无法保证等待的线程获取锁的顺序。ReentrantLock可以设置成公平锁。</li>
+<li>ReentrantReadWriteLock是读写锁，synchronized不支持读写锁。</li>
+<li>一个ReentrantLock对象可以同时绑定多个Condition对象，而在synchronized中，锁对象的wait()和notify()或notifyAll()方法可以实现一个隐含的条件，如果要和多余一个条件关联的时候，就不得不额外地添加一个锁，而ReentrantLock则无须这么做，只需要多次调用new Condition()方法即可。</li>
+<li>在性能上来说，如果竞争资源不激烈，两者的性能是差不多的，而当竞争资源非常激烈时（即有大量线程同时竞争），此时ReentrantLock的性能要远远优于synchronized。</li>
+<li>上述说的都是jdk1.5及以前，在jdk1.6之后，synchronized做了很多优化，包括锁消除，偏向锁等等，官方提倡优先考虑用synchronized来进行同步。</li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/容器/" rel="tag">#容器</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/04/HTTP浅析（二）HTTP结构/" rel="next" title="HTTP浅析（二）HTTP结构">
+                <i class="fa fa-chevron-left"></i> HTTP浅析（二）HTTP结构
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/06/Java虚拟机——双亲委派模型/" rel="prev" title="Java虚拟机——双亲委派模型">
+                Java虚拟机——双亲委派模型 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="SkyAcer" />
+          <p class="site-author-name" itemprop="name">SkyAcer</p>
+          <p class="site-description motion-element" itemprop="description">Little And More.</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">32</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-name">分类</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">20</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#你想知道的HashMap，ConcurrentHashMap-锁机制"><span class="nav-number">1.</span> <span class="nav-text">你想知道的HashMap，ConcurrentHashMap,锁机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么HashMap线程不安全？"><span class="nav-number">1.1.</span> <span class="nav-text">为什么HashMap线程不安全？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HashMap工作原理是什么？"><span class="nav-number">1.2.</span> <span class="nav-text">HashMap工作原理是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HashMap的hash函数是怎么实现的？"><span class="nav-number">1.3.</span> <span class="nav-text">HashMap的hash函数是怎么实现的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HashMap的Resize实现是什么？"><span class="nav-number">1.4.</span> <span class="nav-text">HashMap的Resize实现是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重入锁是什么？"><span class="nav-number">1.5.</span> <span class="nav-text">重入锁是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#公平锁是什么？"><span class="nav-number">1.6.</span> <span class="nav-text">公平锁是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#synchronized和ReentrantLock有什么区别呢？"><span class="nav-number">1.7.</span> <span class="nav-text">synchronized和ReentrantLock有什么区别呢？</span></a></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">SkyAcer</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=0.5.0"></script>
+
+
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+
+  
+
+
+</body>
+</html>

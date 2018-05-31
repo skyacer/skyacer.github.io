@@ -605,6 +605,241 @@
             
               
                 
+                <a class="post-title-link" href="/2018/05/16/Android热修复笔记/" itemprop="url">
+                  Android热修复笔记
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-05-16T16:10:58+08:00" content="2018-05-16">
+              2018-05-16
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Android热修复笔记"><a href="#Android热修复笔记" class="headerlink" title="Android热修复笔记"></a>Android热修复笔记</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>代码修复有两大主要方案，一种是阿里系的底层替换方案，另一种是腾讯系的类加载方案。</p>
+<h3 id="底层替换方案"><a href="#底层替换方案" class="headerlink" title="底层替换方案"></a>底层替换方案</h3><h4 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h4><p>时效性最好，加载轻快，即时生效。</p>
+<h4 id="劣势"><a href="#劣势" class="headerlink" title="劣势"></a>劣势</h4><p>这个方案限制颇多，由于这类方案是根据公开的Android源码中的结构写死的，一旦厂商对ArtMethod结构体进行修改，那么就会出问题。</p>
+<h2 id="AndFix"><a href="#AndFix" class="headerlink" title="AndFix"></a>AndFix</h2><h3 id="替换方法流程"><a href="#替换方法流程" class="headerlink" title="替换方法流程"></a>替换方法流程</h3><p>这里以Android版本大于4.4为例，进行分析</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB315390d16fc48dff84eeeba1cc8b0508?method=download&amp;shareKey=0ce2bfd9775ad2703418b0c700124cdb" alt="AndFix替换方案"></p>
+<p>由流程图看出，替换方法所需ArtMethod中的字段有三个</p>
+<ol>
+<li>entry_point_from_interprete_</li>
+<li>entry_point_from_quick_compiled_code_</li>
+<li>dex_cache_resloved_methods </li>
+</ol>
+<p>ArtMethod到底是什么呢？</p>
+<p>ART运行时在内部又会使用另外两个不同的术语来描述类和方法，其中将类描述为Class，而将类方法描述为ArtMethod</p>
+<p>由于对于ArtMethod的结构写死，所以AndFix不支持很多机型的原因，也就是因为这些机型修改了底层的虚拟机结构。</p>
+<h3 id="在AndFix基础上优化"><a href="#在AndFix基础上优化" class="headerlink" title="在AndFix基础上优化"></a>在AndFix基础上优化</h3><p>通过对于ArtMethod字段替换到整个结构的替换。<br><img src="https://note.youdao.com/yws/api/personal/file/WEBb13ecc4af0dfc784e57faf1b4b965d3d?method=download&amp;shareKey=9daf955e07100f61508da47e83eb1c7f" alt=""></p>
+<p>分配Size流程如下：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB07dd3d5faf50b5e999a6ef52622feab5?method=download&amp;shareKey=ec2d066417c6a92584454653b539a923" alt="ArtMethod分配Size流程"></p>
+<p>如下图，通过在相邻两个方法中取对应ArtMethod的起始地址的差值来判断一个ArtMethod的大小。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBa9ad2afafbd4aa9cb3dbc1774c63fa1f?method=download&amp;shareKey=28b9ae7c73bc793ba2d770640ff5de98" alt="地址差值"></p>
+<h4 id="访问权限"><a href="#访问权限" class="headerlink" title="访问权限"></a>访问权限</h4><p>如何解决被替换的方法有权限访问这个类的其他private方法？</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB2049903c2ba4bc75ee5a597f465a1549?method=download&amp;shareKey=48b4fcb641d43d440ead566eaed3a8c0" alt=""><br>在机器码层面，调用逻辑和之前Activity的例子没有差别，并没有做任何的权限检查，所以替换后会正常执行而不是报错。</p>
+<h4 id="同包名下的权限问题"><a href="#同包名下的权限问题" class="headerlink" title="同包名下的权限问题"></a>同包名下的权限问题</h4><p>如果补丁中的类在访问同包名下的类时会报出访问权限异常。</p>
+<p>原因是因为在虚拟机中，替换了的方法与原来的方法不是同一个ClassLoader来加载，所以导致两个类无法被判断为同包名。</p>
+<p>解决办法：通过设置新类的ClassLoader为原来类的就行了。通过反射即可进行设置。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Filed classLoaderField = Class.class.getDeclaredField(&quot;classLoader&quot;);</span><br><span class="line">classLoaderField.setAccessible(true);</span><br><span class="line">classLoaderField.set(newClass,oldClass.getClassLoader());</span><br></pre></td></tr></table></figure>
+<h3 id="反射调用非静态方法产生的问题"><a href="#反射调用非静态方法产生的问题" class="headerlink" title="反射调用非静态方法产生的问题"></a>反射调用非静态方法产生的问题</h3><p>当一个非静态方法被替换后，如果代码里在反射调用时，会抛出异常。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// BaseBug.test 方法已经被热替换了</span><br><span class="line">BaseBug bb = new BaseBug();</span><br><span class="line">Method testMeth = BaseBug.class.getDeclaredMethod(&quot;test&quot;);</span><br><span class="line">testMeth.invoike(bb);</span><br></pre></td></tr></table></figure>
+<p>在invoke的时候就会抛出 IllegalArgumentException异常。因为虽然都叫com.patch.demo.BaseBug，却是不同的类，不同在于由于把ArtMethod的declaring_class_替换了，因此就是新的补丁类，后者作为被调用的实例对象bb所属类是原有的BaseBug，两者是不同的。</p>
+<p>具体原因：<br><strong>反射时调用InvokeMethod， InvokeMethod ——&gt; VerifyObjectIsClass(receiver, declaring_class) ——&gt; if(!o -&gt; InstanceOF(c)){ //抛异常 }</strong></p>
+<p>由于静态类是在类级别的调用，不需要用到对象实例，就不会有这方面的检查。</p>
+<p>解决方式：冷启动机制</p>
+<h3 id="哪些情况适用热启动？哪些情况适用冷启动？"><a href="#哪些情况适用热启动？哪些情况适用冷启动？" class="headerlink" title="哪些情况适用热启动？哪些情况适用冷启动？"></a>哪些情况适用热启动？哪些情况适用冷启动？</h3><p>不适用于热启动情况：</p>
+<ol>
+<li>引起了原有的类中发生结构变化的修改</li>
+<li>修复了的非静态方法会被反射调用</li>
+</ol>
+<p>其余情况适合用冷启动的方式</p>
+<h2 id="你所不知道的Java"><a href="#你所不知道的Java" class="headerlink" title="你所不知道的Java"></a>你所不知道的Java</h2><h3 id="内部类"><a href="#内部类" class="headerlink" title="内部类"></a>内部类</h3><p><strong>内部类会在编译期编译成跟外部类一样的顶级类</strong></p>
+<h4 id="静态内部类-非静态内部类有什么区别？"><a href="#静态内部类-非静态内部类有什么区别？" class="headerlink" title="静态内部类/非静态内部类有什么区别？"></a>静态内部类/非静态内部类有什么区别？</h4><p>非静态内部类，在编译期间会产生this$0，表示的是外部类的引用。</p>
+<h4 id="既然内部类会在编译期间编译成跟外部类一样的顶级类，那么外部类怎么访问的内部类的私有方法？"><a href="#既然内部类会在编译期间编译成跟外部类一样的顶级类，那么外部类怎么访问的内部类的私有方法？" class="headerlink" title="既然内部类会在编译期间编译成跟外部类一样的顶级类，那么外部类怎么访问的内部类的私有方法？"></a>既然内部类会在编译期间编译成跟外部类一样的顶级类，那么外部类怎么访问的内部类的私有方法？</h4><p>因为在编译期间自动会为内部类生成access&amp;**相关方法，这个方法会简单返回私有域s的值。</p>
+<h4 id="如何防止编译器生成access-amp-方法，从而使得能够进行热部署（不会改变方法数，从而也不会改变索引）？"><a href="#如何防止编译器生成access-amp-方法，从而使得能够进行热部署（不会改变方法数，从而也不会改变索引）？" class="headerlink" title="如何防止编译器生成access&amp;**方法，从而使得能够进行热部署（不会改变方法数，从而也不会改变索引）？"></a>如何防止编译器生成access&amp;**方法，从而使得能够进行热部署（不会改变方法数，从而也不会改变索引）？</h4><ul>
+<li>把内部类的所有method/field的private访问权限改成protected或者默认访问权限public</li>
+<li>如果一个类有内部类，那么把自身的method/field改成protected或者public</li>
+</ul>
+<h4 id="对于新增-删除匿名内部类，如何进行热部署？"><a href="#对于新增-删除匿名内部类，如何进行热部署？" class="headerlink" title="对于新增/删除匿名内部类，如何进行热部署？"></a>对于新增/删除匿名内部类，如何进行热部署？</h4><p><strong>编译器根据该匿名内部类在外部类中出现的先后关系，依次累加命名</strong></p>
+<p>比如第一个匿名内部类叫DexFixDemo&amp;1。第二个叫DexFixDemo&amp;2，由于补丁工具拿到的是编译后的.class文件，所以无法区分DexFixDemo&amp;1/2类，所以要避免插入一个新的匿名内部类。</p>
+<p><strong>当然如果匿名内部类在外部类的尾部，是允许的。</strong></p>
+<h4 id="静态field初始化和静态代码块编译流程是什么样的？"><a href="#静态field初始化和静态代码块编译流程是什么样的？" class="headerlink" title="静态field初始化和静态代码块编译流程是什么样的？"></a>静态field初始化和静态代码块编译流程是什么样的？</h4><p>静态field和代码块初始化在编译后会放在<clinit>方法中</clinit></p>
+<p><strong>静态代码块和静态域初始化在clinit中的先后关系就是两者出现在源码中的先后关系。</strong></p>
+<p>尝试加载一个类的三个情况：</p>
+<ol>
+<li>new一个类的对象（new-instance指令）</li>
+<li>调用类的静态方法（invoke-static指令）</li>
+<li>获取类的静态域的值（sget指令）</li>
+</ol>
+<p>执行的流程是dvmResolve -&gt; Class -&gt; dvmLinkClass -&gt; dvmInitClass。</p>
+<p>在dvmInitClass这个函数首先会对父类进行初始化，然后调用本类的clinit方法，所以此时静态field得到初始化和静态代码块得到执行。</p>
+<p>父类初始化 ——&gt; 本类的静态field和代码块初始化</p>
+<h4 id="非静态field初始化，非静态代码块编译流程是什么样的？"><a href="#非静态field初始化，非静态代码块编译流程是什么样的？" class="headerlink" title="非静态field初始化，非静态代码块编译流程是什么样的？"></a>非静态field初始化，非静态代码块编译流程是什么样的？</h4><p>非静态field初始化和非静态代码块被翻译在<init>无参构造函数中。</init></p>
+<p><strong>构造函数会被android编译器翻译成<init>方法，实际上如果存在有参构造函数，那么每个有参构造函数都会执行一个非静态域的初始化和非静态代码块。</init></strong></p>
+<p>String s = new String(“test”);在编译后翻译成如下代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">new-instance vO, Ljava/lang/String;</span><br><span class="line">invoke-direct &#123;v0&#125;, Ljava/lang/String;-&gt;&lt;init&gt;()V</span><br></pre></td></tr></table></figure>
+<ol>
+<li>首先执行new-instance指令，分配堆内存</li>
+<li>如果之前没加载过，尝试加载类</li>
+<li>invoke-direct指令调用类的init构造函数方法执行对象的初始化</li>
+</ol>
+<h4 id="静态field-代码块和非静态field-代码块支持热部署吗？"><a href="#静态field-代码块和非静态field-代码块支持热部署吗？" class="headerlink" title="静态field/代码块和非静态field/代码块支持热部署吗？"></a>静态field/代码块和非静态field/代码块支持热部署吗？</h4><p>不支持<clint>方法的热部署，所以静态filed/代码块都不支持更改。</clint></p>
+<p>对于非静态filed/代码块，热部署视为一个普通方法的变更，此时对于热部署没有影响。</p>
+<h4 id="final-static域的编译是什么样的？"><a href="#final-static域的编译是什么样的？" class="headerlink" title="final static域的编译是什么样的？"></a>final static域的编译是什么样的？</h4><p><strong>final static的非引用类型并不是像static静态域一样被翻译到clinit方法中。</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class DexFixDemo&#123;</span><br><span class="line">	static Temp t1 = new Temp();</span><br><span class="line">	final static Temp t2 = new Temp();</span><br><span class="line">	</span><br><span class="line">	final static String s1 = new String(&quot;heihei&quot;)l</span><br><span class="line">	final static String s2 = &quot;haha&quot;;</span><br><span class="line">	</span><br><span class="line">	static int i1 = 1;</span><br><span class="line">	final static int i2 = 2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上java文件转换为snail文件结构如下：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBd684706583b05c1bffff55670cbf91ba?method=download&amp;shareKey=954664accf4fa1233f1103961f13f2f8" alt="snail文件结构"></p>
+<p>我们可以看到 s2 = “haha”, i2 = 2,这两个并不是在clinit中赋值的。</p>
+<p>通过查看dex文件结构，在类定义区看到</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBbd10638a6ebdd431b982e893228ec59c?method=download&amp;shareKey=95178b164654615aa60522c97a23b684" alt="dex类定义区"></p>
+<p>所以得出以下结论：</p>
+<ol>
+<li>final static修饰的原始类型和String类型域（非引用类型），并不会翻译到clinit方法中，而是在类初始化执行initSFields方法中得到初始化赋值。</li>
+<li>final static 修饰的引用类型，初始化仍然在clinit方法中。</li>
+</ol>
+<p>关于什么是smail文件，可以点此阅读，<a href="http://skyacer.github.io/2018/03/15/Smali%E6%B5%85%E6%9E%90%E5%8F%8Adex-java%E4%BA%92%E8%BD%AC/">smali浅析</a></p>
+<h3 id="final-static-域优化原理"><a href="#final-static-域优化原理" class="headerlink" title="final static 域优化原理"></a>final static 域优化原理</h3><p>如果一个field是常量，通过final static优化只有原始类型和String类型域（非引用类型），<strong>如果是引用类型，实际上得不到任何优化。</strong></p>
+<h4 id="final-static域初始化流程是什么样的？"><a href="#final-static域初始化流程是什么样的？" class="headerlink" title="final static域初始化流程是什么样的？"></a>final static域初始化流程是什么样的？</h4><p>const/4 -&gt; 操作数在dex中的位置就是在opcode后一个字节</p>
+<h4 id="非final域的初始化流程是什么样的？"><a href="#非final域的初始化流程是什么样的？" class="headerlink" title="非final域的初始化流程是什么样的？"></a>非final域的初始化流程是什么样的？</h4><p>sget -&gt; dvmDexGetResolvedField -&gt; dvmResolveStaticField -&gt; dvmResolveClass -&gt; dvmGetStaticFieldInt(sfiled)</p>
+<p>可见sget指令比const/4要复杂很多。</p>
+<h4 id="为什么final-static引用类型没有得到优化？"><a href="#为什么final-static引用类型没有得到优化？" class="headerlink" title="为什么final static引用类型没有得到优化？"></a>为什么final static引用类型没有得到优化？</h4><p>因为不管是final，最后都是通过sget-object指令去获取该值。</p>
+<h3 id="热部署对于final-static域的解决方案"><a href="#热部署对于final-static域的解决方案" class="headerlink" title="热部署对于final static域的解决方案"></a>热部署对于final static域的解决方案</h3><ul>
+<li>修改final static 基本类型或者String类型域（非引用类型）域，由于编译器间引用到基本类型的地方被立即数替换，引用到String类型（非引用类型）的地方被常量池索引id替换，所以在热部署模式下，最终所有引用该final static域的方法都会被替换。实际上此时仍然可以走热部署。</li>
+<li>修改final static引用类型域，是不允许的，因为这个field的初始化会被翻译到clinit方法中，所以此时没法走热部署。</li>
+</ul>
+<h2 id="哪些情况方法会被内联？"><a href="#哪些情况方法会被内联？" class="headerlink" title="哪些情况方法会被内联？"></a>哪些情况方法会被内联？</h2><ol>
+<li>方法没有被其他任何地方引用到，毫无疑问，该方法会被内联掉。</li>
+<li>方法足够简单，比如一个方法的实现就只有一行，该方法会被内联掉，那么任何调用该方法的地方都会被该方法的实现替换掉。</li>
+<li>方法只被一个地方引用到，这个地方会被方法的实现替换掉。</li>
+</ol>
+<h2 id="混淆编译的过程是什么样的？"><a href="#混淆编译的过程是什么样的？" class="headerlink" title="混淆编译的过程是什么样的？"></a>混淆编译的过程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBe63e4e3ec814195a892f024501cbe134?method=download&amp;shareKey=9d67ecba60a5ead50987962705c6e7d0" alt="代码混淆"></p>
+<h2 id="虚拟机对泛型是怎么处理的？"><a href="#虚拟机对泛型是怎么处理的？" class="headerlink" title="虚拟机对泛型是怎么处理的？"></a>虚拟机对泛型是怎么处理的？</h2><p><strong>虚拟机巧妙使用了桥方法的方式，解决了类型擦除和多态的冲突。</strong><br>通过bridge方法来重写父类方法。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB77a5a0646dbcf09c96a4f4d1da96b5a3?method=download&amp;shareKey=71d1003ac6131c1e1d6b86ae3df0b720" alt="桥模式"></p>
+<h2 id="jack工具链是什么？"><a href="#jack工具链是什么？" class="headerlink" title="jack工具链是什么？"></a>jack工具链是什么？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB73807b6621eac6d7424263b71fb99009?method=download&amp;shareKey=62d712969aa5238eea9fbf86986e6c33" alt=""></p>
+<h2 id="热部署模式限制在哪？"><a href="#热部署模式限制在哪？" class="headerlink" title="热部署模式限制在哪？"></a>热部署模式限制在哪？</h2><p>不允许类结构变更以及不允许变更<clinit>方法，所以如果补丁发现这几种限制情况，那么只能走冷启动重启才能生效。</clinit></p>
+<h2 id="QQ空间方案和Tinker方案有什么差异？"><a href="#QQ空间方案和Tinker方案有什么差异？" class="headerlink" title="QQ空间方案和Tinker方案有什么差异？"></a>QQ空间方案和Tinker方案有什么差异？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB908c8307401a73732757e4d664eda8a7?method=download&amp;shareKey=50d0fff07647ad9a031500455bee7d1f" alt=""></p>
+<h2 id="类校验（dvmVerifyClass）和类优化（dvmOptimizeClass）有什么区别？"><a href="#类校验（dvmVerifyClass）和类优化（dvmOptimizeClass）有什么区别？" class="headerlink" title="类校验（dvmVerifyClass）和类优化（dvmOptimizeClass）有什么区别？"></a>类校验（dvmVerifyClass）和类优化（dvmOptimizeClass）有什么区别？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBeab708153e14bfb0f3dcf05fefabcc77?method=download&amp;shareKey=f684f6e9a5f4328ef6bc05a5d8525877" alt=""></p>
+<h2 id="插桩是什么？有什么影响？"><a href="#插桩是什么？有什么影响？" class="headerlink" title="插桩是什么？有什么影响？"></a>插桩是什么？有什么影响？</h2><blockquote>
+<p>插桩是指侵入dex打包流程，利用.class字节码修改技术，在所有.class文件的构造函数中引用这个帮助类，插桩由此而来。</p>
+</blockquote>
+<p>插桩会给类加载效率带来比较严重的影响，一个类的加载通常有三个阶段，dvmResolveClass -&gt; dvmLinkClass -&gt; d-vmlinitClass。</p>
+<p>如果类没有被打上CLASS_ISPREVERIFIED/CLASS_ISOPTIMIZED标志，那么Verify和Optimize都会在类的初始阶段进行。如下图所示：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB8e056ec53439569444345d2a6d4bfe62?method=download&amp;shareKey=7a4272072e462007bbc3c64705ad03fb" alt=""></p>
+<p>虽然会有性能开销，但是每个类只会加载一次，由jdk1.2版本后虚拟机的<a href="http://skyacer.github.io/2018/05/06/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E2%80%94%E2%80%94%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B/">双亲委派模型</a>决定的，但是在刚启动时的白屏启动页会加载大量的类，此时影响还是比较大。</p>
+<h2 id="QFix是怎么绕过类验证的？"><a href="#QFix是怎么绕过类验证的？" class="headerlink" title="QFix是怎么绕过类验证的？"></a>QFix是怎么绕过类验证的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBdef42baa022012ffea1b008ef697bc82?method=download&amp;shareKey=8e08f6e6ff1a3701e3cb5e834637b0df" alt="QFix"></p>
+<p>详细来说就是通过dlsym拿到该so库的dvmResolveClass/dvmFindLoadedClass函数指针，首先预加载引用类，这样dvmFindLoadedClass才不会为null，dvmFindLoadedClass执行结果得到ClassObject做为第一个参数执行dvmResolveClass(AnimRes, 2425, true)即可。</p>
+<h2 id="Dalvik虚拟机加载一个压缩文件是什么过程？"><a href="#Dalvik虚拟机加载一个压缩文件是什么过程？" class="headerlink" title="Dalvik虚拟机加载一个压缩文件是什么过程？"></a>Dalvik虚拟机加载一个压缩文件是什么过程？</h2><p>Dalvik尝试加载一个压缩文件的时候，只会去把classes.dex加载到内存中。除了classes.dex之外的其他dex被直接忽略掉。</p>
+<h2 id="Art虚拟机加载一个压缩文件是什么过程？"><a href="#Art虚拟机加载一个压缩文件是什么过程？" class="headerlink" title="Art虚拟机加载一个压缩文件是什么过程？"></a>Art虚拟机加载一个压缩文件是什么过程？</h2><p>Art虚拟机的方法调用链如下：<strong>DexFile_openDexFileNative -&gt; OpenDexFilesFromOat -&gt; LoadDexFiles</strong></p>
+<p>在LoadDexFiles中，我们可以看出，虽然Art默认支持加载压缩文件中包含多个dex的情况， 优先加载primary dex这个classes.dex，虽然后续会加载其他dex，补丁类只需要放到classes.dex即可。后续出现在其它dex中的补丁类<strong>是不会被重复加载的</strong>。</p>
+<h2 id="通过替换dex的方案思路是什么样的？"><a href="#通过替换dex的方案思路是什么样的？" class="headerlink" title="通过替换dex的方案思路是什么样的？"></a>通过替换dex的方案思路是什么样的？</h2><p>我们只要把补丁dex命名为classes.dex。原apk中的dex依次命名为classes(2,3,4…)dex就好了，然后一起打包为一个压缩文件。然后DexFile.loadDex得到DexFile对象，最后把该DexFile对象整个替换为旧的dexElements数组就可以了。</p>
+<h2 id="Tinker和Sophix在合成dex时有什么区别？"><a href="#Tinker和Sophix在合成dex时有什么区别？" class="headerlink" title="Tinker和Sophix在合成dex时有什么区别？"></a>Tinker和Sophix在合成dex时有什么区别？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB38fe2b039574bf7f8533ec05274d1f42?method=download&amp;shareKey=229b0248f29871199010f9ddfc416a4e" alt=""></p>
+<ul>
+<li>补丁dex必须命名为classes.dex</li>
+<li>loadDex 得到的DexFile完整替换掉dexElements数组而不是插入</li>
+</ul>
+<h2 id="在冷启动修复过程中遇到哪些性能问题？怎么解决的？"><a href="#在冷启动修复过程中遇到哪些性能问题？怎么解决的？" class="headerlink" title="在冷启动修复过程中遇到哪些性能问题？怎么解决的？"></a>在冷启动修复过程中遇到哪些性能问题？怎么解决的？</h2><p>在加载dex文件到native内存之前，如果dex不存在对应的odex，那么Dalvik下会执行dexopt，Art下会执行dexoat，最后得到的都是一个优化后的odex。<strong>虚拟机最后执行的都是odex而不是dex。</strong></p>
+<p>如果dex足够大，那么dexopt(Dalvik)/dexoat(Art)是很耗时的。Dalvik稍微好一点在于只会load classes.dex(也就是补丁包)，而在Art下，load的是dex和apk的原dex合并的完整补丁包（Tinker方案），这样的dexoat非常耗时。</p>
+<p>解决方式：<br>把loadDex当做一个事物来看，如果中途被打断，那么就删除odex文件，重启的时候如果发现存在odex文件，loadDex完之后，反射注入/替换dexElements数组，实现patch。如果不存在odex文件，重启另一个子线程loadDex，重启之后再生效。<br>对于补丁包的安全性，我们需要对补丁包进行签名校验与md5校验。</p>
+<h2 id="怎么实现Dalvik和Art下共用一套补丁？"><a href="#怎么实现Dalvik和Art下共用一套补丁？" class="headerlink" title="怎么实现Dalvik和Art下共用一套补丁？"></a>怎么实现Dalvik和Art下共用一套补丁？</h2><ul>
+<li>Dalvik下采用自行研发的全量DEX方案</li>
+<li>Art下虚拟机已经支持多dex，只需要把补丁dex作为主dex即可</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/05/06/Java虚拟机——双亲委派模型/" itemprop="url">
                   Java虚拟机——双亲委派模型
                 </a>
@@ -691,152 +926,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/05/06/你想知道的HashMap/" itemprop="url">
-                  你想知道的HashMap
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-05-06T16:06:59+08:00" content="2018-05-06">
-              2018-05-06
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/JAVA/" itemprop="url" rel="index">
-                    <span itemprop="name">JAVA</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="你想知道的HashMap，ConcurrentHashMap-锁机制"><a href="#你想知道的HashMap，ConcurrentHashMap-锁机制" class="headerlink" title="你想知道的HashMap，ConcurrentHashMap,锁机制"></a>你想知道的HashMap，ConcurrentHashMap,锁机制</h1><h2 id="为什么HashMap线程不安全？"><a href="#为什么HashMap线程不安全？" class="headerlink" title="为什么HashMap线程不安全？"></a>为什么HashMap线程不安全？</h2><ol>
-<li>如果此时正好存在两个 put 的 key 发生了碰撞(根据 hash 值计算的 bucket 一样)，那么根据 HashMap 的实现，这两个 key 会添加到数组的同一个位置，这样最终就会发生其中一个线程的 put 的数据被覆盖。</li>
-<li>如果多个线程同时检测到元素个数超过数组大小* loadFactor ，这样就会发生多个线程同时对 Node 数组进行扩容，都在重新计算元素位置以及复制数据，但是最终只有一个线程扩容后的数组会赋给 table，也就是说其他线程的都会丢失，并且各自线程 put 的数据也丢失。</li>
-</ol>
-<h2 id="HashMap工作原理是什么？"><a href="#HashMap工作原理是什么？" class="headerlink" title="HashMap工作原理是什么？"></a>HashMap工作原理是什么？</h2><p>通过hash的方法，通过put和get存储和获取对象。存储对象时，我们将K/V传给put方法时，它调用hashCode计算hash从而得到bucket位置，进一步存储，HashMap会根据当前bucket的占用情况自动调整容量(超过Load Facotr则resize为原来的2倍)。获取对象时，我们将K传给get，它调用hashCode计算hash从而得到bucket位置，并进一步调用equals()方法确定键值对。如果发生碰撞的时候，Hashmap通过链表将产生碰撞冲突的元素组织起来，在Java 8中，如果一个bucket中碰撞冲突的元素超过某个限制(默认是8)，则使用红黑树来替换链表，从而提高速度。</p>
-<h2 id="HashMap的hash函数是怎么实现的？"><a href="#HashMap的hash函数是怎么实现的？" class="headerlink" title="HashMap的hash函数是怎么实现的？"></a>HashMap的hash函数是怎么实现的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBb5a0f030f26093770b46ab0ce5441e12?method=download&amp;shareKey=9849ad8d9e67a5002373acadc1bcd37b" alt="hash过程"></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">static final int hash(Object key) &#123;</span><br><span class="line">    int h;</span><br><span class="line">    return (key == null) ? 0 : (h = key.hashCode()) ^ (h &gt;&gt;&gt; 16);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="HashMap的Resize实现是什么？"><a href="#HashMap的Resize实现是什么？" class="headerlink" title="HashMap的Resize实现是什么？"></a>HashMap的Resize实现是什么？</h2><p>当put时，如果发现目前的bucket占用程度已经超过了Load Factor所希望的比例（默认是0.75），那么就会发生resize。在resize的过程，简单的说就是把bucket扩充为2倍，之后重新计算index，把节点再放到新的bucket中。resize的注释是这样描述的：</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB0bc80d064a1d7246a6b74d5ba08f2e74?method=download&amp;shareKey=dcc5a2b85ccd2b559a3453defb55dba9" alt=""></p>
-<p>因此元素在重新计算hash之后，因为n变为2倍，那么n-1的mask范围在高位多1bit(红色)，因此新的index就会发生这样的变化：</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB286b40b60817b00ca67708af92bd6cdd?method=download&amp;shareKey=0412c14a50b377a1fd6ff6e8bdb717cb" alt=""></p>
-<p>因此，我们在扩充HashMap的时候，不需要重新计算hash，只需要看看原来的hash值新增的那个bit是1还是0就好了，是0的话索引没变，是1的话索引变成“原索引+oldCap”。可以看看下图为16扩充为32的resize示意图：</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB04e8367bff6229238de7ab2abdb9ce4d?method=download&amp;shareKey=0edc15e5ec1d9c83ef2d1e911fb0cc00" alt=""></p>
-<p>这个设计确实非常的巧妙，既省去了重新计算hash值的时间，而且同时，由于新增的1bit是0还是1可以认为是随机的，因此resize的过程，均匀的把之前的冲突的节点分散到新的bucket了。</p>
-<p><strong>注意HashMap可存储的最大容量是有限的，最大为2的30次方。</strong></p>
-<h2 id="重入锁是什么？"><a href="#重入锁是什么？" class="headerlink" title="重入锁是什么？"></a>重入锁是什么？</h2><p>当一个线程得到一个对象后，再次请求该对象锁时是可以再次得到该对象的锁的。</p>
-<p>简而言之：自己可以再次获取自己的内部锁</p>
-<p>在Java中，sychronized和ReetranLock都是可重入的。</p>
-<p>例如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class SynchronizedTest &#123;</span><br><span class="line">    public void method1() &#123;</span><br><span class="line">        synchronized (SynchronizedTest.class) &#123;</span><br><span class="line">            System.out.println(&quot;方法1获得ReentrantTest的锁运行了&quot;);</span><br><span class="line">            method2();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public void method2() &#123;</span><br><span class="line">        synchronized (SynchronizedTest.class) &#123;</span><br><span class="line">            System.out.println(&quot;方法1里面调用的方法2重入锁,也正常运行了&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        new SynchronizedTest().method1();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面便是synchronized的重入锁特性，即调用method1()方法时，已经获得了锁，此时内部调用method2()方法时，由于本身已经具有该锁，所以可以再次获取。</p>
-<p>ReentrantLock锁类似，代码如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">public class ReentrantLockTest &#123;</span><br><span class="line">    private Lock lock = new ReentrantLock();</span><br><span class="line">    public void method1() &#123;</span><br><span class="line">        lock.lock();</span><br><span class="line">        try &#123;</span><br><span class="line">            System.out.println(&quot;方法1获得ReentrantLock锁运行了&quot;);</span><br><span class="line">            method2();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public void method2() &#123;</span><br><span class="line">        lock.lock();</span><br><span class="line">        try &#123;</span><br><span class="line">            System.out.println(&quot;方法1里面调用的方法2重入ReentrantLock锁,也正常运行了&quot;);</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        new ReentrantLockTest().method1();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="公平锁是什么？"><a href="#公平锁是什么？" class="headerlink" title="公平锁是什么？"></a>公平锁是什么？</h2><p>CPU在调度线程的时候是在等待队列里随机挑选一个线程，由于这种随机性所以是无法保证线程先到先得的（synchronized控制的锁就是这种非公平锁）。但这样就会产生饥饿现象，即有些线程（优先级较低的线程）可能永远也无法获取CPU的执行权，优先级高的线程会不断的强制它的资源。那么如何解决饥饿问题呢，这就需要公平锁了。公平锁可以保证线程<strong>按照时间的先后顺序</strong>执行，避免饥饿现象的产生。但公平锁的效率比较低，因为要实现顺序执行，需要维护一个有序队列。</p>
-<p>ReentrantLock同样支持公平锁，在构造函数中，传入true就是公平锁</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public ReentrantLock(boolean fair) &#123;</span><br><span class="line">        sync = fair ? new FairSync() : new NonfairSync();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="synchronized和ReentrantLock有什么区别呢？"><a href="#synchronized和ReentrantLock有什么区别呢？" class="headerlink" title="synchronized和ReentrantLock有什么区别呢？"></a>synchronized和ReentrantLock有什么区别呢？</h2><ol>
-<li>Lock是一个接口，而synchronized是Java中的关键字，synchronized是内置的语言实现；</li>
-<li>synchronized在发生异常时，会自动释放线程占有的锁，因此不会导致死锁现象发生；而Lock在发生异常时，如果没有主动通过unLock()去释放锁，则很可能造成死锁现象，因此使用Lock时需要在finally块中释放锁；</li>
-<li>Lock可以让等待锁的线程响应中断，而synchronized却不行，使用synchronized时，等待的线程会一直等待下去，不能够响应中断；</li>
-<li>通过Lock可以知道有没有成功获取锁，而synchronized却无法办到。</li>
-<li>Lock可以提高多个线程进行读操作的效率。</li>
-<li>synchronized就不是可中断锁，而Lock是可中断锁。</li>
-<li>synchronized就是非公平锁，它无法保证等待的线程获取锁的顺序。ReentrantLock可以设置成公平锁。</li>
-<li>ReentrantReadWriteLock是读写锁，synchronized不支持读写锁。</li>
-<li>一个ReentrantLock对象可以同时绑定多个Condition对象，而在synchronized中，锁对象的wait()和notify()或notifyAll()方法可以实现一个隐含的条件，如果要和多余一个条件关联的时候，就不得不额外地添加一个锁，而ReentrantLock则无须这么做，只需要多次调用new Condition()方法即可。</li>
-<li>在性能上来说，如果竞争资源不激烈，两者的性能是差不多的，而当竞争资源非常激烈时（即有大量线程同时竞争），此时ReentrantLock的性能要远远优于synchronized。</li>
-<li>上述说的都是jdk1.5及以前，在jdk1.6之后，synchronized做了很多优化，包括锁消除，偏向锁等等，官方提倡优先考虑用synchronized来进行同步。</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -882,7 +971,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">32</span>
+              <span class="site-state-item-count">33</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -890,7 +979,7 @@
           
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-count">19</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -899,7 +988,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">20</span>
+                <span class="site-state-item-count">21</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

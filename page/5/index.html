@@ -215,6 +215,156 @@
             
               
                 
+                <a class="post-title-link" href="/2018/03/23/Android主流视频播放及缓存实现原理调研/" itemprop="url">
+                  Android主流视频播放及缓存实现原理调研
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-23T15:42:36+08:00" content="2018-03-23">
+              2018-03-23
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/视频方案/" itemprop="url" rel="index">
+                    <span itemprop="name">视频方案</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Android主流视频播放及缓存实现原理调研"><a href="#Android主流视频播放及缓存实现原理调研" class="headerlink" title="Android主流视频播放及缓存实现原理调研"></a>Android主流视频播放及缓存实现原理调研</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文针对视频播放及缓存方案进行调研，对于Android端常用的视频播放器的缓存策略介绍及实现原理。</p>
+<h2 id="播放器直连"><a href="#播放器直连" class="headerlink" title="播放器直连"></a>播放器直连</h2><p><img src="http://upload-images.jianshu.io/upload_images/4287000-c0cae65b29463412?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="本地存储形式缓存"></p>
+<h3 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h3><p><img src="http://upload-images.jianshu.io/upload_images/4287000-30cc16c3c746929a?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><p>实现简单，逻辑易懂。</p>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
+<li>用户播放视频的时候等待时间较长，起播慢</li>
+<li>需要大量的控制视频播放的逻辑来进行辅助，与播放器代码耦合严重</li>
+<li>每次seek（用户拖动进度条的行为）切源耗时，seek后会切换到从网络上读取状态，体验较慢。</li>
+</ol>
+<h2 id="AndroidVideoCache"><a href="#AndroidVideoCache" class="headerlink" title="AndroidVideoCache"></a>AndroidVideoCache</h2><p>在播放器与视频源服务器之间加了一层代理服务器，截取视频播放器发送的请求，根据截取的请求，向网络服务器请求数据，然后写到本地。本地代理服务器从文件中读取数据并发送给播放器进行播放。</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4287000-791115737d78b9e4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidVideoCache实现原理"></p>
+<h3 id="流程图-1"><a href="#流程图-1" class="headerlink" title="流程图"></a>流程图</h3><p><img src="http://upload-images.jianshu.io/upload_images/4287000-c1022646e5511912?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidVideCache流程图"></p>
+<h3 id="Seek过程解析"><a href="#Seek过程解析" class="headerlink" title="Seek过程解析"></a>Seek过程解析</h3><h4 id="Seek阶段"><a href="#Seek阶段" class="headerlink" title="Seek阶段"></a>Seek阶段</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-5fbb7cc98446550f?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Seek阶段总流程图"></p>
+<h4 id="Seek开始"><a href="#Seek开始" class="headerlink" title="Seek开始"></a>Seek开始</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-d0c87097a0f7c5da?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h4 id="Seek1"><a href="#Seek1" class="headerlink" title="Seek1"></a>Seek1</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-a93d9ccb81ab73ed?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h4 id="Seek2"><a href="#Seek2" class="headerlink" title="Seek2"></a>Seek2</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-38ff3551de7372b4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h4 id="补洞阶段"><a href="#补洞阶段" class="headerlink" title="补洞阶段"></a>补洞阶段</h4><blockquote>
+<p>补洞阶段是对于Seek阶段遗留下来的，片段小于20kb的下载长度进行补充到片段数组的过程。</p>
+</blockquote>
+<p>在第二次播放时，如果文件中有空洞，无论片段再小，也会保存到片段中，最后当配置数组为{0, length}的时候，length为视频长度大小，也会存到片段中。</p>
+<h3 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h3><ol>
+<li>数据流是本地代理控制，方便加入缓存、预加载、防盗链等业务逻辑。提高了视频下载的成功率，减少了视频缓冲时间，提升用户体验。</li>
+<li>与播放器逻辑完全解耦，对于播放器只是一个地址。</li>
+</ol>
+<h2 id="Qzon"><a href="#Qzon" class="headerlink" title="Qzon"></a>Qzon</h2><p>Qzone的日均视频播放量破十亿，其中Android端的总播放量占比超过70%。所以Qzone的实现方案对我们来说很有借鉴意义。</p>
+<h3 id="最初的传统的本地代理方案"><a href="#最初的传统的本地代理方案" class="headerlink" title="最初的传统的本地代理方案"></a>最初的传统的本地代理方案</h3><p><img src="http://upload-images.jianshu.io/upload_images/4287000-b7a8d82c97132297?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QZon"></p>
+<h4 id="带来的问题"><a href="#带来的问题" class="headerlink" title="带来的问题"></a>带来的问题</h4><ol>
+<li>视频下载和播放的业务逻辑复杂，过多的逻辑和下载本身耦合。</li>
+<li>不容易接入第三方下载器和对下载过程进行监控。</li>
+</ol>
+<h3 id="优化过程"><a href="#优化过程" class="headerlink" title="优化过程"></a>优化过程</h3><p>优化主要从如下几个方面入手：</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4287000-85bfdbf9a702e12e?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="视频优化过程"></p>
+<h4 id="防盗链预拉取"><a href="#防盗链预拉取" class="headerlink" title="防盗链预拉取"></a>防盗链预拉取</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-b77c6b39f7ba0e5d?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="防盗链预拉取"></p>
+<h4 id="缓存分片"><a href="#缓存分片" class="headerlink" title="缓存分片"></a>缓存分片</h4><p>这里主要解决的问题是，之前单个的顺序存储方式无法对于播放空洞（非顺序播放场景，例如拖动、续播等）进行缓存，降低了缓存率和命中率。</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4287000-caa54a2250d75023?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="缓存分片"></p>
+<h4 id="私有通道方案"><a href="#私有通道方案" class="headerlink" title="私有通道方案"></a>私有通道方案</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-97cd002ecde5a9b4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="私有通道方案"></p>
+<h4 id="流量控制"><a href="#流量控制" class="headerlink" title="流量控制"></a>流量控制</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-a29eba87469059f1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="流量控制"></p>
+<h4 id="H265编码"><a href="#H265编码" class="headerlink" title="H265编码"></a>H265编码</h4><p>H265是新一代视频编码标准，相比原有使用H264编码的视频，具有更高的压缩比，在画质近似的前提下，H265编码的视频文件体积只有H264的一半甚至更少，因此，播放H265编码的视频能极大减少带宽消耗。</p>
+<p>具体编码相关内容，请看<a href="https://www.jianshu.com/p/f116b6f81ab3" target="_blank" rel="noopener">直播技术点之编解码基础（一）</a></p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><ol>
+<li><a href="https://juejin.im/entry/59b09fcff265da24754db224" target="_blank" rel="noopener">一种边播变下的播放策略</a></li>
+<li><a href="http://www.10tiao.com/html/222/201612/2649796895/1.html" target="_blank" rel="noopener">Qzone视频下载如何做到多快好省？</a></li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/03/16/责任链模式/" itemprop="url">
                   责任链模式
                 </a>
@@ -705,157 +855,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/03/10/Java-native方法及JNI实例/" itemprop="url">
-                  Java native方法及JNI实例
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-10T15:59:36+08:00" content="2018-03-10">
-              2018-03-10
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>今天看AndFix实现时，核心方法之ReplaceMethod方法是一个native方法，之前并没有遇到过，所以在此整理记录。</p>
-<h3 id="native的作用"><a href="#native的作用" class="headerlink" title="native的作用"></a>native的作用</h3><p>总而言之：native是与C++联合开发的时候用的！使用native关键字说明这个方法是原生函数，也就是这个方法是用C/C++语言实现的，并且被编译成了DLL，由java去调用。</p>
-<ol>
-<li>native 是用做java 和其他语言（如c++）进行协作时使用的，也就是native 后的函数的实现不是用java写的。</li>
-<li>既然都不是java，那就别管它的源代码了，我们只需要知道这个方法已经被实现即可。</li>
-<li>native的意思就是通知操作系统， 这个函数你必须给我实现，因为我要使用。 所以native关键字的函数都是操作系统实现的， java只能调用。</li>
-<li>java是跨平台的语言，既然是跨了平台，所付出的代价就是牺牲一些对底层的控制，而java要实现对底层的控制，就需要一些其他语言的帮助，这个就是native的作用了</li>
-</ol>
-<h2 id="JNI简介"><a href="#JNI简介" class="headerlink" title="JNI简介"></a>JNI简介</h2><p>native方法是通过java中的JNI实现的。JNI是Java Native Interface的 缩写。从Java 1.1开始，Java Native Interface (JNI)标准成为java平台的一部分，它允许Java代码和其他语言写的代码进行交互。</p>
-<p>JNI一开始是为了本地已编译语言，尤其是C和C++而设计 的，但是它并不妨碍你使用其他语言，只要调用约定受支持就可以了。</p>
-<p>目前java与dll交互的技术主要有3种：jni，jawin和jacob。</p>
-<p>目前功能性而言：jni &gt;&gt; jawin &gt; jacob，其大致的结构如下图：</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB59723036fe56880a06afd5acd74d278a?method=download&amp;shareKey=67d287341bf076f243683e75262c4a10" alt="jni_jawin_jacob"></p>
-<p>windows，基于native的PE结构，windows的jvm基于native结构，Java的应用体系构建于jvm之上。jvm通过加载此jni程序间接调用目标原生函数。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBc1c5ddbec73d7e3e30cd3c4e4d8990cc?method=download&amp;shareKey=3635b55ce1dd7d9d9effa6280e68eb08" alt=""></p>
-<h3 id="JNI的生成步骤——Mac版"><a href="#JNI的生成步骤——Mac版" class="headerlink" title="JNI的生成步骤——Mac版"></a>JNI的生成步骤——Mac版</h3><ol>
-<li>编写带有native声明的方法的java类，生成.java文件</li>
-<li>使用javac命令编译所编写的java类，生成.class文件</li>
-<li>使用javah -jni java类名生成扩展名为h的头文件，也即生成.h文件</li>
-<li>使用C/C++（或者其他编程想语言）实现本地方法，创建.h文件的实现，也就是创建.cpp文件实现.h文件中的方法</li>
-<li>将C/C++编写的文件生成动态连接库，生成jnilib文件</li>
-</ol>
-<h2 id="JNI实例"><a href="#JNI实例" class="headerlink" title="JNI实例"></a>JNI实例</h2><p>接下来我们按照上述步骤一个一个来生成JNI实例</p>
-<h3 id="1-编写带有native声明的java类，HelloWorld-java"><a href="#1-编写带有native声明的java类，HelloWorld-java" class="headerlink" title="1.编写带有native声明的java类，HelloWorld.java"></a>1.编写带有native声明的java类，HelloWorld.java</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class HelloWorld &#123;</span><br><span class="line">    public native void sayHelloWorld(); //申明一个native方法</span><br><span class="line"></span><br><span class="line">    static&#123;</span><br><span class="line">        System.loadLibrary(&quot;HelloWorldImpl&quot;); //装入动态链接库,&quot;HelloWorldImpl&quot;是装入动态链接库的名称</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args)&#123;</span><br><span class="line">        HelloWorld helloWorld = new HelloWorld();</span><br><span class="line">        helloWorld.sayHelloWorld();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="2-使用javac生成HelloWorld-class"><a href="#2-使用javac生成HelloWorld-class" class="headerlink" title="2.使用javac生成HelloWorld.class"></a>2.使用javac生成HelloWorld.class</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac HelloWorld.java</span><br></pre></td></tr></table></figure>
-<h3 id="3-使用javah-jni-java类生成扩展名为h的头文件"><a href="#3-使用javah-jni-java类生成扩展名为h的头文件" class="headerlink" title="3.使用javah -jni java类生成扩展名为h的头文件"></a>3.使用javah -jni java类生成扩展名为h的头文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javah -jni HelloWorld</span><br></pre></td></tr></table></figure>
-<p><strong>此处需要注意的是，我们应该在包名的根目录下执行，因为生成的文件的文件名需要引用包目录。不然就会报找不到类文件的错误</strong></p>
-<p>生成com_think_jni_HelloWorld.h文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">/* DO NOT EDIT THIS FILE - it is machine generated */</span><br><span class="line">#include &lt;jni.h&gt;</span><br><span class="line">/* Header for class com_think_jni_HelloWorld */</span><br><span class="line"></span><br><span class="line">#ifndef _Included_com_think_jni_HelloWorld</span><br><span class="line">#define _Included_com_think_jni_HelloWorld</span><br><span class="line">#ifdef __cplusplus</span><br><span class="line">extern &quot;C&quot; &#123;</span><br><span class="line">#endif</span><br><span class="line">/*</span><br><span class="line"> * Class:     com_think_jni_HelloWorld</span><br><span class="line"> * Method:    displayHelloWorld</span><br><span class="line"> * Signature: ()V</span><br><span class="line"> */</span><br><span class="line">JNIEXPORT void JNICALL Java_com_think_jni_HelloWorld_displayHelloWorld</span><br><span class="line">  (JNIEnv *, jobject);</span><br><span class="line"></span><br><span class="line">#ifdef __cplusplus</span><br><span class="line">&#125;</span><br><span class="line">#endif</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
-<p>这里我们可以这样理解：这个h文件相当于我们在java里面的接口，这里声明了一个 Java_HelloWorld_displayHelloWorld (JNIEnv *, jobject);方法，然后在我们的本地方法里面实现这个方法，也就是说我们在编写C/C++程序的时候所使用的方法名必须和这里的一致</p>
-<h3 id="4使用C-C-实现本地方法"><a href="#4使用C-C-实现本地方法" class="headerlink" title="4使用C/C++实现本地方法"></a>4使用C/C++实现本地方法</h3><p>创建HelloWorldImpl.cpp，代码如下所示：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;jni.h&quot;</span><br><span class="line">#include &quot;com_think_jni_HelloWorld.h&quot;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">JNIEXPORT void JNICALL Java_com_think_jni_HelloWorld_displayHelloWorld(JNIEnv *env,jobject obj)&#123;</span><br><span class="line">    printf(&quot;Hello World!\n&quot;);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="5-将本地方法编写的文件生成动态链接库"><a href="#5-将本地方法编写的文件生成动态链接库" class="headerlink" title="5 将本地方法编写的文件生成动态链接库"></a>5 将本地方法编写的文件生成动态链接库</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -I/Library/Java/JavaVirtualMachines/[根据装的jdk版本来定]/Contents/Home/include/ -dynamiclib HelloWorldImpl.cpp -o libhell.jnilib</span><br></pre></td></tr></table></figure>
-<p>但是会出现运行这个命令报错</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB2800ec370c93a88b866f1005aca0422a?method=download&amp;shareKey=687169bc4d1b1e546652eed6b11a2aec" alt="file not found"></p>
-<p>我们找到这个文件在</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/Library/Java/JavaVirtualMachines/[根据安装的jdk版本来定]/Contents/Home/include/darwin/</span><br></pre></td></tr></table></figure>
-<p>这个目录下，所以我们再链接该目录到以上命令中</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gcc -I/Library/Java/JavaVirtualMachines/jdk1.8.0_71.jdk/Contents/Home/include/ -I/Library/Java/JavaVirtualMachines/jdk1.8.0_71</span><br><span class="line"></span><br><span class="line">.jdk/Contents/Home/include/darwin/ -dynamiclib HelloWorldImpl.cpp -o libhell.jnilib</span><br></pre></td></tr></table></figure>
-<p>最终成功生成libhell.jnilib</p>
-<h3 id="6-运行可执行文件"><a href="#6-运行可执行文件" class="headerlink" title="6 运行可执行文件"></a>6 运行可执行文件</h3><p>把上述文件放在同一个文件夹后，执行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java HelloWorld</span><br></pre></td></tr></table></figure>
-<p>即可看到</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB823e888a2c766f094f126aab67b0f039?method=download&amp;shareKey=a3c76b783e2a041cdc7ea1a2dfac63f0" alt=""></p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -901,7 +900,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">33</span>
+              <span class="site-state-item-count">34</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

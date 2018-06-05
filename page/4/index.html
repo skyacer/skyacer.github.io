@@ -215,6 +215,150 @@
             
               
                 
+                <a class="post-title-link" href="/2018/03/28/SurfaceView和TextureView对比/" itemprop="url">
+                  SurfaceView和TextureView对比
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-28T13:52:58+08:00" content="2018-03-28">
+              2018-03-28
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/视频/" itemprop="url" rel="index">
+                    <span itemprop="name">视频</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="SurfaceView及TextureView对比"><a href="#SurfaceView及TextureView对比" class="headerlink" title="SurfaceView及TextureView对比"></a>SurfaceView及TextureView对比</h1><h2 id="SurfaceView是什么？"><a href="#SurfaceView是什么？" class="headerlink" title="SurfaceView是什么？"></a>SurfaceView是什么？</h2><p>它继承自类View，因此它本质上是一个View。但与普通View不同的是，它有自己的Surface。有自己的Surface，在WMS中有对应的WindowState，在SurfaceFlinger中有Layer。我们知道，一般的Activity包含的多个View会组成View hierachy的树形结构，只有最顶层的DecorView，也就是根结点视图，才是对WMS可见的。这个DecorView在WMS中有一个对应的WindowState。相应地，在SF中对应的Layer。而SurfaceView自带一个Surface，这个Surface在WMS中有自己对应的WindowState，在SF中也会有自己的Layer。虽然在App端它仍在View hierachy中，但在Server端（WMS和SF）中，它与宿主窗口是分离的。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB683a92bd2aaadb2aa9eb3a9312c787d0?method=download&amp;shareKey=e3be2c2ca348fa888942b849536dd92c" alt="SurfaceView结构"></p>
+<h2 id="SurfaceView这样设计的优势和缺陷是什么？"><a href="#SurfaceView这样设计的优势和缺陷是什么？" class="headerlink" title="SurfaceView这样设计的优势和缺陷是什么？"></a>SurfaceView这样设计的优势和缺陷是什么？</h2><h3 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h3><p>这样的好处是对这个Surface的渲染可以放到单独线程去做，渲染时可以有自己的GL context。这对于一些游戏、视频等性能相关的应用非常有益，因为它不会影响主线程对事件的响应。</p>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><p>因为这个Surface不在View hierachy中，它的显示也不受View的属性控制，所以不能进行平移，缩放等变换，也不能放在其它ViewGroup中，一些View中的特性也无法使用。</p>
+<h2 id="SurfaceView双缓冲是什么？"><a href="#SurfaceView双缓冲是什么？" class="headerlink" title="SurfaceView双缓冲是什么？"></a>SurfaceView双缓冲是什么？</h2><blockquote>
+<p>通俗来讲就是有两个缓冲区，一个后台缓冲区和一个前台缓冲区，每次后台缓冲区接受数据，当填充完整后交换给前台缓冲，这样就保证了前台缓冲里的数据都是完整的。</p>
+</blockquote>
+<p>双缓冲：SurfaceView在更新视图时用到了两张Canvas：</p>
+<ol>
+<li>frontCanvas：实际显示的canvas</li>
+<li>backCanvas：存储的是上一次更改前的canvas</li>
+</ol>
+<p>流程如下：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB870926aec79c9b78404e61e7674605cf?method=download&amp;shareKey=73fb3846d2744ca54f31f516067f4a39" alt="双缓冲流程"></p>
+<h3 id="好处是什么？"><a href="#好处是什么？" class="headerlink" title="好处是什么？"></a>好处是什么？</h3><ol>
+<li>提高渲染效率</li>
+<li>可以避免刷新频率过高而出现的闪烁现象</li>
+</ol>
+<h2 id="TextureView是什么？"><a href="#TextureView是什么？" class="headerlink" title="TextureView是什么？"></a>TextureView是什么？</h2><blockquote>
+<p>在Android4.0(API level 14)中引入，与SurfaceView一样继承View，它可以将内容流直接投影到View中，它可以将内容流直接投影到View中，可以用于实现Live preview等功能。</p>
+</blockquote>
+<ol>
+<li>和SurfaceView不同，不在WMS中单独创建窗口，而是作为View  hierachy中的一个普通view，因此可以合其他普通View一样进行移动，旋转，缩放，动画等变化。</li>
+<li>和SurfaceView不同，TextureView必须在硬件加速的窗口中。</li>
+<li>它显示的内容流数据可以来自App进程或是远端进程。</li>
+<li>TextureView继承自View，它与其它的View一样在View hierachy中管理与绘制。TextureView重载了draw()方法，其中主要SurfaceTexture中收到的图像数据作为纹理更新到对应的HardwareLayer中。</li>
+</ol>
+<h2 id="TextureView优点和缺点？"><a href="#TextureView优点和缺点？" class="headerlink" title="TextureView优点和缺点？"></a>TextureView优点和缺点？</h2><p><strong>优点</strong>：支持移动、旋转、缩放等动画，支持截图<br><strong>缺点</strong>：必须在硬件加速的窗口中使用，占用内存比SurfaceView高，在5.0以前在主线程渲染，5.0以后有单独的渲染线程。</p>
+<h2 id="TextureView和SurfaceView区别是什么？"><a href="#TextureView和SurfaceView区别是什么？" class="headerlink" title="TextureView和SurfaceView区别是什么？"></a>TextureView和SurfaceView区别是什么？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB7529fdd04d9cf09323a2d83303427b22?method=download&amp;shareKey=5c37edeaf1c1d09ee6d5f42631733ebd" alt="区别"></p>
+<h2 id="播放器应该选哪个？"><a href="#播放器应该选哪个？" class="headerlink" title="播放器应该选哪个？"></a>播放器应该选哪个？</h2><p>从性能和安全性角度出发，<strong>优先选SurfaceView</strong></p>
+<ol>
+<li>在android 7.0上系统surfaceview的性能比TextureView更有优势，支持对象的内容位置和包含的应用内容同步更新，平移、缩放不会产生黑边。 在7.0以下系统如果使用场景有动画效果，可以选择性使用TextureView</li>
+<li>由于失效(invalidation)和缓冲的特性，TextureView增加了额外1~3帧的延迟显示画面更新</li>
+<li>TextureView总是使用GL合成，而SurfaceView可以使用硬件overlay后端，可以占用更少的内存带宽，消耗更少的能量</li>
+<li>TextureView的内部缓冲队列导致比SurfaceView使用更多的内存</li>
+<li>SurfaceView： 内部自己持有surface，surface 创建、销毁、大小改变时系统来处理的，通过surfaceHolder 的callback回调通知。当画布创建好时，可以将surface绑定到MediaPlayer中。SurfaceView如果为用户可见的时候，创建SurfaceView的SurfaceHolder用于显示视频流解析的帧图片，如果发现SurfaceView变为用户不可见的时候，则立即销毁SurfaceView的SurfaceHolder，以达到节约系统资源的目的</li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/03/27/一个App从启动到主页面经历了什么过程？/" itemprop="url">
                   一个App从启动到主页面经历了什么过程？
                 </a>
@@ -791,156 +935,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/03/23/Android主流视频播放及缓存实现原理调研/" itemprop="url">
-                  Android主流视频播放及缓存实现原理调研
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-23T15:42:36+08:00" content="2018-03-23">
-              2018-03-23
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/视频方案/" itemprop="url" rel="index">
-                    <span itemprop="name">视频方案</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Android主流视频播放及缓存实现原理调研"><a href="#Android主流视频播放及缓存实现原理调研" class="headerlink" title="Android主流视频播放及缓存实现原理调研"></a>Android主流视频播放及缓存实现原理调研</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文针对视频播放及缓存方案进行调研，对于Android端常用的视频播放器的缓存策略介绍及实现原理。</p>
-<h2 id="播放器直连"><a href="#播放器直连" class="headerlink" title="播放器直连"></a>播放器直连</h2><p><img src="http://upload-images.jianshu.io/upload_images/4287000-c0cae65b29463412?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="本地存储形式缓存"></p>
-<h3 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h3><p><img src="http://upload-images.jianshu.io/upload_images/4287000-30cc16c3c746929a?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
-<h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><p>实现简单，逻辑易懂。</p>
-<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
-<li>用户播放视频的时候等待时间较长，起播慢</li>
-<li>需要大量的控制视频播放的逻辑来进行辅助，与播放器代码耦合严重</li>
-<li>每次seek（用户拖动进度条的行为）切源耗时，seek后会切换到从网络上读取状态，体验较慢。</li>
-</ol>
-<h2 id="AndroidVideoCache"><a href="#AndroidVideoCache" class="headerlink" title="AndroidVideoCache"></a>AndroidVideoCache</h2><p>在播放器与视频源服务器之间加了一层代理服务器，截取视频播放器发送的请求，根据截取的请求，向网络服务器请求数据，然后写到本地。本地代理服务器从文件中读取数据并发送给播放器进行播放。</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/4287000-791115737d78b9e4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidVideoCache实现原理"></p>
-<h3 id="流程图-1"><a href="#流程图-1" class="headerlink" title="流程图"></a>流程图</h3><p><img src="http://upload-images.jianshu.io/upload_images/4287000-c1022646e5511912?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidVideCache流程图"></p>
-<h3 id="Seek过程解析"><a href="#Seek过程解析" class="headerlink" title="Seek过程解析"></a>Seek过程解析</h3><h4 id="Seek阶段"><a href="#Seek阶段" class="headerlink" title="Seek阶段"></a>Seek阶段</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-5fbb7cc98446550f?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Seek阶段总流程图"></p>
-<h4 id="Seek开始"><a href="#Seek开始" class="headerlink" title="Seek开始"></a>Seek开始</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-d0c87097a0f7c5da?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
-<h4 id="Seek1"><a href="#Seek1" class="headerlink" title="Seek1"></a>Seek1</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-a93d9ccb81ab73ed?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
-<h4 id="Seek2"><a href="#Seek2" class="headerlink" title="Seek2"></a>Seek2</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-38ff3551de7372b4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
-<h4 id="补洞阶段"><a href="#补洞阶段" class="headerlink" title="补洞阶段"></a>补洞阶段</h4><blockquote>
-<p>补洞阶段是对于Seek阶段遗留下来的，片段小于20kb的下载长度进行补充到片段数组的过程。</p>
-</blockquote>
-<p>在第二次播放时，如果文件中有空洞，无论片段再小，也会保存到片段中，最后当配置数组为{0, length}的时候，length为视频长度大小，也会存到片段中。</p>
-<h3 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h3><ol>
-<li>数据流是本地代理控制，方便加入缓存、预加载、防盗链等业务逻辑。提高了视频下载的成功率，减少了视频缓冲时间，提升用户体验。</li>
-<li>与播放器逻辑完全解耦，对于播放器只是一个地址。</li>
-</ol>
-<h2 id="Qzon"><a href="#Qzon" class="headerlink" title="Qzon"></a>Qzon</h2><p>Qzone的日均视频播放量破十亿，其中Android端的总播放量占比超过70%。所以Qzone的实现方案对我们来说很有借鉴意义。</p>
-<h3 id="最初的传统的本地代理方案"><a href="#最初的传统的本地代理方案" class="headerlink" title="最初的传统的本地代理方案"></a>最初的传统的本地代理方案</h3><p><img src="http://upload-images.jianshu.io/upload_images/4287000-b7a8d82c97132297?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QZon"></p>
-<h4 id="带来的问题"><a href="#带来的问题" class="headerlink" title="带来的问题"></a>带来的问题</h4><ol>
-<li>视频下载和播放的业务逻辑复杂，过多的逻辑和下载本身耦合。</li>
-<li>不容易接入第三方下载器和对下载过程进行监控。</li>
-</ol>
-<h3 id="优化过程"><a href="#优化过程" class="headerlink" title="优化过程"></a>优化过程</h3><p>优化主要从如下几个方面入手：</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/4287000-85bfdbf9a702e12e?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="视频优化过程"></p>
-<h4 id="防盗链预拉取"><a href="#防盗链预拉取" class="headerlink" title="防盗链预拉取"></a>防盗链预拉取</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-b77c6b39f7ba0e5d?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="防盗链预拉取"></p>
-<h4 id="缓存分片"><a href="#缓存分片" class="headerlink" title="缓存分片"></a>缓存分片</h4><p>这里主要解决的问题是，之前单个的顺序存储方式无法对于播放空洞（非顺序播放场景，例如拖动、续播等）进行缓存，降低了缓存率和命中率。</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/4287000-caa54a2250d75023?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="缓存分片"></p>
-<h4 id="私有通道方案"><a href="#私有通道方案" class="headerlink" title="私有通道方案"></a>私有通道方案</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-97cd002ecde5a9b4?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="私有通道方案"></p>
-<h4 id="流量控制"><a href="#流量控制" class="headerlink" title="流量控制"></a>流量控制</h4><p><img src="http://upload-images.jianshu.io/upload_images/4287000-a29eba87469059f1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="流量控制"></p>
-<h4 id="H265编码"><a href="#H265编码" class="headerlink" title="H265编码"></a>H265编码</h4><p>H265是新一代视频编码标准，相比原有使用H264编码的视频，具有更高的压缩比，在画质近似的前提下，H265编码的视频文件体积只有H264的一半甚至更少，因此，播放H265编码的视频能极大减少带宽消耗。</p>
-<p>具体编码相关内容，请看<a href="https://www.jianshu.com/p/f116b6f81ab3" target="_blank" rel="noopener">直播技术点之编解码基础（一）</a></p>
-<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><ol>
-<li><a href="https://juejin.im/entry/59b09fcff265da24754db224" target="_blank" rel="noopener">一种边播变下的播放策略</a></li>
-<li><a href="http://www.10tiao.com/html/222/201612/2649796895/1.html" target="_blank" rel="noopener">Qzone视频下载如何做到多快好省？</a></li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -986,7 +980,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">33</span>
+              <span class="site-state-item-count">34</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

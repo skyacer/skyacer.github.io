@@ -215,6 +215,241 @@
             
               
                 
+                <a class="post-title-link" href="/2018/05/16/Android热修复笔记/" itemprop="url">
+                  Android热修复笔记
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-05-16T16:10:58+08:00" content="2018-05-16">
+              2018-05-16
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Android热修复笔记"><a href="#Android热修复笔记" class="headerlink" title="Android热修复笔记"></a>Android热修复笔记</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>代码修复有两大主要方案，一种是阿里系的底层替换方案，另一种是腾讯系的类加载方案。</p>
+<h3 id="底层替换方案"><a href="#底层替换方案" class="headerlink" title="底层替换方案"></a>底层替换方案</h3><h4 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h4><p>时效性最好，加载轻快，即时生效。</p>
+<h4 id="劣势"><a href="#劣势" class="headerlink" title="劣势"></a>劣势</h4><p>这个方案限制颇多，由于这类方案是根据公开的Android源码中的结构写死的，一旦厂商对ArtMethod结构体进行修改，那么就会出问题。</p>
+<h2 id="AndFix"><a href="#AndFix" class="headerlink" title="AndFix"></a>AndFix</h2><h3 id="替换方法流程"><a href="#替换方法流程" class="headerlink" title="替换方法流程"></a>替换方法流程</h3><p>这里以Android版本大于4.4为例，进行分析</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB315390d16fc48dff84eeeba1cc8b0508?method=download&amp;shareKey=0ce2bfd9775ad2703418b0c700124cdb" alt="AndFix替换方案"></p>
+<p>由流程图看出，替换方法所需ArtMethod中的字段有三个</p>
+<ol>
+<li>entry_point_from_interprete_</li>
+<li>entry_point_from_quick_compiled_code_</li>
+<li>dex_cache_resloved_methods </li>
+</ol>
+<p>ArtMethod到底是什么呢？</p>
+<p>ART运行时在内部又会使用另外两个不同的术语来描述类和方法，其中将类描述为Class，而将类方法描述为ArtMethod</p>
+<p>由于对于ArtMethod的结构写死，所以AndFix不支持很多机型的原因，也就是因为这些机型修改了底层的虚拟机结构。</p>
+<h3 id="在AndFix基础上优化"><a href="#在AndFix基础上优化" class="headerlink" title="在AndFix基础上优化"></a>在AndFix基础上优化</h3><p>通过对于ArtMethod字段替换到整个结构的替换。<br><img src="https://note.youdao.com/yws/api/personal/file/WEBb13ecc4af0dfc784e57faf1b4b965d3d?method=download&amp;shareKey=9daf955e07100f61508da47e83eb1c7f" alt=""></p>
+<p>分配Size流程如下：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB07dd3d5faf50b5e999a6ef52622feab5?method=download&amp;shareKey=ec2d066417c6a92584454653b539a923" alt="ArtMethod分配Size流程"></p>
+<p>如下图，通过在相邻两个方法中取对应ArtMethod的起始地址的差值来判断一个ArtMethod的大小。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBa9ad2afafbd4aa9cb3dbc1774c63fa1f?method=download&amp;shareKey=28b9ae7c73bc793ba2d770640ff5de98" alt="地址差值"></p>
+<h4 id="访问权限"><a href="#访问权限" class="headerlink" title="访问权限"></a>访问权限</h4><p>如何解决被替换的方法有权限访问这个类的其他private方法？</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB2049903c2ba4bc75ee5a597f465a1549?method=download&amp;shareKey=48b4fcb641d43d440ead566eaed3a8c0" alt=""><br>在机器码层面，调用逻辑和之前Activity的例子没有差别，并没有做任何的权限检查，所以替换后会正常执行而不是报错。</p>
+<h4 id="同包名下的权限问题"><a href="#同包名下的权限问题" class="headerlink" title="同包名下的权限问题"></a>同包名下的权限问题</h4><p>如果补丁中的类在访问同包名下的类时会报出访问权限异常。</p>
+<p>原因是因为在虚拟机中，替换了的方法与原来的方法不是同一个ClassLoader来加载，所以导致两个类无法被判断为同包名。</p>
+<p>解决办法：通过设置新类的ClassLoader为原来类的就行了。通过反射即可进行设置。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Filed classLoaderField = Class.class.getDeclaredField(&quot;classLoader&quot;);</span><br><span class="line">classLoaderField.setAccessible(true);</span><br><span class="line">classLoaderField.set(newClass,oldClass.getClassLoader());</span><br></pre></td></tr></table></figure>
+<h3 id="反射调用非静态方法产生的问题"><a href="#反射调用非静态方法产生的问题" class="headerlink" title="反射调用非静态方法产生的问题"></a>反射调用非静态方法产生的问题</h3><p>当一个非静态方法被替换后，如果代码里在反射调用时，会抛出异常。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// BaseBug.test 方法已经被热替换了</span><br><span class="line">BaseBug bb = new BaseBug();</span><br><span class="line">Method testMeth = BaseBug.class.getDeclaredMethod(&quot;test&quot;);</span><br><span class="line">testMeth.invoike(bb);</span><br></pre></td></tr></table></figure>
+<p>在invoke的时候就会抛出 IllegalArgumentException异常。因为虽然都叫com.patch.demo.BaseBug，却是不同的类，不同在于由于把ArtMethod的declaring_class_替换了，因此就是新的补丁类，后者作为被调用的实例对象bb所属类是原有的BaseBug，两者是不同的。</p>
+<p>具体原因：<br><strong>反射时调用InvokeMethod， InvokeMethod ——&gt; VerifyObjectIsClass(receiver, declaring_class) ——&gt; if(!o -&gt; InstanceOF(c)){ //抛异常 }</strong></p>
+<p>由于静态类是在类级别的调用，不需要用到对象实例，就不会有这方面的检查。</p>
+<p>解决方式：冷启动机制</p>
+<h3 id="哪些情况适用热启动？哪些情况适用冷启动？"><a href="#哪些情况适用热启动？哪些情况适用冷启动？" class="headerlink" title="哪些情况适用热启动？哪些情况适用冷启动？"></a>哪些情况适用热启动？哪些情况适用冷启动？</h3><p>不适用于热启动情况：</p>
+<ol>
+<li>引起了原有的类中发生结构变化的修改</li>
+<li>修复了的非静态方法会被反射调用</li>
+</ol>
+<p>其余情况适合用冷启动的方式</p>
+<h2 id="你所不知道的Java"><a href="#你所不知道的Java" class="headerlink" title="你所不知道的Java"></a>你所不知道的Java</h2><h3 id="内部类"><a href="#内部类" class="headerlink" title="内部类"></a>内部类</h3><p><strong>内部类会在编译期编译成跟外部类一样的顶级类</strong></p>
+<h4 id="静态内部类-非静态内部类有什么区别？"><a href="#静态内部类-非静态内部类有什么区别？" class="headerlink" title="静态内部类/非静态内部类有什么区别？"></a>静态内部类/非静态内部类有什么区别？</h4><p>非静态内部类，在编译期间会产生this$0，表示的是外部类的引用。</p>
+<h4 id="既然内部类会在编译期间编译成跟外部类一样的顶级类，那么外部类怎么访问的内部类的私有方法？"><a href="#既然内部类会在编译期间编译成跟外部类一样的顶级类，那么外部类怎么访问的内部类的私有方法？" class="headerlink" title="既然内部类会在编译期间编译成跟外部类一样的顶级类，那么外部类怎么访问的内部类的私有方法？"></a>既然内部类会在编译期间编译成跟外部类一样的顶级类，那么外部类怎么访问的内部类的私有方法？</h4><p>因为在编译期间自动会为内部类生成access&amp;**相关方法，这个方法会简单返回私有域s的值。</p>
+<h4 id="如何防止编译器生成access-amp-方法，从而使得能够进行热部署（不会改变方法数，从而也不会改变索引）？"><a href="#如何防止编译器生成access-amp-方法，从而使得能够进行热部署（不会改变方法数，从而也不会改变索引）？" class="headerlink" title="如何防止编译器生成access&amp;**方法，从而使得能够进行热部署（不会改变方法数，从而也不会改变索引）？"></a>如何防止编译器生成access&amp;**方法，从而使得能够进行热部署（不会改变方法数，从而也不会改变索引）？</h4><ul>
+<li>把内部类的所有method/field的private访问权限改成protected或者默认访问权限public</li>
+<li>如果一个类有内部类，那么把自身的method/field改成protected或者public</li>
+</ul>
+<h4 id="对于新增-删除匿名内部类，如何进行热部署？"><a href="#对于新增-删除匿名内部类，如何进行热部署？" class="headerlink" title="对于新增/删除匿名内部类，如何进行热部署？"></a>对于新增/删除匿名内部类，如何进行热部署？</h4><p><strong>编译器根据该匿名内部类在外部类中出现的先后关系，依次累加命名</strong></p>
+<p>比如第一个匿名内部类叫DexFixDemo&amp;1。第二个叫DexFixDemo&amp;2，由于补丁工具拿到的是编译后的.class文件，所以无法区分DexFixDemo&amp;1/2类，所以要避免插入一个新的匿名内部类。</p>
+<p><strong>当然如果匿名内部类在外部类的尾部，是允许的。</strong></p>
+<h4 id="静态field初始化和静态代码块编译流程是什么样的？"><a href="#静态field初始化和静态代码块编译流程是什么样的？" class="headerlink" title="静态field初始化和静态代码块编译流程是什么样的？"></a>静态field初始化和静态代码块编译流程是什么样的？</h4><p>静态field和代码块初始化在编译后会放在<clinit>方法中</clinit></p>
+<p><strong>静态代码块和静态域初始化在clinit中的先后关系就是两者出现在源码中的先后关系。</strong></p>
+<p>尝试加载一个类的三个情况：</p>
+<ol>
+<li>new一个类的对象（new-instance指令）</li>
+<li>调用类的静态方法（invoke-static指令）</li>
+<li>获取类的静态域的值（sget指令）</li>
+</ol>
+<p>执行的流程是dvmResolve -&gt; Class -&gt; dvmLinkClass -&gt; dvmInitClass。</p>
+<p>在dvmInitClass这个函数首先会对父类进行初始化，然后调用本类的clinit方法，所以此时静态field得到初始化和静态代码块得到执行。</p>
+<p>父类初始化 ——&gt; 本类的静态field和代码块初始化</p>
+<h4 id="非静态field初始化，非静态代码块编译流程是什么样的？"><a href="#非静态field初始化，非静态代码块编译流程是什么样的？" class="headerlink" title="非静态field初始化，非静态代码块编译流程是什么样的？"></a>非静态field初始化，非静态代码块编译流程是什么样的？</h4><p>非静态field初始化和非静态代码块被翻译在<init>无参构造函数中。</init></p>
+<p><strong>构造函数会被android编译器翻译成<init>方法，实际上如果存在有参构造函数，那么每个有参构造函数都会执行一个非静态域的初始化和非静态代码块。</init></strong></p>
+<p>String s = new String(“test”);在编译后翻译成如下代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">new-instance vO, Ljava/lang/String;</span><br><span class="line">invoke-direct &#123;v0&#125;, Ljava/lang/String;-&gt;&lt;init&gt;()V</span><br></pre></td></tr></table></figure>
+<ol>
+<li>首先执行new-instance指令，分配堆内存</li>
+<li>如果之前没加载过，尝试加载类</li>
+<li>invoke-direct指令调用类的init构造函数方法执行对象的初始化</li>
+</ol>
+<h4 id="静态field-代码块和非静态field-代码块支持热部署吗？"><a href="#静态field-代码块和非静态field-代码块支持热部署吗？" class="headerlink" title="静态field/代码块和非静态field/代码块支持热部署吗？"></a>静态field/代码块和非静态field/代码块支持热部署吗？</h4><p>不支持<clint>方法的热部署，所以静态filed/代码块都不支持更改。</clint></p>
+<p>对于非静态filed/代码块，热部署视为一个普通方法的变更，此时对于热部署没有影响。</p>
+<h4 id="final-static域的编译是什么样的？"><a href="#final-static域的编译是什么样的？" class="headerlink" title="final static域的编译是什么样的？"></a>final static域的编译是什么样的？</h4><p><strong>final static的非引用类型并不是像static静态域一样被翻译到clinit方法中。</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class DexFixDemo&#123;</span><br><span class="line">	static Temp t1 = new Temp();</span><br><span class="line">	final static Temp t2 = new Temp();</span><br><span class="line">	</span><br><span class="line">	final static String s1 = new String(&quot;heihei&quot;)l</span><br><span class="line">	final static String s2 = &quot;haha&quot;;</span><br><span class="line">	</span><br><span class="line">	static int i1 = 1;</span><br><span class="line">	final static int i2 = 2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上java文件转换为snail文件结构如下：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBd684706583b05c1bffff55670cbf91ba?method=download&amp;shareKey=954664accf4fa1233f1103961f13f2f8" alt="snail文件结构"></p>
+<p>我们可以看到 s2 = “haha”, i2 = 2,这两个并不是在clinit中赋值的。</p>
+<p>通过查看dex文件结构，在类定义区看到</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBbd10638a6ebdd431b982e893228ec59c?method=download&amp;shareKey=95178b164654615aa60522c97a23b684" alt="dex类定义区"></p>
+<p>所以得出以下结论：</p>
+<ol>
+<li>final static修饰的原始类型和String类型域（非引用类型），并不会翻译到clinit方法中，而是在类初始化执行initSFields方法中得到初始化赋值。</li>
+<li>final static 修饰的引用类型，初始化仍然在clinit方法中。</li>
+</ol>
+<p>关于什么是smail文件，可以点此阅读，<a href="http://skyacer.github.io/2018/03/15/Smali%E6%B5%85%E6%9E%90%E5%8F%8Adex-java%E4%BA%92%E8%BD%AC/">smali浅析</a></p>
+<h3 id="final-static-域优化原理"><a href="#final-static-域优化原理" class="headerlink" title="final static 域优化原理"></a>final static 域优化原理</h3><p>如果一个field是常量，通过final static优化只有原始类型和String类型域（非引用类型），<strong>如果是引用类型，实际上得不到任何优化。</strong></p>
+<h4 id="final-static域初始化流程是什么样的？"><a href="#final-static域初始化流程是什么样的？" class="headerlink" title="final static域初始化流程是什么样的？"></a>final static域初始化流程是什么样的？</h4><p>const/4 -&gt; 操作数在dex中的位置就是在opcode后一个字节</p>
+<h4 id="非final域的初始化流程是什么样的？"><a href="#非final域的初始化流程是什么样的？" class="headerlink" title="非final域的初始化流程是什么样的？"></a>非final域的初始化流程是什么样的？</h4><p>sget -&gt; dvmDexGetResolvedField -&gt; dvmResolveStaticField -&gt; dvmResolveClass -&gt; dvmGetStaticFieldInt(sfiled)</p>
+<p>可见sget指令比const/4要复杂很多。</p>
+<h4 id="为什么final-static引用类型没有得到优化？"><a href="#为什么final-static引用类型没有得到优化？" class="headerlink" title="为什么final static引用类型没有得到优化？"></a>为什么final static引用类型没有得到优化？</h4><p>因为不管是final，最后都是通过sget-object指令去获取该值。</p>
+<h3 id="热部署对于final-static域的解决方案"><a href="#热部署对于final-static域的解决方案" class="headerlink" title="热部署对于final static域的解决方案"></a>热部署对于final static域的解决方案</h3><ul>
+<li>修改final static 基本类型或者String类型域（非引用类型）域，由于编译器间引用到基本类型的地方被立即数替换，引用到String类型（非引用类型）的地方被常量池索引id替换，所以在热部署模式下，最终所有引用该final static域的方法都会被替换。实际上此时仍然可以走热部署。</li>
+<li>修改final static引用类型域，是不允许的，因为这个field的初始化会被翻译到clinit方法中，所以此时没法走热部署。</li>
+</ul>
+<h2 id="哪些情况方法会被内联？"><a href="#哪些情况方法会被内联？" class="headerlink" title="哪些情况方法会被内联？"></a>哪些情况方法会被内联？</h2><ol>
+<li>方法没有被其他任何地方引用到，毫无疑问，该方法会被内联掉。</li>
+<li>方法足够简单，比如一个方法的实现就只有一行，该方法会被内联掉，那么任何调用该方法的地方都会被该方法的实现替换掉。</li>
+<li>方法只被一个地方引用到，这个地方会被方法的实现替换掉。</li>
+</ol>
+<h2 id="混淆编译的过程是什么样的？"><a href="#混淆编译的过程是什么样的？" class="headerlink" title="混淆编译的过程是什么样的？"></a>混淆编译的过程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBe63e4e3ec814195a892f024501cbe134?method=download&amp;shareKey=9d67ecba60a5ead50987962705c6e7d0" alt="代码混淆"></p>
+<h2 id="虚拟机对泛型是怎么处理的？"><a href="#虚拟机对泛型是怎么处理的？" class="headerlink" title="虚拟机对泛型是怎么处理的？"></a>虚拟机对泛型是怎么处理的？</h2><p><strong>虚拟机巧妙使用了桥方法的方式，解决了类型擦除和多态的冲突。</strong><br>通过bridge方法来重写父类方法。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB77a5a0646dbcf09c96a4f4d1da96b5a3?method=download&amp;shareKey=71d1003ac6131c1e1d6b86ae3df0b720" alt="桥模式"></p>
+<h2 id="jack工具链是什么？"><a href="#jack工具链是什么？" class="headerlink" title="jack工具链是什么？"></a>jack工具链是什么？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB73807b6621eac6d7424263b71fb99009?method=download&amp;shareKey=62d712969aa5238eea9fbf86986e6c33" alt=""></p>
+<h2 id="热部署模式限制在哪？"><a href="#热部署模式限制在哪？" class="headerlink" title="热部署模式限制在哪？"></a>热部署模式限制在哪？</h2><p>不允许类结构变更以及不允许变更<clinit>方法，所以如果补丁发现这几种限制情况，那么只能走冷启动重启才能生效。</clinit></p>
+<h2 id="QQ空间方案和Tinker方案有什么差异？"><a href="#QQ空间方案和Tinker方案有什么差异？" class="headerlink" title="QQ空间方案和Tinker方案有什么差异？"></a>QQ空间方案和Tinker方案有什么差异？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB908c8307401a73732757e4d664eda8a7?method=download&amp;shareKey=50d0fff07647ad9a031500455bee7d1f" alt=""></p>
+<h2 id="类校验（dvmVerifyClass）和类优化（dvmOptimizeClass）有什么区别？"><a href="#类校验（dvmVerifyClass）和类优化（dvmOptimizeClass）有什么区别？" class="headerlink" title="类校验（dvmVerifyClass）和类优化（dvmOptimizeClass）有什么区别？"></a>类校验（dvmVerifyClass）和类优化（dvmOptimizeClass）有什么区别？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBeab708153e14bfb0f3dcf05fefabcc77?method=download&amp;shareKey=f684f6e9a5f4328ef6bc05a5d8525877" alt=""></p>
+<h2 id="插桩是什么？有什么影响？"><a href="#插桩是什么？有什么影响？" class="headerlink" title="插桩是什么？有什么影响？"></a>插桩是什么？有什么影响？</h2><blockquote>
+<p>插桩是指侵入dex打包流程，利用.class字节码修改技术，在所有.class文件的构造函数中引用这个帮助类，插桩由此而来。</p>
+</blockquote>
+<p>插桩会给类加载效率带来比较严重的影响，一个类的加载通常有三个阶段，dvmResolveClass -&gt; dvmLinkClass -&gt; d-vmlinitClass。</p>
+<p>如果类没有被打上CLASS_ISPREVERIFIED/CLASS_ISOPTIMIZED标志，那么Verify和Optimize都会在类的初始阶段进行。如下图所示：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB8e056ec53439569444345d2a6d4bfe62?method=download&amp;shareKey=7a4272072e462007bbc3c64705ad03fb" alt=""></p>
+<p>虽然会有性能开销，但是每个类只会加载一次，由jdk1.2版本后虚拟机的<a href="http://skyacer.github.io/2018/05/06/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E2%80%94%E2%80%94%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B/">双亲委派模型</a>决定的，但是在刚启动时的白屏启动页会加载大量的类，此时影响还是比较大。</p>
+<h2 id="QFix是怎么绕过类验证的？"><a href="#QFix是怎么绕过类验证的？" class="headerlink" title="QFix是怎么绕过类验证的？"></a>QFix是怎么绕过类验证的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBdef42baa022012ffea1b008ef697bc82?method=download&amp;shareKey=8e08f6e6ff1a3701e3cb5e834637b0df" alt="QFix"></p>
+<p>详细来说就是通过dlsym拿到该so库的dvmResolveClass/dvmFindLoadedClass函数指针，首先预加载引用类，这样dvmFindLoadedClass才不会为null，dvmFindLoadedClass执行结果得到ClassObject做为第一个参数执行dvmResolveClass(AnimRes, 2425, true)即可。</p>
+<h2 id="Dalvik虚拟机加载一个压缩文件是什么过程？"><a href="#Dalvik虚拟机加载一个压缩文件是什么过程？" class="headerlink" title="Dalvik虚拟机加载一个压缩文件是什么过程？"></a>Dalvik虚拟机加载一个压缩文件是什么过程？</h2><p>Dalvik尝试加载一个压缩文件的时候，只会去把classes.dex加载到内存中。除了classes.dex之外的其他dex被直接忽略掉。</p>
+<h2 id="Art虚拟机加载一个压缩文件是什么过程？"><a href="#Art虚拟机加载一个压缩文件是什么过程？" class="headerlink" title="Art虚拟机加载一个压缩文件是什么过程？"></a>Art虚拟机加载一个压缩文件是什么过程？</h2><p>Art虚拟机的方法调用链如下：<strong>DexFile_openDexFileNative -&gt; OpenDexFilesFromOat -&gt; LoadDexFiles</strong></p>
+<p>在LoadDexFiles中，我们可以看出，虽然Art默认支持加载压缩文件中包含多个dex的情况， 优先加载primary dex这个classes.dex，虽然后续会加载其他dex，补丁类只需要放到classes.dex即可。后续出现在其它dex中的补丁类<strong>是不会被重复加载的</strong>。</p>
+<h2 id="通过替换dex的方案思路是什么样的？"><a href="#通过替换dex的方案思路是什么样的？" class="headerlink" title="通过替换dex的方案思路是什么样的？"></a>通过替换dex的方案思路是什么样的？</h2><p>我们只要把补丁dex命名为classes.dex。原apk中的dex依次命名为classes(2,3,4…)dex就好了，然后一起打包为一个压缩文件。然后DexFile.loadDex得到DexFile对象，最后把该DexFile对象整个替换为旧的dexElements数组就可以了。</p>
+<h2 id="Tinker和Sophix在合成dex时有什么区别？"><a href="#Tinker和Sophix在合成dex时有什么区别？" class="headerlink" title="Tinker和Sophix在合成dex时有什么区别？"></a>Tinker和Sophix在合成dex时有什么区别？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB38fe2b039574bf7f8533ec05274d1f42?method=download&amp;shareKey=229b0248f29871199010f9ddfc416a4e" alt=""></p>
+<ul>
+<li>补丁dex必须命名为classes.dex</li>
+<li>loadDex 得到的DexFile完整替换掉dexElements数组而不是插入</li>
+</ul>
+<h2 id="在冷启动修复过程中遇到哪些性能问题？怎么解决的？"><a href="#在冷启动修复过程中遇到哪些性能问题？怎么解决的？" class="headerlink" title="在冷启动修复过程中遇到哪些性能问题？怎么解决的？"></a>在冷启动修复过程中遇到哪些性能问题？怎么解决的？</h2><p>在加载dex文件到native内存之前，如果dex不存在对应的odex，那么Dalvik下会执行dexopt，Art下会执行dexoat，最后得到的都是一个优化后的odex。<strong>虚拟机最后执行的都是odex而不是dex。</strong></p>
+<p>如果dex足够大，那么dexopt(Dalvik)/dexoat(Art)是很耗时的。Dalvik稍微好一点在于只会load classes.dex(也就是补丁包)，而在Art下，load的是dex和apk的原dex合并的完整补丁包（Tinker方案），这样的dexoat非常耗时。</p>
+<p>解决方式：<br>把loadDex当做一个事物来看，如果中途被打断，那么就删除odex文件，重启的时候如果发现存在odex文件，loadDex完之后，反射注入/替换dexElements数组，实现patch。如果不存在odex文件，重启另一个子线程loadDex，重启之后再生效。<br>对于补丁包的安全性，我们需要对补丁包进行签名校验与md5校验。</p>
+<h2 id="怎么实现Dalvik和Art下共用一套补丁？"><a href="#怎么实现Dalvik和Art下共用一套补丁？" class="headerlink" title="怎么实现Dalvik和Art下共用一套补丁？"></a>怎么实现Dalvik和Art下共用一套补丁？</h2><ul>
+<li>Dalvik下采用自行研发的全量DEX方案</li>
+<li>Art下虚拟机已经支持多dex，只需要把补丁dex作为主dex即可</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/05/06/Java虚拟机——双亲委派模型/" itemprop="url">
                   Java虚拟机——双亲委派模型
                 </a>
@@ -769,178 +1004,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/04/17/RecyclerView源码解析/" itemprop="url">
-                  RecyclerView源码解析
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-04-17T16:36:08+08:00" content="2018-04-17">
-              2018-04-17
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/View/" itemprop="url" rel="index">
-                    <span itemprop="name">View</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="RecyclerView源码解析"><a href="#RecyclerView源码解析" class="headerlink" title="RecyclerView源码解析"></a>RecyclerView源码解析</h1><h2 id="总体框架"><a href="#总体框架" class="headerlink" title="总体框架"></a>总体框架</h2><h3 id="内部调用流程"><a href="#内部调用流程" class="headerlink" title="内部调用流程"></a>内部调用流程</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEBaaa20f9284dc534d3be53ceb6e3683a3?method=download&amp;shareKey=ef2fca96c536d923ea6ab1b4a2183644" alt="内部调用流程"></p>
-<h3 id="设计思路"><a href="#设计思路" class="headerlink" title="设计思路"></a>设计思路</h3><blockquote>
-<p>RecyclerView官网给出的定义是: A flexible view for providing a limited window into a large data set. 也就是在限定的视图内展示大量的数据</p>
-</blockquote>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB2f5e28793cca033bc119504bc4d7c41f?method=download&amp;shareKey=3e4e9fd97ff1e9f09ac0771d20e752f7" alt="适配器模式"></p>
-<p>如上所示，RecyclerView表示只会和ViewHolder进行接触，Adapter的工作是将Data转换为RecyclerView认识的ViewHolder，因此RecyclerView就间接地认识Datas。</p>
-<p>而RecyclerView仍然不想管理子view，于是交给了LayoutManager来帮助完成布局（桥接模式）。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB8a059ab9a6a178b0ec3ee8b0ae019298?method=download&amp;shareKey=d78b65294897b8799bde0531c3256b98" alt="桥接模式"></p>
-<p>但是LayoutManager这个大管家也有弱点，它只知道怎么将这一个个View布局在RecyclerView上，但是并不知道如何管理这些View，此时要有个回收期Recycler回收器做管理。当LayoutManager在需要View的时候向Recycler进行索取，当LayoutManager不需要View（试图滑出）的时候，就直接将废弃的View丢给Recycler。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB6cde858d77096432bb502a1d3267e352?method=download&amp;shareKey=63d6b41952091f8b3af1e6e03a172647" alt="Recycler"></p>
-<p>到了这里，看似一切都很完美，但是RecyclerView还想让子View变动的动画要优雅，所以通过观察者模式，引入了ItemAnimator(观察者模式)。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBb2ff9d64047966e71e191d3c66fd88b6?method=download&amp;shareKey=a2c113f8a90134e437b95bf1d361f4ff" alt=""></p>
-<h2 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h2><ul>
-<li>通过桥接模式，使RecyclerView将布局方式独立成LayoutManager，实现对布局的定制化。</li>
-<li>通过组合模式，使RecyclerView通过dispatchLayout对item View进行布局绘制。</li>
-<li>通过适配器模式，ViewHolder将RecyclerView与ItemView联系起来，使得RecyclerView方便操作ItemView。</li>
-<li>通过观察者模式，给ViewHolder注册观察者，当调用notifyDataSetChanged时，就能重新绘制。</li>
-</ul>
-<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><h3 id="设计结构"><a href="#设计结构" class="headerlink" title="设计结构"></a>设计结构</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEBbb61dc925d026053c5d5fd14c7539edf?method=download&amp;shareKey=2790c3eb0a3f59f871c8d4541ef69ed4" alt="设计结构"></p>
-<h3 id="类关系图"><a href="#类关系图" class="headerlink" title="类关系图"></a>类关系图</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEBa5cfb53836bc3c7fe1d4a11f8c2ffb29?method=download&amp;shareKey=2c2a4a7037d3c6580c1c9c0cca13502b" alt="类关系图"></p>
-<ul>
-<li>RecyclerViewDataObserver： 数据观察器</li>
-<li>Recycler： View 循环复用系统，核心部件</li>
-<li>SavedState： RecyclerView状态</li>
-<li>AdapterHelper：适配器更新</li>
-<li>ChildHelper：管理子View</li>
-<li>ViewInfoStore：存储子VIEW的动画信息</li>
-<li>Adapter：数据适配器</li>
-<li>LayoutManager：负责子VIEW的布局，核心部件</li>
-<li>ItemAnimator：Item动画</li>
-<li>ViewFlinger：快速滑动管理</li>
-<li>NestedScrollingChildHelper：管理子VIEW嵌套滑动</li>
-</ul>
-<h3 id="绘制详情"><a href="#绘制详情" class="headerlink" title="绘制详情"></a>绘制详情</h3><p>以我们平时使用RecyclerView的行为举例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">recyclerView = (RecyclerView) findViewById(R.id.recyclerView);  </span><br><span class="line">LinearLayoutManager layoutManager = new LinearLayoutManager(this);  </span><br><span class="line">//设置布局管理器  </span><br><span class="line">recyclerView.setLayoutManager(layoutManager);  </span><br><span class="line">//设置为垂直布局，这也是默认的  </span><br><span class="line">layoutManager.setOrientation(OrientationHelper. VERTICAL);  </span><br><span class="line">//设置Adapter  </span><br><span class="line">recyclerView.setAdapter( recycleAdapter);  </span><br><span class="line"> //设置分隔线  </span><br><span class="line">recyclerView.addItemDecoration( new DividerGridItemDecoration(this ));  </span><br><span class="line">//设置增加或删除条目的动画  </span><br><span class="line">recyclerView.setItemAnimator( new DefaultItemAnimator());</span><br></pre></td></tr></table></figure>
-<h3 id="初始化整体流程图如下"><a href="#初始化整体流程图如下" class="headerlink" title="初始化整体流程图如下"></a>初始化整体流程图如下</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEBca3ee08fea0d2c88b4bb959fa6e7b37d?method=download&amp;shareKey=af0fae22f03cfb0ab37b8d889c3188e9" alt="流程图"></p>
-<h3 id="RecyclerView-layout（setLayoutManager）流程是什么样的？"><a href="#RecyclerView-layout（setLayoutManager）流程是什么样的？" class="headerlink" title="RecyclerView layout（setLayoutManager）流程是什么样的？"></a>RecyclerView layout（setLayoutManager）流程是什么样的？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB749b77d77ef0b7b430abaa44ba51e739?method=download&amp;shareKey=9d46381b8409bcd6a7d8fa5408b124ed" alt="RecyclerView Layout流程"></p>
-<h3 id="layout过程中onLayoutChildren是什么流程？"><a href="#layout过程中onLayoutChildren是什么流程？" class="headerlink" title="layout过程中onLayoutChildren是什么流程？"></a>layout过程中onLayoutChildren是什么流程？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB2408904753cd6aee9d430862d107cbd3?method=download&amp;shareKey=9a29c10d31ad325d5b1e81700cafb0b8" alt=""></p>
-<ul>
-<li>找到anchor点</li>
-<li>根据anchor一直向前布局，直到充满anchor点前面的所有区域</li>
-<li>根据anchor一直向后布局，直到填充满anchor点后面所有区域，以垂直布局来说明，mAnchorInfo为布局锚点信息，包含了子控件在Y轴上起始绘制偏移量(coordinate)，ItemView在Adapter中的索引信息(position)和布局方向(mLayoutFromEnd) ——指start、end方向。确定布局锚点，以此为起点向开始和结束方向填充ItemView。</li>
-</ul>
-<h3 id="setAdapter方法最终调用的流程？"><a href="#setAdapter方法最终调用的流程？" class="headerlink" title="setAdapter方法最终调用的流程？"></a>setAdapter方法最终调用的流程？</h3><ol>
-<li>如果之前存在Adapter，先移除原来的，注销观察者，从RecyclerView Detached。</li>
-<li>根据参数，决定是否清除原来的ViewHolder。</li>
-<li>重置AdapterHelper，更新Adapter，注册观察者。</li>
-</ol>
-<h3 id="RecyclerView的滑动过程是什么样的？"><a href="#RecyclerView的滑动过程是什么样的？" class="headerlink" title="RecyclerView的滑动过程是什么样的？"></a>RecyclerView的滑动过程是什么样的？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB3b18149dec7c15370c35b6ae0b894575?method=download&amp;shareKey=187a8d1c6699f89ae7f64670b09f98cd" alt="滑动过程"></p>
-<h3 id="缓存逻辑是什么样的？"><a href="#缓存逻辑是什么样的？" class="headerlink" title="缓存逻辑是什么样的？"></a>缓存逻辑是什么样的？</h3><p>总共分为两级缓存</p>
-<ol>
-<li>mCachedViews，先进先出的数据结构，将新的View存入mCachedViews，移除头元素，并将头元素放入mRecyclerPool</li>
-<li>mRecyclerPool，可以多个ReyclerView共享，减少内存开销。</li>
-</ol>
-<h3 id="AdapterView与RecyclerView的区别？"><a href="#AdapterView与RecyclerView的区别？" class="headerlink" title="AdapterView与RecyclerView的区别？"></a>AdapterView与RecyclerView的区别？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB4edaacbfaf0b69b263ec9f0002627249?method=download&amp;shareKey=9f60f307584f038c0834883e96f764d5" alt="区别"></p>
-<h3 id="RecyclerView中有哪些设计精巧的地方？"><a href="#RecyclerView中有哪些设计精巧的地方？" class="headerlink" title="RecyclerView中有哪些设计精巧的地方？"></a>RecyclerView中有哪些设计精巧的地方？</h3><h4 id="Bucket"><a href="#Bucket" class="headerlink" title="Bucket"></a>Bucket</h4><blockquote>
-<p>用来表示不设上限的状态，Bucket是一个链表结构，当index大于64的时候，它便会去下一个Bucket寻找，Bucket不设上限的表示状态。</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">static class Bucket &#123;</span><br><span class="line">    final static int BITS_PER_WORD = Long.SIZE;</span><br><span class="line">    final static long LAST_BIT = 1L &lt;&lt; (Long.SIZE - 1);</span><br><span class="line">    long mData = 0;</span><br><span class="line">    Bucket next;</span><br><span class="line">    void set(int index) &#123;</span><br><span class="line">        if (index &gt;= BITS_PER_WORD) &#123;</span><br><span class="line">            ensureNext();</span><br><span class="line">            next.set(index - BITS_PER_WORD);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            mData |= 1L &lt;&lt; index;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="Pools"><a href="#Pools" class="headerlink" title="Pools"></a>Pools</h4><p>相当于Messages的池的概念，通过Message.obtain()可以在很多情况下避免创建新的对象</p>
-<ul>
-<li>RecycleView将Item的增删改封装为UpdateOp类</li>
-<li>ViewInfoStore类中的静态内部类infoRecord</li>
-</ul>
-<h2 id="使用RecyclerView有没有遇到不好用的地方？"><a href="#使用RecyclerView有没有遇到不好用的地方？" class="headerlink" title="使用RecyclerView有没有遇到不好用的地方？"></a>使用RecyclerView有没有遇到不好用的地方？</h2><p>RecyclerView也不是万能的，它的灵活性也是有一定限制的，比如我就遇到了一不是很好解决的问题：Recyler的缓存级别是一个Item的整个View，而我们没办法自定义缓存级别，这样说比较抽象，举个例子，我的某些Item的某个子View加载很耗时，所以我希望我在上下滑动的时候，Item的其它View是可以被回收利用的，但这个加载很耗时的View是不要重复使用的。即我希望用空间换取时间来获取滑动的流畅性。当然，这样的需求不常见，RecyclerView也不能很好的满足这一点。</p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -986,7 +1049,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">34</span>
+              <span class="site-state-item-count">35</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

@@ -215,7 +215,400 @@
             
               
                 
-                <a class="post-title-link" href="/2018/06/09/Android窗口管理分析（二）——WindowManagerService图层管理之窗口的添加/" itemprop="url">
+                <a class="post-title-link" href="/2018/07/20/Android窗口管理分析（四）—— Android-View绘制图层内存的分配、传递、使用/" itemprop="url">
+                  Android窗口管理分析（4）—— Android View绘制图层内存的分配、传递、使用
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-07-20T14:19:00+08:00" content="2018-07-20">
+              2018-07-20
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/framework/" itemprop="url" rel="index">
+                    <span itemprop="name">framework</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Android窗口管理分析（四）——-Android-View绘制图层内存的分配、传递、使用"><a href="#Android窗口管理分析（四）——-Android-View绘制图层内存的分配、传递、使用" class="headerlink" title="Android窗口管理分析（四）—— Android View绘制图层内存的分配、传递、使用"></a>Android窗口管理分析（四）—— Android View绘制图层内存的分配、传递、使用</h1><blockquote>
+<p>本文来看Android是怎么利用Ashmem分配及绘制的</p>
+</blockquote>
+<h2 id="View视图内存是怎么分配的？"><a href="#View视图内存是怎么分配的？" class="headerlink" title="View视图内存是怎么分配的？"></a>View视图内存是怎么分配的？</h2><p>添加窗口时，WMS为APP分配一个WindowState，标识当前窗口用于窗口管理，</p>
+<p>Surface握有一块可以绘图的内存，这块内存是APP端需要的时候，通过sp GraphicBufferProducer申请的。</p>
+<h3 id="如何获得sp-gdp这个服务代理？"><a href="#如何获得sp-gdp这个服务代理？" class="headerlink" title="如何获得sp gdp这个服务代理？"></a>如何获得sp gdp这个服务代理？</h3><p>在createNormalLayer中，建立了一个sp gbp容器 ——&gt; 请求SurfaceFlinger分配填充内容 ——&gt; SurfaceFlinger收到请求后为WMS建立与APP端对应的Layer ——&gt; 分配sp gbp ——&gt; 填充到Surface中返回给APP</p>
+<h3 id="APP端如何获得申请内存的句柄BpGraphicBufferProducer？"><a href="#APP端如何获得申请内存的句柄BpGraphicBufferProducer？" class="headerlink" title="APP端如何获得申请内存的句柄BpGraphicBufferProducer？"></a>APP端如何获得申请内存的句柄BpGraphicBufferProducer？</h3><p>BufferQueueProducer是一个Binder通信对象，在服务端是BnGraphicBufferProducer，在App端是BpInterface<igraphicbufferproducer>{}</igraphicbufferproducer></p>
+<p>SurfaceFlinger创建Binder实体 ——&gt; 打包Surface对象 ——&gt; 通过binder通信传递给APP端 ——&gt; APP端通过反序列化将其恢复出来——&gt; APP端获得了申请内存句柄BpGraphicBufferProducer </p>
+<h3 id="BpGraphicBufferProducer有什么作用呢？"><a href="#BpGraphicBufferProducer有什么作用呢？" class="headerlink" title="BpGraphicBufferProducer有什么作用呢？"></a>BpGraphicBufferProducer有什么作用呢？</h3><p>ViewRootImpl的draw ——&gt; surface.nativeLockCanvas ——&gt; Surface.dequeueBuffer ——&gt; BpGraphicBufferProducer.dequeueBuffer请求分配内存</p>
+<p>在Linux中一切都是文件，共享内存也是文件，分配成功后，跨进程传递tmpfs临时文件的描述符fd。</p>
+<h2 id="View绘制内存是怎么传递的？"><a href="#View绘制内存是怎么传递的？" class="headerlink" title="View绘制内存是怎么传递的？"></a>View绘制内存是怎么传递的？</h2><p>fd利用Binder通信传递给App进程 ——&gt; App获取fd后，将共享内存映射到自己的进程空间，进行图形绘制 ——&gt; 等到App对GraphicBuffer反序列化的时候，将共享内存mmap到当前进程空间 ——&gt; 这样进程就拿到绘制后的数据了</p>
+<h2 id="View绘制内存是怎么使用的？"><a href="#View绘制内存是怎么使用的？" class="headerlink" title="View绘制内存是怎么使用的？"></a>View绘制内存是怎么使用的？</h2><p>当内存经过反序列化，拿到内存地址后 ——&gt; 封装一个ANativeWindow_Buffer给上层调用  ——&gt; 对于2d绘图，利用skia库填充Bitmap对应的共享内存 ——&gt; 绘制完成 ——&gt; 通过unlock通知SurfaceFlinger服务进行图层合成</p>
+<h2 id="Android-View局部重绘的原理是什么？"><a href="#Android-View局部重绘的原理是什么？" class="headerlink" title="Android View局部重绘的原理是什么？"></a>Android View局部重绘的原理是什么？</h2><p>lockCanvas ——&gt; 判断buffer宽高格式是否一致 ——&gt; 如果一致则进行数据拷贝 ——&gt; 如果不一致则整块绘制 ——&gt; 将绘制UI数据拷贝到申请内存中 ——&gt; 在拷贝数据中进行脏区域重绘</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2018/07/03/Android窗口管理分析（三）—— WMS窗口的组织形式/" itemprop="url">
+                  Android窗口管理分析（3）：WMS窗口的组织形式
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-07-03T15:24:37+08:00" content="2018-07-03">
+              2018-07-03
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/framework/" itemprop="url" rel="index">
+                    <span itemprop="name">framework</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Android窗口管理分析（3）：WMS窗口的组织形式"><a href="#Android窗口管理分析（3）：WMS窗口的组织形式" class="headerlink" title="Android窗口管理分析（3）：WMS窗口的组织形式"></a>Android窗口管理分析（3）：WMS窗口的组织形式</h1><blockquote>
+<p>本文总共包括以下几点：</p>
+<ul>
+<li>窗口的分组管理：应用窗口组、子窗口组、系统窗口组</li>
+<li>Activity、Dialg应用窗口及PopWindow子窗口的添加原理跟注意事项</li>
+<li>窗口的Z次序管理：窗口的分配序号、次序调整等</li>
+<li>WMS中窗口次序分配如何影响SurfaceFlinger服务</li>
+</ul>
+</blockquote>
+<h2 id="各种窗口type和窗口类型的对应关系是什么样的？"><a href="#各种窗口type和窗口类型的对应关系是什么样的？" class="headerlink" title="各种窗口type和窗口类型的对应关系是什么样的？"></a>各种窗口type和窗口类型的对应关系是什么样的？</h2><h3 id="窗口和对应类型"><a href="#窗口和对应类型" class="headerlink" title="窗口和对应类型"></a>窗口和对应类型</h3><table>
+<thead>
+<tr>
+<th>窗口type值</th>
+<th>窗口类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIRST_APPLICATION_WINDOW=1</td>
+<td>开始应用程序窗口</td>
+</tr>
+<tr>
+<td>TYPE_BASE_APPLICATION=1</td>
+<td>所有程序窗口的base窗口，其他应用程序都显示在它上面</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION=2</td>
+<td>普通应用程序窗口，token必须设置为Activity的token</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_STARTING=3</td>
+<td>应用程序启动时所显示的窗口</td>
+</tr>
+<tr>
+<td>LAST_APPLICATION_WINDOW=99</td>
+<td>结束应用程序窗口</td>
+</tr>
+</tbody>
+</table>
+<p>一般Activity都是TYPE_BASE_APPLICATION类型的，而TYPE_APPLICATION主要是用于Dialog，再看下子窗口类型</p>
+<h3 id="子窗口和对应类型"><a href="#子窗口和对应类型" class="headerlink" title="子窗口和对应类型"></a>子窗口和对应类型</h3><table>
+<thead>
+<tr>
+<th>窗口type值</th>
+<th>窗口类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIRST_SUB_WINDOW=1000</td>
+<td>SubWindows子窗口，子窗口的Z序和坐标空间</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_PANEL =1000</td>
+<td>面板窗口，显示于宿主窗口的上层</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_MEDIA=1001</td>
+<td>媒体窗口（例如视频），显示于宿主窗口下层</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_SUB_PANEL=1002</td>
+<td>应用程序窗口的子面板，显示于所有面板窗口的上层</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_ATTACHED_DIALOG=1003</td>
+<td>对话框，类似于面板窗口，显示于所有面板窗口的上层</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_MEDIA_OVERLAY=1004</td>
+<td>媒体信息，显示在媒体层和程序窗口之间，需要实现半透明效果</td>
+</tr>
+<tr>
+<td>LAST_SUB_WINDOW=1999</td>
+<td>结束子窗口</td>
+</tr>
+</tbody>
+</table>
+<h3 id="系统窗口类型"><a href="#系统窗口类型" class="headerlink" title="系统窗口类型"></a>系统窗口类型</h3><table>
+<thead>
+<tr>
+<th>窗口type值</th>
+<th>窗口类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIRST_SYSTEM_WINDOW=2000</td>
+<td>系统窗口</td>
+</tr>
+<tr>
+<td>TYPE_STATUS_BAR=FIRST_SYSTEM_WINDOW</td>
+<td>状态栏</td>
+</tr>
+<tr>
+<td>TYPE_SYSTEM_ALERT=FIRST_SYSTEM_WINDOW+3</td>
+<td>系统提示，出现在应用程序窗口之上</td>
+</tr>
+<tr>
+<td>TYPE_TOAST=FIRST_SYSTEM_WINDOW+5</td>
+<td>显示Toast</td>
+</tr>
+</tbody>
+</table>
+<h2 id="窗口的分组原理是什么样的？"><a href="#窗口的分组原理是什么样的？" class="headerlink" title="窗口的分组原理是什么样的？"></a>窗口的分组原理是什么样的？</h2><p><strong>Android的窗口是以token来分组的</strong></p>
+<p>windowToken包含一个WindowList，包含一系列的WindowState</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB48b062a332232b68f2f86836f1d854dc?method=download&amp;shareKey=694d04d38e9b2467955b50a465d38a4d" alt="windowtoken"></p>
+<h2 id="Activity对应token和WindowToken的添加过程是什么样的？"><a href="#Activity对应token和WindowToken的添加过程是什么样的？" class="headerlink" title="Activity对应token和WindowToken的添加过程是什么样的？"></a>Activity对应token和WindowToken的添加过程是什么样的？</h2><ol>
+<li>AMS将Activity的token加入WMS中，为Activity创建APPWindowToken。</li>
+<li>Activity分组在Activity显示之前就被AMS添加到WMS中，之后AMS才会去通知App新建Activity，并将Activity的Window添加到WMS中。</li>
+<li>启动Activity步骤：新建一个Activity，并为Activity创建一个appContext，这个Context主要是为了activity.attach使用的，其实是单纯new一个ContextImpl，之后Activity会利用attach函数将ContextImpl绑定在自己身上。</li>
+</ol>
+<h3 id="创建ActivityContext"><a href="#创建ActivityContext" class="headerlink" title="创建ActivityContext"></a>创建ActivityContext</h3><ol>
+<li>为Activity绑定ContextImpl，因为Activity只是一个ContextWrapper。</li>
+<li>new一个PhoneWindow并设置回调。</li>
+<li>利用当前的WindowManagerImpl为Window创建一个WindowManagerImpl并设置它的parentWindow。</li>
+</ol>
+<h3 id="setWindowManager"><a href="#setWindowManager" class="headerlink" title="setWindowManager"></a>setWindowManager</h3><ol>
+<li>将window的WindowManager传递给Activity，作为Activity的WindowManager</li>
+<li>Activity通过getSystemService获取WindowManager服务时，直接返回了Window的WindowManagerImpl</li>
+</ol>
+<h3 id="getSystemService"><a href="#getSystemService" class="headerlink" title="getSystemService"></a>getSystemService</h3><ol>
+<li>通过需要获得的service名字返回不同manager对象。</li>
+</ol>
+<h3 id="handleResumeActivity"><a href="#handleResumeActivity" class="headerlink" title="handleResumeActivity"></a>handleResumeActivity</h3><ol>
+<li>获取activity的window对象，如果用户没有通过setContentView方式新建DecorView，这里会利用PhoneWindow的getDecorView()新建DecorView，并把decorview设置为不可见。</li>
+<li>获取windowManager以及window的各属性。添加decorview到WMS管理。</li>
+</ol>
+<h3 id="WindowManagerImpl的addView"><a href="#WindowManagerImpl的addView" class="headerlink" title="WindowManagerImpl的addView"></a>WindowManagerImpl的addView</h3><ol>
+<li>最终会调用WindowManagerGlobal的addView方法</li>
+<li>调整wparams的token参数</li>
+<li>新建ViewRootImpl，并利用wparams参数添加窗口</li>
+<li>ViewRootImpl设置view</li>
+</ol>
+<h3 id="adjustLayoutParamsForSubWindow"><a href="#adjustLayoutParamsForSubWindow" class="headerlink" title="adjustLayoutParamsForSubWindow"></a>adjustLayoutParamsForSubWindow</h3><ol>
+<li>对于Activity来说，wp.token = mContainer其实是AMS端传过来的IApplicationToken</li>
+<li>在ViewRootImpl中setView的时候，利用IWindowSession代理与WMS端的Session通信，将窗口及token信息传递到WMS端，其中IApplicationToken就是该Activity处于的分组</li>
+<li>在WMS端，根据IApplicationToken IBinder键值，从全局的mTokenMap。</li>
+</ol>
+<h2 id="Dialog必须用Activity的context？"><a href="#Dialog必须用Activity的context？" class="headerlink" title="Dialog必须用Activity的context？"></a>Dialog必须用Activity的context？</h2><p>在添加到WMS时，Dialog窗口属性是WindowManager.LayoutParams.TYPE_APPLICATION，同样属于应用窗口，所以必须使用Activity的AppToken才可以。</p>
+<p>Dialog和Activity共享一个同一个WindowManager（也就是WindowManagerImpl），而WindowManagerImpl里面有个Window类型的mParentWindow变量，这个变量在attach时传入当前Activity的Window。而Activity的Window里面的mAppToken是当前Activity的token。</p>
+<p>所以最终是因为<strong>不能为Dialog提供正确的token</strong></p>
+<h2 id="PopupWindow的子窗口添加流程是什么样的？"><a href="#PopupWindow的子窗口添加流程是什么样的？" class="headerlink" title="PopupWindow的子窗口添加流程是什么样的？"></a>PopupWindow的子窗口添加流程是什么样的？</h2><p>WMS为PopupWindow窗口创建一个子窗口分组WindowToken，每个子窗口都会有一个指向父窗口的引用，因为是利用父窗口IWindow作为键值，父窗口可以方便利用IWindow获取WindowToken，存入map中，进而得到全部的子窗口。</p>
+<h2 id="窗口的Z次序管理是什么样的？"><a href="#窗口的Z次序管理是什么样的？" class="headerlink" title="窗口的Z次序管理是什么样的？"></a>窗口的Z次序管理是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBf6552df5db0595bc726979ae4867e135?method=download&amp;shareKey=81992d5eb5b019920186bbbf1f7ef162" alt="Z序列坐标系"></p>
+<p>在WMS中，窗口被抽象成WindowState，采用了三个int值来标志窗口所在位置。前两个主要根据窗口类型确定窗口位置，mLayer才是真正的值。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">final class WindowState implements WindowManagerPolicy.WindowState &#123;</span><br><span class="line">    </span><br><span class="line">    final WindowList mChildWindows = new WindowList();</span><br><span class="line">    final int mBaseLayer;</span><br><span class="line">    final int mSubLayer;</span><br><span class="line">     &lt;!--最终Z次序的赋值--&gt;</span><br><span class="line">   int mLayer;</span><br><span class="line">    </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>由于前两个都是final修饰的，所以只有最后一个值可以改。</p>
+<p>从坐标系知道，值越大，窗口越靠上。</p>
+<p>对于Activity等应用窗口来说，主序都是一样的，怎么定他们真正的Z-order呢？其实是Activity的顺序由AMS来保证的。</p>
+<p><strong>在系统层面，决定了不同类型窗口所处的位置，比如系统Toast类型的窗口一定处于所有应用窗口之上</strong></p>
+<p>添加窗口的示意代码如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">addWindow()&#123;</span><br><span class="line">    &lt;!--1--&gt;</span><br><span class="line">    new WindowState</span><br><span class="line">    &lt;!--2--&gt;</span><br><span class="line">    addWindowToListInOrderLocked(win, true);</span><br><span class="line">    &lt;!--3--&gt;</span><br><span class="line">    assignLayersLocked(displayContent.getWindowList());</span><br><span class="line"> 	&#125;</span><br></pre></td></tr></table></figure>
+<p>Z-order通过addWindowToListInOrderLocked及assignLayersLocked才能确定</p>
+<ol>
+<li><p>第一步，new一个windowstate实例。</p>
+</li>
+<li><p>第二步，addWindowToListInOrderLocked主要根据窗口的Token找到归属，插入到对应Token的WindowState列表，插入到特定位置后，Z-order就确定了。</p>
+</li>
+<li><p>第三步，通过assignLayersLocked为WindowState分配真正的Z-order mLayer。</p>
+</li>
+</ol>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB438789e52f069cecb59102d2508a6d8c?method=download&amp;shareKey=dbd6fec50b6c1f847a3798dd6b6b17d8" alt=""></p>
+<p>当mLayer(int)确定后，这个顺序最终确定，之后，在SurfaceFlinger图层混排的时候处理。</p>
+<h2 id="WMS中窗口次序分配如何影响SurfaceFlinger服务？"><a href="#WMS中窗口次序分配如何影响SurfaceFlinger服务？" class="headerlink" title="WMS中窗口次序分配如何影响SurfaceFlinger服务？"></a>WMS中窗口次序分配如何影响SurfaceFlinger服务？</h2><p>SurfaceFlinger图层混排的时候不会混排所有的窗口，只会混排可见的窗口，比如有多个全屏Activity的时候，SurfaceFlinger只会处理最上面的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">SurfaceControl.openTransaction();</span><br><span class="line">          try &#123;</span><br><span class="line">              mSurfaceX = left;</span><br><span class="line">              mSurfaceY = top;</span><br><span class="line">               try &#123;</span><br><span class="line">                  mSurfaceControl.setPosition(left, top);</span><br><span class="line">                  mSurfaceLayer = mAnimLayer;</span><br><span class="line">                  final DisplayContent displayContent = w.getDisplayContent();</span><br><span class="line">                  if (displayContent != null) &#123;</span><br><span class="line">                      mSurfaceControl.setLayerStack(displayContent.getDisplay().getLayerStack());</span><br><span class="line">                  &#125;</span><br><span class="line">                  &lt;!--设置次序--&gt;</span><br><span class="line">                  mSurfaceControl.setLayer(mAnimLayer);</span><br><span class="line">                  mSurfaceControl.setAlpha(0);</span><br><span class="line">                  mSurfaceShown = false;</span><br><span class="line">              &#125; catch (RuntimeException e) &#123;</span><br><span class="line">                  mService.reclaimSomeSurfaceMemoryLocked(this, &quot;create-init&quot;, true);</span><br><span class="line">              &#125;</span><br><span class="line">              mLastHidden = true;</span><br><span class="line">          &#125; finally &#123;</span><br><span class="line">              SurfaceControl.closeTransaction();</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+<p>通过事务来确保完整性，包括surface次序调整，通知SurfaceFlinger更新Surface信息。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2018/06/09/Android窗口管理分析（二）—— WindowManagerService图层管理之窗口的添加/" itemprop="url">
                   Android窗口管理分析（二）——WindowManagerService图层管理之窗口的添加
                 </a>
               
@@ -304,6 +697,8 @@
 <li>WindowToken：是窗口的令牌，也是窗口分组的依据，在WMS端，和分组对应的数据结构是WindowToken</li>
 <li>AppToken：是ActivityRecord里面的IApplicationToken.Stub appToken代理。</li>
 </ul>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB48b062a332232b68f2f86836f1d854dc?method=download&amp;shareKey=694d04d38e9b2467955b50a465d38a4d" alt=""></p>
+<p>Activity与Dialog对应的是AppWindowToken，PopupWindow对应的是普通的WindowToken。</p>
 <h2 id="Session和App进程对应关系是什么样的？"><a href="#Session和App进程对应关系是什么样的？" class="headerlink" title="Session和App进程对应关系是什么样的？"></a>Session和App进程对应关系是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBa1d0149bfa323db501e5a50e9943f40d?method=download&amp;shareKey=702e142fb9d4e9a4de6d6fc0dfc945cd" alt=""></p>
 <ol>
 <li>Session与App进程一一对应，进一步为当前进程建立SurfaceSession会话。</li>
@@ -563,293 +958,11 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/05/26/Android-View分发机制及解决滑动冲突方案/" itemprop="url">
-                  Android View分发机制及解决滑动冲突方案
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-05-26T22:04:52+08:00" content="2018-05-26">
-              2018-05-26
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/基础知识/" itemprop="url" rel="index">
-                    <span itemprop="name">基础知识</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Android-View分发机制及解决滑动冲突方案"><a href="#Android-View分发机制及解决滑动冲突方案" class="headerlink" title="Android View分发机制及解决滑动冲突方案"></a>Android View分发机制及解决滑动冲突方案</h1><div id="article_content" class="article_content clearfix csdn-tracking-statistics" data-pid="blog" data-mod="popu_307" data-dsm="post"><br>                    <div class="markdown_views"><br>                <p></p><div class="toc"><div class="toc"><br><ul><br><li><ul><br><li><a href="#初探view事件" target="">初探View事件</a></li><br><li><a href="#事件分发" target="">事件分发</a><ul><br><li><a href="#理论知识" target="">理论知识</a></li><br><li><a href="#实战讲解" target="">实战讲解</a><ul><br><li><a href="#验证view的事件分发" target="">验证View的事件分发</a></li><br><li><a href="#验证不消耗actiondown事件" target="">验证不消耗ACTION_DOWN事件</a></li><br><li><a href="#验证-viewgroup事件拦截" target="">验证 ViewGroup事件拦截</a></li><br></ul><br></li><br><li><a href="#源码分析viewgroup" target="">源码分析ViewGroup</a><ul><br><li><a href="#activity的事件分发" target="">Activity的事件分发</a></li><br><li><a href="#viewgroup的事件拦截" target="">ViewGroup的事件拦截</a></li><br><li><a href="#viewgroup的事件分发" target="">ViewGroup的事件分发</a></li><br></ul><br></li><br></ul><br></li><br><li><a href="#view的滑动冲突" target="">View的滑动冲突</a><ul><br><li><a href="#外部拦截" target="">外部拦截</a></li><br><li><a href="#内部拦截" target="">内部拦截</a></li><br></ul><br></li><br><li><a href="#总结" target="">总结</a></li><br><iframe id="tmp_downloadhelper_iframe" style="display: none;"></iframe></ul><br></li><br></ul><br></div><br></div><br><p></p><br><br><br><br><h2 id="初探view事件"><a name="t0"></a>初探View事件</h2><br><br><p>前言View的事件分发和滑动冲突处理是老生常谈的知识了，<br>我们常说的View事件是指： 从手指亲密接触屏幕的那一刻到手指离开屏幕的这个过程，<font color="#84331f" size="4">该事件序列以down事件为起点，move事件为过程，up事件为终点</font>。 <br><br>一次down-move-up这一个事件过程我们称为一个<font color="#84331f" size="5">事件序列</font>。所以我们今天研究的对象就是<font color="#84331f" size="4">MotionEvent</font>。</p><br><br><br><br><h2 id="事件分发"><a name="t1"></a>事件分发</h2><br><br><br><br><h3 id="理论知识"><a name="t2"></a>理论知识</h3><br><br><ul><br><li><font color="#f36c21" size="4">public boolean dispatchTouchEvent(MotionEvent ev)</font> <br><br>用来分发事件，即事件序列的大门，如果事件传递到当前View的<code>onTouchEvent</code>或者是子View的<code>dispatchTouchEvent</code>，即该方法被调用了。 <br><br><font color="#f05b72">return true: </font>  表示消耗了当前事件，有可能是当前View的<code>onTouchEvent</code>或者是子View的<code>dispatchTouchEvent</code>消费了，事件终止，不再传递。 <br><br><font color="#f05b72">return false: </font> 调用父ViewGroup或则Activity的<code>onTouchEvent</code>。 （不再往下传）。<font color="#7fb80e">①另外如果不消耗ACTION_DOWN事件，那么down,move,up事件都与该View无关，交由父类处理(父类的<code>onTouchEvent</code>方法)</font> <br><br><font color="#f05b72">return super.dispatherTouchEvent:</font>  则继续往下(子View)传递，或者是调用当前View的onTouchEvent方法;</li><br></ul><br><br><p><br></p><br><br><ul><br><li><font color="#f36c21" size="4">public boolean onInterceptTouchEvent(MotionEvent ev)</font> <br><br>在<code>dispatchTouchEvent</code>内部调用，顾名思义就是判断是否拦截某个事件。(注：ViewGroup才有的方法，View因为没有子View了，所以不需要也没有该方法) <br><br><font color="#f05b72">return true: </font> ViewGroup将该事件拦截，交给自己的<code>onTouchEvent</code>处理。<font color="#7fb80e">②而且这一个事件序列（当前和其它事件）都只能由该ViewGroup处理，并且不会再调用该<code>onInterceptTouchEvent</code>方法去询问是否拦截。</font> <br><br><font color="#f05b72">return false: </font> 继续传递给子元素的<code>dispatchTouchEvent</code>处理。 <br><br><font color="#f05b72">return super.dispatherTouchEvent:</font>   事件默认不会被拦截。 </li><br></ul><br><br><p><br></p><br><br><ul><br><li><font color="#f36c21" size="4">public boolean onTouchEvent(MotionEvent ev)</font> <br><br>在<code>dispatchTouchEvent</code>内部调用 <br><br><font color="#f05b72">return true: </font> 事件消费，当前事件终止。 <br><br><font color="#f05b72">return false: </font>交给父View的<code>onTouchEvent</code>。 <br><br><font color="#f05b72">return super.dispatherTouchEvent:</font>  默认处理事件的逻辑和返回 false 时相同。</li><br></ul><br><br><p><br> <br><br>其实上面的关系可以用以下代码简单描述。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTouchEvent</span>(MotionEvent ev){<br>    <span class="hljs-keyword">boolean</span> consume = <span class="hljs-keyword">false</span>;<span class="hljs-comment">//是否消费事件</span><br>    <span class="hljs-keyword">if</span>(onInterceptTouchEvent(ev)){<span class="hljs-comment">//是否拦截事件</span><br>        consume = onTouchEvent(ev);<span class="hljs-comment">//拦截了，交给自己的View处理</span><br>    }<span class="hljs-keyword">else</span>{<br>        consume = child.dispatchTouchEvent(ev);<span class="hljs-comment">//不拦截，就交给子View处理</span><br>    }<br><br>    <span class="hljs-keyword">return</span> consume;<span class="hljs-comment">//true：消费事件，终止。false:交给父onTouchEvent处理。并不再往下传递当前事件。</span><br>}</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li></ul></pre><br><br><p>有图有真相</p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20171121120051746?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" title=""></div><p></p><br><br><p>有点类似<a href="http://blog.csdn.net/qian520ao/article/details/73558275" title="optional title" target="_blank">责任链设计模式</a></p><br><br><p><br></p><br><br><h3 id="实战讲解"><a name="t3"></a>实战讲解</h3><br><br><br><br><h4 id="验证view的事件分发">验证View的事件分发</h4><br><br><ul><br><li>创建CustomViewGroup继承FrameLayout</li><br><li>创建CustomView继承View</li><br></ul><br><br><p>xml</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs avrasm has-numbering"><br>&lt;FrameLayout xmlns:android=<span class="hljs-string">“<a href="http://schemas.android.com/apk/res/android&quot;" target="_blank" rel="noopener">http://schemas.android.com/apk/res/android&quot;</a></span><br>    xmlns:tools=<span class="hljs-string">“<a href="http://schemas.android.com/tools&quot;" target="_blank" rel="noopener">http://schemas.android.com/tools&quot;</a></span><br>    android:layout_width=<span class="hljs-string">“match_parent”</span><br>    android:layout_height=<span class="hljs-string">“match_parent”</span><br>    tools:context=<span class="hljs-string">“qdx.viewtouchevent.MainActivity”</span>&gt;<br><br>//最外层为activity（白色背景）<br>    &lt;qdx<span class="hljs-preprocessor">.viewtouchevent</span><span class="hljs-preprocessor">.CustomViewGroup</span><br>        android:layout_width=<span class="hljs-string">“300dp”</span><br>        android:layout_height=<span class="hljs-string">“400dp”</span><br>        android:layout_gravity=<span class="hljs-string">“right”</span><br>        android:background=<span class="hljs-string">“#84bf96”</span>&gt;<br>//CustomViewGroup（绿色背景）包含CustomView（黄色背景）<br>        &lt;qdx<span class="hljs-preprocessor">.viewtouchevent</span><span class="hljs-preprocessor">.CustomView</span><br>            android:layout_width=<span class="hljs-string">“150dp”</span><br>            android:layout_height=<span class="hljs-string">“300dp”</span><br>            android:layout_gravity=<span class="hljs-string">“right”</span><br>            android:background=<span class="hljs-string">“#f2eada”</span> /&gt;<br><br>    &lt;/qdx<span class="hljs-preprocessor">.viewtouchevent</span><span class="hljs-preprocessor">.CustomViewGroup</span>&gt;<br><br>&lt;/FrameLayout&gt;<br></code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li><li style="color: rgb(153, 153, 153);">21</li><li style="color: rgb(153, 153, 153);">22</li><li style="color: rgb(153, 153, 153);">23</li><li style="color: rgb(153, 153, 153);">24</li></ul></pre><br><br><p><br></p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170820190556008?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="无事件处理者" title=""></div><p></p><br><br><p>如上图所示，down事件由activity-&gt;ViewGroup-&gt;View，因为View并没有处理down事件，所以事件消费情况为false，并且最后由View-&gt;ViewGroup-&gt;activity传递。 <br><br><br></p><br><br><h4 id="验证不消耗actiondown事件">验证不消耗ACTION_DOWN事件</h4><br><br><p>我们再来验证<font color="#7fb80e">①另外如果不消耗ACTION_DOWN事件，那么down,move,up事件系列都与该View无关，交由父类处理(父类的<code>onTouchEvent</code>方法)</font> <br><br>根据上面文字描述，因为我们的<code>CustomViewGroup</code>和<code>CustomView</code>都没有去处理任何事件，即当前序列的所有事件都<font color="#f05b72">return false</font>，所以我们也无法接收/处理其他事件(move,up)</p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170820192518176?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt=" 不消耗ACTION_DOWN事件" title=""></div><p></p><br><br><p><br></p><br><br><p>我们再将customView设置为可点击状态，即消费touch事件。<code>setClickable(true);</code></p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170820214522582?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="子View消费touch事件" title=""></div><p></p><br><br><p><br></p><br><br><h4 id="验证-viewgroup事件拦截">验证 ViewGroup事件拦截</h4><br><br><p>viewGroup将事件拦截后，<font color="#7fb80e">②而且这一个事件序列（当前和其它事件）都只能由该ViewGroup处理，并且不会再调用该<code>onInterceptTouchEvent</code>方法去询问是否拦截。</font></p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170820232415501?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="View事件拦截" title=""></div><p></p><br><br><p>通过上面的几个验证，我们越来越接近真相，用通俗的话来解释就是：</p><br><br><blockquote><br>  <p>老板发现BUG解决，一开始是由上级往下级问话。（<a href="http://blog.csdn.net/qian520ao/article/details/73558275" title="optional title" target="_blank">类似责任链设计模式</a>）</p><br><br>  <p>例如突然间出现了BUG，老板问小组A有没有空处理一下BUG(即分发ACTION_DOWN)，小组A说没时间(return false)，那么老板就不会把这个序列的BUG（ACTION_MOVE和ACTION_UP）交给小组A。如果再次出现BUG，老板还会再次询问小组A。①</p><br><br>  <p>如果你举手揽了这个BUG（即拦截），那么这一事件的BUG都交由你解决，并且相同序列的BUG老板不会问话，直接找你处理。②</p><br></blockquote><br><br><p><br></p><br><br><h3 id="源码分析viewgroup"><a name="t4"></a>源码分析ViewGroup</h3><br><br><p>源码分析这一块主要还是基于《Android开发艺术探索》这本书的引导和理解做出的总结。PS：这本书性价比很高，涵盖知识面广。</p><br><br><br><br><h4 id="activity的事件分发">Activity的事件分发</h4><br><br><p>Activity的事件分发还关系到View的绘制和加载机制，等待下一篇来更详细认识这个知识点。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">if</span> (ev.getAction() == MotionEvent.ACTION_DOWN) {<br>            onUserInteraction();<br>        }<br><br>        <span class="hljs-comment">//最终获取到顶级View(ViewGroup)分发事件</span><br>        <span class="hljs-comment">//（getWindow().getDecorView().findViewById(android.R.id.Content)）.getChildAt(0)</span><br>        <span class="hljs-keyword">if</span> (getWindow().superDispatchTouchEvent(ev)) {<br>            <span class="hljs-keyword">return</span> <span class="hljs-keyword">true</span>;<br>        }<br><br>        <span class="hljs-comment">//如果所有的View都没有处理事件，则由Activity亲自出马</span><br>        <span class="hljs-keyword">return</span> onTouchEvent(ev);<br>    }</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li></ul></pre><br><br><p><br></p><br><br><br><br><h4 id="viewgroup的事件拦截">ViewGroup的事件拦截</h4><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">            <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTouchEvent</span>(MotionEvent ev) {<br>            ……<br><br>            <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> action = ev.getAction();<br>            <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> actionMasked = action &amp; MotionEvent.ACTION_MASK;<br><br>            <span class="hljs-keyword">if</span> (actionMasked == MotionEvent.ACTION_DOWN) {<br>                cancelAndClearTouchTargets(ev);<br><br>                <span class="hljs-comment">//清除FLAG_DISALLOW_INTERCEPT，并且设置mFirstTouchTarget为null</span><br>                resetTouchState(){<br>                    <span class="hljs-keyword">if</span>(mFirstTouchTarget!=<span class="hljs-keyword">null</span>){mFirstTouchTarget==<span class="hljs-keyword">null</span>;}<br>                    mGroupFlags &amp;= ~FLAG_DISALLOW_INTERCEPT;<br>                    ……<br>                };<br>            }<br>            <span class="hljs-keyword">final</span> <span class="hljs-keyword">boolean</span> intercepted;<span class="hljs-comment">//ViewGroup是否拦截事件</span><br><br>            <span class="hljs-comment">//mFirstTouchTarget是ViewGroup中处理事件(return true)的子View</span><br>            <span class="hljs-comment">//如果没有子View处理则mFirstTouchTarget=null,ViewGroup自己处理</span><br>            <span class="hljs-keyword">if</span> (actionMasked == MotionEvent.ACTION_DOWN|| mFirstTouchTarget != <span class="hljs-keyword">null</span>) {<br>                <span class="hljs-keyword">final</span> <span class="hljs-keyword">boolean</span> disallowIntercept = (mGroupFlags &amp; FLAG_DISALLOW_INTERCEPT) != <span class="hljs-number">0</span>;<br>                <span class="hljs-keyword">if</span> (!disallowIntercept) {<br>                    intercepted = onInterceptTouchEvent(ev);<span class="hljs-comment">//onInterceptTouchEvent</span><br>                    ev.setAction(action);<br>                } <span class="hljs-keyword">else</span> {<br>                    intercepted = <span class="hljs-keyword">false</span>;<br><br>                    <span class="hljs-comment">//如果子类设置requestDisallowInterceptTouchEvent（true）</span><br>                    <span class="hljs-comment">//ViewGroup将无法拦截MotionEvent.ACTION_DOWN以外的事件</span><br>                }<br>            } <span class="hljs-keyword">else</span> {<br>                intercepted = <span class="hljs-keyword">true</span>;<br><br>                <span class="hljs-comment">//actionMasked != MotionEvent.ACTION_DOWN并且没有子View处理事件，则将事件拦截</span><br>                <span class="hljs-comment">//并且不会再调用onInterceptTouchEvent询问是否拦截</span><br>            }<br><br>            ……<br>            ……<br>}</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li><li style="color: rgb(153, 153, 153);">21</li><li style="color: rgb(153, 153, 153);">22</li><li style="color: rgb(153, 153, 153);">23</li><li style="color: rgb(153, 153, 153);">24</li><li style="color: rgb(153, 153, 153);">25</li><li style="color: rgb(153, 153, 153);">26</li><li style="color: rgb(153, 153, 153);">27</li><li style="color: rgb(153, 153, 153);">28</li><li style="color: rgb(153, 153, 153);">29</li><li style="color: rgb(153, 153, 153);">30</li><li style="color: rgb(153, 153, 153);">31</li><li style="color: rgb(153, 153, 153);">32</li><li style="color: rgb(153, 153, 153);">33</li><li style="color: rgb(153, 153, 153);">34</li><li style="color: rgb(153, 153, 153);">35</li><li style="color: rgb(153, 153, 153);">36</li><li style="color: rgb(153, 153, 153);">37</li><li style="color: rgb(153, 153, 153);">38</li><li style="color: rgb(153, 153, 153);">39</li><li style="color: rgb(153, 153, 153);">40</li><li style="color: rgb(153, 153, 153);">41</li></ul></pre><br><br><p>我们将上面的结论再次写下来，方便对照。 <br><br><font color="#7fb80e">①另外如果不消耗ACTION_DOWN事件，那么down,move,up事件都与该View无关，交由父类处理(父类的<code>onTouchEvent</code>方法)</font>（dispatchTouchEvent） <br><br><font color="#7fb80e">②而且这一个事件序列（当前和其它事件）都只能由该ViewGroup处理，并且不会再调用该<code>onInterceptTouchEvent</code>方法去询问是否拦截。</font>（onInterceptTouchEvent return true）</p><br><br><ul><br><li>首先我们分析上面第21行代码： ViewGroup在两种情况下会拦截事件（ACTION_DOWN || mFirstTouchTarget != null）所以反过来也就是说 <font color="#f15a22">I : 当ACTION_MOVE和ACTION_UP事件到来时，如果没有子元素处理事件（mFirstTouchTarget==null），则ViewGroup的onInterceptTouchEvent不会再被调用，而且同一序列中的其它事件都会默认交给它处理（第34行 intercepted=true）；</font>与上面所说的<font color="#7fb80e">①②</font>呼应。</li><br><li>紧接着22行： ViewGroup<code>disallowIntercept</code>（不拦截）的判定是<code>FLAG_DISALLOW_INTERCEPT</code>标记位，这个标记是通过子View<code>requestDisallowInterceptTouchEvent</code>方法设置的。所以我们可以得出这么一个结论<font color="#f15a22">II : 当子View处理了ACTION_DOWN事件(mFirstTouchTarget =该子View)，而且设置了FLAG_DISALLOW_INTERCEPT标记位，那么ViewGroup将无法拦截除了ACTION_DOWN以外的其它事件。</font>（在11行代码ACTION_DOWN时清除了FLAG_DISALLOW_INTERCEPT标记位，所以ViewGroup无论如何都可以选择是否拦截处理ACTION_DOWN）</li><br></ul><br><br><p>上面变着花样的又一次验证了①②个知识点，不得不说<font color="#fdb933" size="4">read the fuck source code</font>让我们可以找到一个处理滑动冲突的方法：<font color="#7fb80e" size="4">子View处理DOWN事件并且设置<code>FLAG_DISALLOW_INTERCEPT</code>标记位，就可以不让ViewGroup拦截DOWN以外的事件。</font></p><br><br><p><br></p><br><br><br><br><h4 id="viewgroup的事件分发">ViewGroup的事件分发</h4><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">        <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">final</span> View[] children = mChildren;<br><br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = childrenCount - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; i–) {<br>            <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> childIndex = getAndVerifyPreorderedIndex(childrenCount, i, customOrder);<br>            <span class="hljs-keyword">final</span> View child = getAndVerifyPreorderedView(preorderedList, children, childIndex);<br><br>            ……<br><br>            <span class="hljs-keyword">if</span> (!canViewReceivePointerEvents(child) || !isTransformedTouchPointInView(x, y, child, <span class="hljs-keyword">null</span>))<br>            {<br>                ev.setTargetAccessibilityFocus(<span class="hljs-keyword">false</span>);<br>                <span class="hljs-comment">//如果子View没有播放动画，而且点击事件的坐标在子View的区域内，继续下面的判断</span><br>                <span class="hljs-keyword">continue</span>;<br>            }<br>            <span class="hljs-comment">//判断是否有子View处理了事件</span><br>            newTouchTarget = getTouchTarget(child);<br><br>            <span class="hljs-keyword">if</span> (newTouchTarget != <span class="hljs-keyword">null</span>) {<br>                <span class="hljs-comment">//如果已经有子View处理了事件，即mFirstTouchTarget!=null，终止循环。</span><br>                newTouchTarget.pointerIdBits |= idBitsToAssign;<br>                <span class="hljs-keyword">break</span>;<br>            }<br><br>            <span class="hljs-keyword">if</span> (dispatchTransformedTouchEvent(ev, <span class="hljs-keyword">false</span>, child, idBitsToAssign)) {<br>                <span class="hljs-comment">//点击dispatchTransformedTouchEvent代码发现其执行方法实际为</span><br>                <span class="hljs-comment">//return child.dispatchTouchEvent(event); （因为child!=null）</span><br>                <span class="hljs-comment">//所以如果有子View处理了事件，我们就进行下一步：赋值</span><br><br>                ……<br><br>                newTouchTarget = addTouchTarget(child, idBitsToAssign);<br>                <span class="hljs-comment">//addTouchTarget方法里完成了对mFirstTouchTarget的赋值</span><br>                alreadyDispatchedToNewTouchTarget = <span class="hljs-keyword">true</span>;<br><br>                <span class="hljs-keyword">break</span>;<br>            }<br>        }<br>    }<br><br>    <span class="hljs-keyword">private</span> TouchTarget <span class="hljs-title">addTouchTarget</span>(@NonNull View child, <span class="hljs-keyword">int</span> pointerIdBits) {<br>        <span class="hljs-keyword">final</span> TouchTarget target = TouchTarget.obtain(child, pointerIdBits);<br>        target.next = mFirstTouchTarget;<br>        mFirstTouchTarget = target;<br>        <span class="hljs-keyword">return</span> target;<br>    }<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTransformedTouchEvent</span>(MotionEvent event, <span class="hljs-keyword">boolean</span> cancel,<br>            View child, <span class="hljs-keyword">int</span> desiredPointerIdBits) {<br>            ……<br><br>            <span class="hljs-keyword">if</span> (child == <span class="hljs-keyword">null</span>) {<br>            <span class="hljs-comment">//如果没有子View处理事件，就自己处理</span><br>                handled = <span class="hljs-keyword">super</span>.dispatchTouchEvent(event);<br>            } <span class="hljs-keyword">else</span> {<br>           <span class="hljs-comment">//有子View，调用子View的dispatchTouchEvent方法</span><br>                handled = child.dispatchTouchEvent(event);<br><br>            ……<br><br>            <span class="hljs-keyword">return</span> handled;<br>    }<br></code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li><li style="color: rgb(153, 153, 153);">21</li><li style="color: rgb(153, 153, 153);">22</li><li style="color: rgb(153, 153, 153);">23</li><li style="color: rgb(153, 153, 153);">24</li><li style="color: rgb(153, 153, 153);">25</li><li style="color: rgb(153, 153, 153);">26</li><li style="color: rgb(153, 153, 153);">27</li><li style="color: rgb(153, 153, 153);">28</li><li style="color: rgb(153, 153, 153);">29</li><li style="color: rgb(153, 153, 153);">30</li><li style="color: rgb(153, 153, 153);">31</li><li style="color: rgb(153, 153, 153);">32</li><li style="color: rgb(153, 153, 153);">33</li><li style="color: rgb(153, 153, 153);">34</li><li style="color: rgb(153, 153, 153);">35</li><li style="color: rgb(153, 153, 153);">36</li><li style="color: rgb(153, 153, 153);">37</li><li style="color: rgb(153, 153, 153);">38</li><li style="color: rgb(153, 153, 153);">39</li><li style="color: rgb(153, 153, 153);">40</li><li style="color: rgb(153, 153, 153);">41</li><li style="color: rgb(153, 153, 153);">42</li><li style="color: rgb(153, 153, 153);">43</li><li style="color: rgb(153, 153, 153);">44</li><li style="color: rgb(153, 153, 153);">45</li><li style="color: rgb(153, 153, 153);">46</li><li style="color: rgb(153, 153, 153);">47</li><li style="color: rgb(153, 153, 153);">48</li><li style="color: rgb(153, 153, 153);">49</li><li style="color: rgb(153, 153, 153);">50</li><li style="color: rgb(153, 153, 153);">51</li><li style="color: rgb(153, 153, 153);">52</li><li style="color: rgb(153, 153, 153);">53</li><li style="color: rgb(153, 153, 153);">54</li><li style="color: rgb(153, 153, 153);">55</li><li style="color: rgb(153, 153, 153);">56</li><li style="color: rgb(153, 153, 153);">57</li><li style="color: rgb(153, 153, 153);">58</li><li style="color: rgb(153, 153, 153);">59</li><li style="color: rgb(153, 153, 153);">60</li><li style="color: rgb(153, 153, 153);">61</li><li style="color: rgb(153, 153, 153);">62</li><li style="color: rgb(153, 153, 153);">63</li></ul></pre><br><br><p>上面为ViewGroup对事件的分发，主要有2点</p><br><br><ol><br><li>如果有子View，则调用子View的dispatchTouchEvent方法判断是否处理了事件，如果处理了便赋值mFirstTouchTarget，赋值成功则跳出循环。</li><br><li>ViewGroup的事件分发最终还是调用View的<code>dispatchTouchEvent</code>方法，具体如上代码所述。</li><br></ol><br><br><p>至此View的事件分发机制已经演练完毕，如果事件分发机制理解深入的话，那么处理滑动冲突便是手到擒来了。</p><br><br><p><br></p><br><br><br><br><h2 id="view的滑动冲突"><a name="t5"></a>View的滑动冲突</h2><br><br><p>关于View的滑动冲突我们就开门见山吧，因为上述的事件分发已经有足够的理论知识了，我们可以单刀赴会了。</p><br><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170822232321861?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="View的滑动冲突" title=""></div><p></p><br><br><p>针对上图，这个是比较普遍的滑动冲突事件，我们先拿它来开刀。</p><br><br><p><br> <br><br>好记性不如烂笔头，我们再次把结论搬到战场上 <br><br><font color="#7fb80e">①另外如果不消耗ACTION_DOWN事件，那么down,move,up事件都与该View无关，交由父类处理(父类的<code>onTouchEvent</code>方法)</font>（dispatchTouchEvent） <br><br><font color="#7fb80e">②而且这一个事件序列（当前和其它事件）都只能由该ViewGroup处理，并且不会再调用该<code>onInterceptTouchEvent</code>方法去询问是否拦截。</font>（onInterceptTouchEvent return true）</p><br><br><p><font color="#f15a22">I : 当ACTION_MOVE和ACTION_UP事件到来时，如果没有子元素处理事件（mFirstTouchTarget==null），则ViewGroup的onInterceptTouchEvent不会再被调用，而且同一序列中的其它事件都会默认交给它处理（第34行 intercepted=true）；</font></p><br><br><h3 id="外部拦截"><a name="t6"></a>外部拦截</h3><br><br>以下是外部拦截的伪代码：<br><br><img src="https://note.youdao.com/yws/api/personal/file/WEBa5be22d63894c59774c93ed5c167a2b3?method=download&amp;shareKey=66d44259265f8148df25421e0980fd2e" alt="外部拦截法"><br><br><br><p>外部拦截顾名思义就是由父ViewGroup对事件拦截处理（所以重写<code>onInterceptTouchEvent</code>方法即可），子View只能眼巴巴的处理父View“吃剩”的事件。主要有以下几点。</p><br><br><ul><br><li>父类不能拦截ACTION_DOWN，也就是说必须返回false，根据上述<font color="#7fb80e">①②</font>和<font color="#f15a22"> I </font>可得。</li><br><li>父类在ACTION_MOVE的时候根据需求，判断是否拦截。</li><br><li>ACTION_UP事件建议返回false或者<code>super.onInterceptTouchEvent</code>，因为如果已经拦截的话，那么并不会调用<code>onInterceptTouchEvent</code>方法再次询问。如果不拦截，而且返回true，子View可能就无法触发onClick等相关事件。</li><br></ul><br><br><p>ViewGroup ： 需要重写<code>onInterceptTouchEvent</code>，判断是否拦截即可。 <br><br>但是有一种情况：用户正在水平滑动（事件已拦截给ViewGroup），但是水平滑动停止前用户再进行竖直滑动，下面代码我用<code>isSolve</code>进行简单的处理。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">    <span class="hljs-keyword">private</span> <span class="hljs-keyword">boolean</span> isIntercept;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">boolean</span> isSolve;<span class="hljs-comment">//是否完成了拦截判断，如果决定拦截，那么同系列事件就不能设置为不拦截</span><br><br>    <span class="hljs-annotation">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">onInterceptTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">switch</span> (ev.getAction()) {<br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_DOWN:<br>                mPointGapF.x = ev.getX();<br>                mPointGapF.y = ev.getY();<br>                <span class="hljs-keyword">return</span> <span class="hljs-keyword">false</span>;<span class="hljs-comment">//down的时候拦截后，就只能交给自己处理了</span><br><br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_MOVE:<br>                <span class="hljs-keyword">if</span> (!isSolve) {<span class="hljs-comment">//是否已经决定拦截/不拦截？</span><br>                    isIntercept = (Math.abs(ev.getX() - mPointGapF.x) &gt; Math.abs(ev.getY() - mPointGapF.y)<em><span class="hljs-number">2</span>);<span class="hljs-comment">//如果是左右滑动，且水平角度小于30°，就拦截</span><br>                    isSolve = <span class="hljs-keyword">true</span>;<br>                }<br>                <span class="hljs-keyword">return</span> isIntercept;<span class="hljs-comment">//如果是左右滑动，就拦截</span><br>        }<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.onInterceptTouchEvent(ev);<br>    }<br><br>    <span class="hljs-annotation">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">onTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">switch</span> (ev.getAction()) {<br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_MOVE:<br>                scrollBy((<span class="hljs-keyword">int</span>) (mPointGapF.x - ev.getX()), <span class="hljs-number">0</span>);<br><br>                mPointGapF.x = ev.getX();<br>                mPointGapF.y = ev.getY();<br>                <span class="hljs-keyword">break</span>;<br>        }<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.onTouchEvent(ev);<br>    }</em></code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li><li style="color: rgb(153, 153, 153);">21</li><li style="color: rgb(153, 153, 153);">22</li><li style="color: rgb(153, 153, 153);">23</li><li style="color: rgb(153, 153, 153);">24</li><li style="color: rgb(153, 153, 153);">25</li><li style="color: rgb(153, 153, 153);">26</li><li style="color: rgb(153, 153, 153);">27</li><li style="color: rgb(153, 153, 153);">28</li><li style="color: rgb(153, 153, 153);">29</li><li style="color: rgb(153, 153, 153);">30</li><li style="color: rgb(153, 153, 153);">31</li><li style="color: rgb(153, 153, 153);">32</li><li style="color: rgb(153, 153, 153);">33</li></ul></pre><br><br><p>子View ： 和子View没有多大关系，只需要处理自身的移动操作即可。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs avrasm has-numbering">public boolean onTouchEvent(MotionEvent ev) {<br>        switch (ev<span class="hljs-preprocessor">.getAction</span>()) {<br>            case MotionEvent<span class="hljs-preprocessor">.ACTION</span>_DOWN:<br>                mPointGapF<span class="hljs-preprocessor">.x</span> = ev<span class="hljs-preprocessor">.getX</span>()<span class="hljs-comment">;</span><br>                mPointGapF<span class="hljs-preprocessor">.y</span> = ev<span class="hljs-preprocessor">.getY</span>()<span class="hljs-comment">;</span><br>                <span class="hljs-keyword">break</span><span class="hljs-comment">;</span><br>            case MotionEvent<span class="hljs-preprocessor">.ACTION</span>_MOVE:<br>                scrollBy(<span class="hljs-number">0</span>, (int) (mPointGapF<span class="hljs-preprocessor">.y</span> - ev<span class="hljs-preprocessor">.getY</span>()))<span class="hljs-comment">;</span><br>                mPointGapF<span class="hljs-preprocessor">.x</span> = ev<span class="hljs-preprocessor">.getX</span>()<span class="hljs-comment">;</span><br>                mPointGapF<span class="hljs-preprocessor">.y</span> = ev<span class="hljs-preprocessor">.getY</span>()<span class="hljs-comment">;</span><br>                <span class="hljs-keyword">break</span><span class="hljs-comment">;</span><br>        }<br>        return true<span class="hljs-comment">;</span><br>    }</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li></ul></pre><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170823135102485?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="外部拦截冲突" title=""></div><p></p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170823134034862?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="外部拦截冲突" title=""></div><p></p><br><br><p><br></p><br><br><h3 id="内部拦截"><a name="t7"></a>内部拦截</h3><br><br><br>以下是内部拦截方法的伪代码：<br><br><img src="https://note.youdao.com/yws/api/personal/file/WEB895b11d40d1cdddcac2f098c30ae4652?method=download&amp;shareKey=6f0bd71a1c4bb9db90f7e5eef112612a" alt=""><br><br><p><font color="#f15a22">II : 当子View处理了ACTION_DOWN事件(mFirstTouchTarget =该子View)，而且设置了FLAG_DISALLOW_INTERCEPT标记位，那么ViewGroup将无法拦截除了ACTION_DOWN以外的其它事件。</font></p><br><br><p>ViewGroup ： 只需在<code>onInterceptTouchEvent</code>MotionEvent.ACTION_DOWN时候不拦截，其他时候都需要拦截，否则父类的<code>onTouchEvent</code>就不能处理任何事件了。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">onInterceptTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">switch</span> (ev.getAction()) {<br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_DOWN:<br>                <span class="hljs-keyword">return</span> <span class="hljs-keyword">false</span>;<span class="hljs-comment">//down的时候拦截后，就只能交给自己处理了</span><br>        }<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">true</span>;<span class="hljs-comment">//如果不拦截，父类的onTouchEvent方法就无事件可以处理。</span><br>    }<br><br>    <span class="hljs-annotation">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">onTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">switch</span> (ev.getAction()) {<br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_MOVE:<br>                scrollBy((<span class="hljs-keyword">int</span>) (mPointGapF.x - ev.getX()), <span class="hljs-number">0</span>);<br><br>                mPointGapF.x = ev.getX();<br>                mPointGapF.y = ev.getY();<br>                <span class="hljs-keyword">break</span>;<br>        }<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.onTouchEvent(ev);<br>    }</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li></ul></pre><br><br><p>子View ： 需要在ACTION_DOWN事件设置getParent().requestDisallowInterceptTouchEvent(true)，并且在ACTION_MOVE的时候通过判断是否禁止父类的拦截。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">    <span class="hljs-keyword">private</span> <span class="hljs-keyword">boolean</span> isSolve;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">boolean</span> isIntercept;<br><br>    <span class="hljs-annotation">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">switch</span> (ev.getAction()) {<br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_DOWN:<br>                isIntercept = <span class="hljs-keyword">false</span>;<br>                isSolve = <span class="hljs-keyword">false</span>;<br>                mPointGapF.x = ev.getX();<br>                mPointGapF.y = ev.getY();<br>                getParent().requestDisallowInterceptTouchEvent(<span class="hljs-keyword">true</span>);<br>                <span class="hljs-keyword">break</span>;<br><br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_MOVE:<br>                <span class="hljs-keyword">if</span> (!isSolve) {<br>                    isSolve = <span class="hljs-keyword">true</span>;<br>                    isIntercept = (Math.abs(ev.getX() - mPointGapF.x) &lt; Math.abs(ev.getY() - mPointGapF.y)  <span class="hljs-number">2</span>);<br>                    getParent().requestDisallowInterceptTouchEvent(isIntercept);<br>                }<br>                <span class="hljs-keyword">break</span>;<br>        }<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.dispatchTouchEvent(ev);<br>    }</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li><li style="color: rgb(153, 153, 153);">21</li><li style="color: rgb(153, 153, 153);">22</li><li style="color: rgb(153, 153, 153);">23</li><li style="color: rgb(153, 153, 153);">24</li></ul></pre><br><br><p>最终的效果图和外部拦截的效果一致，这里就不再次贴出来了。 <br><br><br></p><br><br><br>## 一图看懂分发机制<br><br><img src="https://note.youdao.com/yws/api/personal/file/WEBe578b38e326c625af6d4bf41d73cd0c6?method=download&amp;shareKey=fc0868e4d6f2132ec5353a4a77e46a5a" alt="一图看懂分发机制"><br><br><br><h2 id="总结"><a name="t8"></a>总结</h2><br><br><p>通过理论和实战，更清晰的了解了事件的分发机制，从而这些理论知识使得我们更有效的处理滑动冲突事件，所以以后只要再遇见滑动冲突事件，再次巩固View的事件分发，万变不离其宗，定能手到擒来解决这一问题！</p>            </div><br>            <link rel="stylesheet" href="https://csdnimg.cn/release/phoenix/template/css/markdown_views-ea0013b516.css"><br>                </div>
-
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/05/23/《Android优化专题》——-优化下载效率/" itemprop="url">
-                  《Android优化专题》—— 优化下载效率
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-05-23T20:35:28+08:00" content="2018-05-23">
-              2018-05-23
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Android优化专题/" itemprop="url" rel="index">
-                    <span itemprop="name">Android优化专题</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="《Android优化专题》——-优化下载效率"><a href="#《Android优化专题》——-优化下载效率" class="headerlink" title="《Android优化专题》—— 优化下载效率"></a>《Android优化专题》—— 优化下载效率</h1><h2 id="一、用有效率的网络访问方式来优化下载"><a href="#一、用有效率的网络访问方式来优化下载" class="headerlink" title="一、用有效率的网络访问方式来优化下载"></a>一、用有效率的网络访问方式来优化下载</h2><h3 id="1-无线电状态机"><a href="#1-无线电状态机" class="headerlink" title="1.无线电状态机"></a>1.无线电状态机</h3><ul>
-<li>Full power：当无线连接被激活的时候，允许设备以最大的传输速率进行操作。</li>
-<li>Low power：相对Full power来说，算是一种中间状态，差不多50%的传输速率。</li>
-<li>Standby：最低的状态，没有数据连接需要传输。</li>
-</ul>
-<p>典型的3G无线电波状态机图示：</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB67e9adfaac62ea0736d6f24b4cc0f165?method=download&amp;shareKey=dc3ce6fbd2dec3ee1b1fd82ae1605f1f" alt=""></p>
-<h3 id="2-apps如何影响无线状态机"><a href="#2-apps如何影响无线状态机" class="headerlink" title="2. apps如何影响无线状态机"></a>2. apps如何影响无线状态机</h3><h4 id="创建新连接"><a href="#创建新连接" class="headerlink" title="创建新连接"></a>创建新连接</h4><p>每次创建一个网络连接，无线电波就会切换到full power状态（这也是为什么降低连接数可以更省电量以及省流量的原因），结束之后会有一个附加的5s时间切换到low power，再之后会经过12s进入到low energy状态，每次数据传输的会话都会引起无线电波持续消耗大概20s的能量。</p>
-<h4 id="传输bundle（序列化）与unbundled（未序列化）数据差别"><a href="#传输bundle（序列化）与unbundled（未序列化）数据差别" class="headerlink" title="传输bundle（序列化）与unbundled（未序列化）数据差别"></a>传输bundle（序列化）与unbundled（未序列化）数据差别</h4><p><img src="https://note.youdao.com/yws/api/personal/file/WEB7ab6e5aa0af3cc84fbf0e5e5bde4be5e?method=download&amp;shareKey=1e98b1be3b6eb2e4299ee7522bdffeb5" alt=""></p>
-<p>一个app传递1秒钟的unbundled data会使得无线电波持续活动18秒【18=1秒的传输数据+5秒过渡时间回到low power+12秒过渡时间回到standby】。因此每一分钟，它会消耗18秒high power的电量，42秒的low power的电量。</p>
-<p>如果每分钟app会传输bundle的data持续3秒的话，其中会使得无线电波持续在high power状态仅仅8秒钟，在low power状态仅仅12秒钟。 上面第二种传输bundle data的例子，可以看到减少了大量的电量消耗。</p>
-<h3 id="3-预取数据"><a href="#3-预取数据" class="headerlink" title="3. 预取数据"></a>3. 预取数据</h3><blockquote>
-<p>预取数据是一种减少独立数据传输会话数量的有效方法。在单次操作的时候，通过一次连接，在最大能力下，根据给出的时间下载到所有的数据。</p>
-</blockquote>
-<p>对于预取，取太多，不仅用户可能根本用不到那么多，而且还耗费了电量和流量。取太少，达不到预取的效果。</p>
-<p>如何控制预取的大小？</p>
-<p>这需要根据正在下载的数据大小与可能被用到的数据量来决定。一个基于上面状态机情况的比较大概的建议是：对于数据来说，大概有50%的机会可能用在当前用户的会话中，那么我们可以预取大约6秒(大约1-2Mb)，这大概使得潜在可能要用的数据量与可能已经下载好的数据量相一致。</p>
-<p>通常来说，预取1-5Mb会比较好，这种情况下，我们仅仅只需要每隔2-5分钟开始另一段下载。根据这个原理，大数据的下载，比如视频文件，应该每隔2-5秒开始另一段下载，这样能有效的预取到下面几分钟内的数据进行预览。</p>
-<h3 id="4-批量传输与连接"><a href="#4-批量传输与连接" class="headerlink" title="4. 批量传输与连接"></a>4. 批量传输与连接</h3><p>每次初始化一个连接（与需要传输的数据量无关），有可能导致无线电波持续花费20s的电量。</p>
-<p>对于数据进行bundle操作，并且创建一个序列可以使得大量数据集中进行发送，这样可以使得无线电波的激活时间尽可能的少，同事减少大部分的电量花费。</p>
-<h3 id="5-减少连接次数"><a href="#5-减少连接次数" class="headerlink" title="5. 减少连接次数"></a>5. 减少连接次数</h3><p>重用之前存在的网络连接比重新创建一个连接是更有效率的。当可以用一个GET请求解决的情况下，不要同时创建多个网络连接。</p>
-<p>可以在一个连接要关闭时，不要立即关闭，而是在timeout之前关闭。</p>
-<p>使用HttpUrlConnection，而不是HttpClient，前者做了response cache</p>
-<h3 id="6-使用DDMS（Dalvik-Debug-Monitor-Server）网络通信工具来检测网络使用情况"><a href="#6-使用DDMS（Dalvik-Debug-Monitor-Server）网络通信工具来检测网络使用情况" class="headerlink" title="6. 使用DDMS（Dalvik Debug Monitor Server）网络通信工具来检测网络使用情况"></a>6. 使用DDMS（Dalvik Debug Monitor Server）网络通信工具来检测网络使用情况</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6200ba40b6d05b617272f233ce870afc?method=download&amp;shareKey=dbfc00a9fc45b3d02971ddadca2c65d4" alt=""></p>
-<p>通过监测数据传输的频率和每次传输的数据量，可以看出哪些地方可以进行优化。类似于图中短小钉子形状的地方，可以和附近位置的请求进行merge操作。</p>
-<p>Traffic Status API可以使用TrafficStats.setThreadStatsTag()的方法标记数据传输发生在某个Thread里面。可以手动使用tagSocket()进行标记或者untagSocket()来取消标记。</p>
-<h2 id="二、调整更新的频率"><a href="#二、调整更新的频率" class="headerlink" title="二、调整更新的频率"></a>二、调整更新的频率</h2><h3 id="1-使用C2DM作为轮询方式之一"><a href="#1-使用C2DM作为轮询方式之一" class="headerlink" title="1.使用C2DM作为轮询方式之一"></a>1.使用C2DM作为轮询方式之一</h3><blockquote>
-<p>C2DM是一个用来从server到特定app传输数据的轻量级机制。使用C2DM，server会在某个app有需要获取新数据的时候通知app有这个消息。</p>
-</blockquote>
-<p>但中国大陆的Google框架通常会被移除，使得C2DM没法在中国大陆的App上使用。</p>
-<p>可参考各大厂商的推送定制。</p>
-<h3 id="2-通过不定时的重复提醒和指数退避来优化轮询操作"><a href="#2-通过不定时的重复提醒和指数退避来优化轮询操作" class="headerlink" title="2.通过不定时的重复提醒和指数退避来优化轮询操作"></a>2.通过不定时的重复提醒和指数退避来优化轮询操作</h3><p>如果必须要使用轮询机制，可以考虑以下几个方面的优化：</p>
-<ol>
-<li>如果多个提醒都安排在某个小的时间段内，考虑把这多个操作在一个无线电状态下操作完。</li>
-<li>使用Alarm时，设置的提醒类型为非wake类型（对于非紧急通知消息时，避免在屏幕熄灭状态下，将设备唤醒），减少电量的损耗。</li>
-<li>在app上一次更新操作之后还未被使用的情况下，使用指数退避算法（exponential back-off algorithm）来减少更新频率。</li>
-</ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">private void retryIn(long interval) &#123;</span><br><span class="line">  boolean success = attemptTransfer();</span><br><span class="line"></span><br><span class="line">  if (!success) &#123;</span><br><span class="line">    retryIn(interval*2 &lt; MAX_RETRY_INTERVAL ?</span><br><span class="line">            interval*2 : MAX_RETRY_INTERVAL);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="二进制退避算法"><a href="#二进制退避算法" class="headerlink" title="二进制退避算法"></a>二进制退避算法</h4><ol>
-<li>确定基本退避时间，一般为端到端的往返时间为2t，2t也成为冲突窗口或争用期。</li>
-<li>定义参数k，k与冲突次数有关，规定k不能超过10，k=Min[冲突次数，10]。在冲突次数大于10，小于16时，k不再增大，一直取值为10。</li>
-<li>从离散的整数集合[0,1,2，……，(2k-1)]中随机的取出一个数r，等待的时延为r倍的基本退避时间，等于r x 2t。r的取值范围与冲突次数k有关，r可选的随机取值为2k个、这也是称为二进制退避算法的起因。</li>
-<li>当冲突次数大于10以后，都是从0—210-1个2t中随机选择一个作为等待时间。</li>
-<li>当冲突次数超过16次后，发送失败，丢弃传输的帧，发送错误报告。</li>
-</ol>
-<h2 id="三、使用缓存来避免重复下载"><a href="#三、使用缓存来避免重复下载" class="headerlink" title="三、使用缓存来避免重复下载"></a>三、使用缓存来避免重复下载</h2><blockquote>
-<p>减少下载的最基本方法是仅仅下载你想要的数据，通过类似上次更新时间来制定查询数据的条件。在下载图片时，server尽量减少图片的大小，比如对图片进行剪裁等处理。</p>
-</blockquote>
-<h3 id="1-缓存到本地"><a href="#1-缓存到本地" class="headerlink" title="1. 缓存到本地"></a>1. 缓存到本地</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">long currentTime = System.currentTimeMillis());</span><br><span class="line"></span><br><span class="line">HttpURLConnection conn = (HttpURLConnection) url.openConnection();</span><br><span class="line"></span><br><span class="line">long expires = conn.getHeaderFieldDate(&quot;Expires&quot;, currentTime);</span><br><span class="line">long lastModified = conn.getHeaderFieldDate(&quot;Last-Modified&quot;, currentTime);</span><br><span class="line"></span><br><span class="line">setDataExpirationDate(expires);</span><br><span class="line"></span><br><span class="line">if (lastModified &lt; lastUpdateTime) &#123;</span><br><span class="line">  // Skip update  </span><br><span class="line">&#125; else &#123;</span><br><span class="line">  // Parse update  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>可以使用下面的方法获取External缓存目录：目录是Android/data/data/com.xxx.xxx/cache</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Context.getExternalCacheDir();</span><br></pre></td></tr></table></figure>
-<p>获取内部缓存的方法</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Context.getCache()</span><br></pre></td></tr></table></figure>
-<p>这里注意不要随便在sdcard下创建目录存放缓存，因为这个文件夹不会随着程序的卸载而删除。既影响用户体验，又会把一些不想让用户知道的数据泄露出去。</p>
-<h3 id="2-使用HttpUrlConnect-Response缓存"><a href="#2-使用HttpUrlConnect-Response缓存" class="headerlink" title="2. 使用HttpUrlConnect Response缓存"></a>2. 使用HttpUrlConnect Response缓存</h3><p>我们可以通过反射机制开启HTTP response cache</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">private void enableHttpResponseCache() &#123;</span><br><span class="line">  try &#123;</span><br><span class="line">    long httpCacheSize = 10 * 1024 * 1024; // 10 MiB  </span><br><span class="line">    File httpCacheDir = new File(getCacheDir(), &quot;http&quot;);</span><br><span class="line">    Class.forName(&quot;android.net.http.HttpResponseCache&quot;)</span><br><span class="line">         .getMethod(&quot;install&quot;, File.class, long.class)</span><br><span class="line">         .invoke(null, httpCacheDir, httpCacheSize);</span><br><span class="line">  &#125; catch (Exception httpResponseCacheNotAvailable) &#123;</span><br><span class="line">    Log.d(TAG, &quot;HTTP response cache is unavailable.&quot;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>也可以在onCreate中加入以下代码开启</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">protected void onCreate(Bundle savedInstanceState) &#123;</span><br><span class="line">     ...</span><br><span class="line"></span><br><span class="line">     try &#123;</span><br><span class="line">         File httpCacheDir = new File(context.getCacheDir(), &quot;http&quot;);</span><br><span class="line">         long httpCacheSize = 10 * 1024 * 1024; // 10 MiB</span><br><span class="line">         HttpResponseCache.install(httpCacheDir, httpCacheSize);</span><br><span class="line">     &#125; catch (IOException e) &#123;</span><br><span class="line">         Log.i(TAG, &quot;HTTP response cache installation failed:&quot; + e);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> protected void onStop() &#123;</span><br><span class="line">     ...</span><br><span class="line"></span><br><span class="line">     HttpResponseCache cache = HttpResponseCache.getInstalled();</span><br><span class="line">     if (cache != null) &#123;</span><br><span class="line">         cache.flush();</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<p>以上代码会在Android4.0以上开启response code，所有cache中的HTTP请求都可以直接在本地存储中响应，就不需要开启一个新的网络连接。被cache起来的response可以被server确保没有过期，这样减少了带宽。</p>
-<h2 id="四、根据网络类型来切换下载模式"><a href="#四、根据网络类型来切换下载模式" class="headerlink" title="四、根据网络类型来切换下载模式"></a>四、根据网络类型来切换下载模式</h2><blockquote>
-<p>WIFI要比无线电波消耗的电量要少很多，而且对于无线电波而言（3G,2G,LTE等）也存在不同电量的区别。</p>
-</blockquote>
-<h3 id="1-尽量WIFI"><a href="#1-尽量WIFI" class="headerlink" title="1. 尽量WIFI"></a>1. 尽量WIFI</h3><p>我们尽量要在连接WIFI的时候进行下载，更新数据等操作。</p>
-<h3 id="2-尽量使用更大的带宽下载更多的数据，而不是经常去下载"><a href="#2-尽量使用更大的带宽下载更多的数据，而不是经常去下载" class="headerlink" title="2. 尽量使用更大的带宽下载更多的数据，而不是经常去下载"></a>2. 尽量使用更大的带宽下载更多的数据，而不是经常去下载</h3><p>相对更宽的带宽会有更长的状态切换时间（从full power过渡到standby有更长一段时间的延迟），过渡时间的电量通常是固定的，每次传输会话过程中尽量一次性把事情做完，而不是断断续续请求就更有效率了。</p>
-<p>如果LTE无线电的带宽与电量消耗都是3G无线电的2倍，我们应该在每次会话的时候都下载4倍于3G的数据量，或者是差不多10Mb</p>
-<p>我们可以根据connectivity manager来判断当前激活的无线电波，根据结果来做prefetch。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">ConnectivityManager cm =</span><br><span class="line"> (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);</span><br><span class="line"></span><br><span class="line">TelephonyManager tm =</span><br><span class="line">  (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);</span><br><span class="line"></span><br><span class="line">NetworkInfo activeNetwork = cm.getActiveNetworkInfo();</span><br><span class="line"></span><br><span class="line">int PrefetchCacheSize = DEFAULT_PREFETCH_CACHE;</span><br><span class="line"></span><br><span class="line">switch (activeNetwork.getType()) &#123;</span><br><span class="line">  case (ConnectivityManager.TYPE_WIFI):</span><br><span class="line">    PrefetchCacheSize = MAX_PREFETCH_CACHE; break;</span><br><span class="line">  case (ConnectivityManager.TYPE_MOBILE): &#123;</span><br><span class="line">    switch (tm.getNetworkType()) &#123;</span><br><span class="line">      case (TelephonyManager.NETWORK_TYPE_LTE |</span><br><span class="line">            TelephonyManager.NETWORK_TYPE_HSPAP):</span><br><span class="line">        PrefetchCacheSize *= 4;</span><br><span class="line">        break;</span><br><span class="line">      case (TelephonyManager.NETWORK_TYPE_EDGE |</span><br><span class="line">            TelephonyManager.NETWORK_TYPE_GPRS):</span><br><span class="line">        PrefetchCacheSize /= 2;</span><br><span class="line">        break;</span><br><span class="line">      default: break;</span><br><span class="line">    &#125;</span><br><span class="line">    break;</span><br><span class="line">  &#125;</span><br><span class="line">  default: break;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -890,7 +1003,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">35</span>
+              <span class="site-state-item-count">37</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

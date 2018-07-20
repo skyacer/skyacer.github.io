@@ -1,0 +1,718 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="View," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="Android窗口管理分析（四）—— Android View绘制图层内存的分配、传递、使用 本文来看Android是怎么利用Ashmem分配及绘制的  View视图内存是怎么分配的？添加窗口时，WMS为APP分配一个WindowState，标识当前窗口用于窗口管理， Surface握有一块可以绘图的内存，这块内存是APP端需要的时候，通过sp GraphicBufferProducer申请的。">
+<meta name="keywords" content="View">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android窗口管理分析（4）—— Android View绘制图层内存的分配、传递、使用">
+<meta property="og:url" content="http://skyacer.github.io/2018/07/20/Android窗口管理分析（四）—— Android-View绘制图层内存的分配、传递、使用/index.html">
+<meta property="og:site_name" content="SkyAcer&#39;s blog">
+<meta property="og:description" content="Android窗口管理分析（四）—— Android View绘制图层内存的分配、传递、使用 本文来看Android是怎么利用Ashmem分配及绘制的  View视图内存是怎么分配的？添加窗口时，WMS为APP分配一个WindowState，标识当前窗口用于窗口管理， Surface握有一块可以绘图的内存，这块内存是APP端需要的时候，通过sp GraphicBufferProducer申请的。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-07-20T06:20:28.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android窗口管理分析（4）—— Android View绘制图层内存的分配、传递、使用">
+<meta name="twitter:description" content="Android窗口管理分析（四）—— Android View绘制图层内存的分配、传递、使用 本文来看Android是怎么利用Ashmem分配及绘制的  View视图内存是怎么分配的？添加窗口时，WMS为APP分配一个WindowState，标识当前窗口用于窗口管理， Surface握有一块可以绘图的内存，这块内存是APP端需要的时候，通过sp GraphicBufferProducer申请的。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Android窗口管理分析（4）—— Android View绘制图层内存的分配、传递、使用 | SkyAcer's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SkyAcer's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Hacking,Thoughts.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-heartbeat fa-fw"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android窗口管理分析（4）—— Android View绘制图层内存的分配、传递、使用
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-07-20T14:19:00+08:00" content="2018-07-20">
+              2018-07-20
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/framework/" itemprop="url" rel="index">
+                    <span itemprop="name">framework</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Android窗口管理分析（四）——-Android-View绘制图层内存的分配、传递、使用"><a href="#Android窗口管理分析（四）——-Android-View绘制图层内存的分配、传递、使用" class="headerlink" title="Android窗口管理分析（四）—— Android View绘制图层内存的分配、传递、使用"></a>Android窗口管理分析（四）—— Android View绘制图层内存的分配、传递、使用</h1><blockquote>
+<p>本文来看Android是怎么利用Ashmem分配及绘制的</p>
+</blockquote>
+<h2 id="View视图内存是怎么分配的？"><a href="#View视图内存是怎么分配的？" class="headerlink" title="View视图内存是怎么分配的？"></a>View视图内存是怎么分配的？</h2><p>添加窗口时，WMS为APP分配一个WindowState，标识当前窗口用于窗口管理，</p>
+<p>Surface握有一块可以绘图的内存，这块内存是APP端需要的时候，通过sp GraphicBufferProducer申请的。</p>
+<h3 id="如何获得sp-gdp这个服务代理？"><a href="#如何获得sp-gdp这个服务代理？" class="headerlink" title="如何获得sp gdp这个服务代理？"></a>如何获得sp gdp这个服务代理？</h3><p>在createNormalLayer中，建立了一个sp gbp容器 ——&gt; 请求SurfaceFlinger分配填充内容 ——&gt; SurfaceFlinger收到请求后为WMS建立与APP端对应的Layer ——&gt; 分配sp gbp ——&gt; 填充到Surface中返回给APP</p>
+<h3 id="APP端如何获得申请内存的句柄BpGraphicBufferProducer？"><a href="#APP端如何获得申请内存的句柄BpGraphicBufferProducer？" class="headerlink" title="APP端如何获得申请内存的句柄BpGraphicBufferProducer？"></a>APP端如何获得申请内存的句柄BpGraphicBufferProducer？</h3><p>BufferQueueProducer是一个Binder通信对象，在服务端是BnGraphicBufferProducer，在App端是BpInterface<igraphicbufferproducer>{}</igraphicbufferproducer></p>
+<p>SurfaceFlinger创建Binder实体 ——&gt; 打包Surface对象 ——&gt; 通过binder通信传递给APP端 ——&gt; APP端通过反序列化将其恢复出来——&gt; APP端获得了申请内存句柄BpGraphicBufferProducer </p>
+<h3 id="BpGraphicBufferProducer有什么作用呢？"><a href="#BpGraphicBufferProducer有什么作用呢？" class="headerlink" title="BpGraphicBufferProducer有什么作用呢？"></a>BpGraphicBufferProducer有什么作用呢？</h3><p>ViewRootImpl的draw ——&gt; surface.nativeLockCanvas ——&gt; Surface.dequeueBuffer ——&gt; BpGraphicBufferProducer.dequeueBuffer请求分配内存</p>
+<p>在Linux中一切都是文件，共享内存也是文件，分配成功后，跨进程传递tmpfs临时文件的描述符fd。</p>
+<h2 id="View绘制内存是怎么传递的？"><a href="#View绘制内存是怎么传递的？" class="headerlink" title="View绘制内存是怎么传递的？"></a>View绘制内存是怎么传递的？</h2><p>fd利用Binder通信传递给App进程 ——&gt; App获取fd后，将共享内存映射到自己的进程空间，进行图形绘制 ——&gt; 等到App对GraphicBuffer反序列化的时候，将共享内存mmap到当前进程空间 ——&gt; 这样进程就拿到绘制后的数据了</p>
+<h2 id="View绘制内存是怎么使用的？"><a href="#View绘制内存是怎么使用的？" class="headerlink" title="View绘制内存是怎么使用的？"></a>View绘制内存是怎么使用的？</h2><p>当内存经过反序列化，拿到内存地址后 ——&gt; 封装一个ANativeWindow_Buffer给上层调用  ——&gt; 对于2d绘图，利用skia库填充Bitmap对应的共享内存 ——&gt; 绘制完成 ——&gt; 通过unlock通知SurfaceFlinger服务进行图层合成</p>
+<h2 id="Android-View局部重绘的原理是什么？"><a href="#Android-View局部重绘的原理是什么？" class="headerlink" title="Android View局部重绘的原理是什么？"></a>Android View局部重绘的原理是什么？</h2><p>lockCanvas ——&gt; 判断buffer宽高格式是否一致 ——&gt; 如果一致则进行数据拷贝 ——&gt; 如果不一致则整块绘制 ——&gt; 将绘制UI数据拷贝到申请内存中 ——&gt; 在拷贝数据中进行脏区域重绘</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/View/" rel="tag">#View</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/03/Android窗口管理分析（三）—— WMS窗口的组织形式/" rel="next" title="Android窗口管理分析（3）：WMS窗口的组织形式">
+                <i class="fa fa-chevron-left"></i> Android窗口管理分析（3）：WMS窗口的组织形式
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="SkyAcer" />
+          <p class="site-author-name" itemprop="name">SkyAcer</p>
+          <p class="site-description motion-element" itemprop="description">Little And More.</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">37</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-name">分类</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android窗口管理分析（四）——-Android-View绘制图层内存的分配、传递、使用"><span class="nav-number">1.</span> <span class="nav-text">Android窗口管理分析（四）—— Android View绘制图层内存的分配、传递、使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#View视图内存是怎么分配的？"><span class="nav-number">1.1.</span> <span class="nav-text">View视图内存是怎么分配的？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#如何获得sp-gdp这个服务代理？"><span class="nav-number">1.1.1.</span> <span class="nav-text">如何获得sp gdp这个服务代理？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#APP端如何获得申请内存的句柄BpGraphicBufferProducer？"><span class="nav-number">1.1.2.</span> <span class="nav-text">APP端如何获得申请内存的句柄BpGraphicBufferProducer？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BpGraphicBufferProducer有什么作用呢？"><span class="nav-number">1.1.3.</span> <span class="nav-text">BpGraphicBufferProducer有什么作用呢？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#View绘制内存是怎么传递的？"><span class="nav-number">1.2.</span> <span class="nav-text">View绘制内存是怎么传递的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#View绘制内存是怎么使用的？"><span class="nav-number">1.3.</span> <span class="nav-text">View绘制内存是怎么使用的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android-View局部重绘的原理是什么？"><span class="nav-number">1.4.</span> <span class="nav-text">Android View局部重绘的原理是什么？</span></a></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">SkyAcer</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=0.5.0"></script>
+
+
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+
+  
+
+
+</body>
+</html>

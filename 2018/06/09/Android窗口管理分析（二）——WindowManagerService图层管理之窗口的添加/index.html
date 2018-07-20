@@ -67,11 +67,12 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB057109037ca9e125198e2eead8d18b6c?method=download&shareKey=9a0a33be9b12833c4e858b57b8a85175">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB9f0d62cfec2b9b86ad69ce5a2c1d5d5f?method=download&shareKey=141858c3f2650257f1d92749d015eb66">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB48b062a332232b68f2f86836f1d854dc?method=download&shareKey=694d04d38e9b2467955b50a465d38a4d">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBa1d0149bfa323db501e5a50e9943f40d?method=download&shareKey=702e142fb9d4e9a4de6d6fc0dfc945cd">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB83a988108f7640d3f3da543ac13c9d6e?method=download&shareKey=8cf63d1649205192dbb11c052d9c06e0">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBe71e95c3cd0470eda95fccfcbe38a3d3?method=download&shareKey=21aebce9d3d76fef32cb15afb840bc30">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBc3fddfc737f1b81cba23081ac3605d40?method=download&shareKey=be9e6a33752602f050ac7e185c641b5f">
-<meta property="og:updated_time" content="2018-06-09T10:54:43.000Z">
+<meta property="og:updated_time" content="2018-06-09T11:01:56.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android窗口管理分析（二）——WindowManagerService图层管理之窗口的添加">
 <meta name="twitter:description" content="Android窗口管理分析（二）——WindowManagerService图层管理之窗口的添加 本文主要从以下几点分析：  窗口的分类：Activity、Dialog、PopupWindow、Toast等对应窗口的区别 窗口的添加和删除 窗口的分组与窗口Z的顺序 Window、IWindow、WindowState、WindowToken、AppToken等之间的关系   Android窗口大概">
@@ -306,6 +307,8 @@
 <li>WindowToken：是窗口的令牌，也是窗口分组的依据，在WMS端，和分组对应的数据结构是WindowToken</li>
 <li>AppToken：是ActivityRecord里面的IApplicationToken.Stub appToken代理。</li>
 </ul>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB48b062a332232b68f2f86836f1d854dc?method=download&amp;shareKey=694d04d38e9b2467955b50a465d38a4d" alt=""></p>
+<p>Activity与Dialog对应的是AppWindowToken，PopupWindow对应的是普通的WindowToken。</p>
 <h2 id="Session和App进程对应关系是什么样的？"><a href="#Session和App进程对应关系是什么样的？" class="headerlink" title="Session和App进程对应关系是什么样的？"></a>Session和App进程对应关系是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBa1d0149bfa323db501e5a50e9943f40d?method=download&amp;shareKey=702e142fb9d4e9a4de6d6fc0dfc945cd" alt=""></p>
 <ol>
 <li>Session与App进程一一对应，进一步为当前进程建立SurfaceSession会话。</li>

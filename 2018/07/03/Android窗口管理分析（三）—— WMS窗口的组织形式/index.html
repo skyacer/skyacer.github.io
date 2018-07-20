@@ -1,0 +1,879 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="View," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="Android窗口管理分析（3）：WMS窗口的组织形式 本文总共包括以下几点：  窗口的分组管理：应用窗口组、子窗口组、系统窗口组 Activity、Dialg应用窗口及PopWindow子窗口的添加原理跟注意事项 窗口的Z次序管理：窗口的分配序号、次序调整等 WMS中窗口次序分配如何影响SurfaceFlinger服务   各种窗口type和窗口类型的对应关系是什么样的？窗口和对应类型   窗口">
+<meta name="keywords" content="View">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android窗口管理分析（3）：WMS窗口的组织形式">
+<meta property="og:url" content="http://skyacer.github.io/2018/07/03/Android窗口管理分析（三）—— WMS窗口的组织形式/index.html">
+<meta property="og:site_name" content="SkyAcer&#39;s blog">
+<meta property="og:description" content="Android窗口管理分析（3）：WMS窗口的组织形式 本文总共包括以下几点：  窗口的分组管理：应用窗口组、子窗口组、系统窗口组 Activity、Dialg应用窗口及PopWindow子窗口的添加原理跟注意事项 窗口的Z次序管理：窗口的分配序号、次序调整等 WMS中窗口次序分配如何影响SurfaceFlinger服务   各种窗口type和窗口类型的对应关系是什么样的？窗口和对应类型   窗口">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB48b062a332232b68f2f86836f1d854dc?method=download&shareKey=694d04d38e9b2467955b50a465d38a4d">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBf6552df5db0595bc726979ae4867e135?method=download&shareKey=81992d5eb5b019920186bbbf1f7ef162">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB438789e52f069cecb59102d2508a6d8c?method=download&shareKey=dbd6fec50b6c1f847a3798dd6b6b17d8">
+<meta property="og:updated_time" content="2018-07-03T07:25:34.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android窗口管理分析（3）：WMS窗口的组织形式">
+<meta name="twitter:description" content="Android窗口管理分析（3）：WMS窗口的组织形式 本文总共包括以下几点：  窗口的分组管理：应用窗口组、子窗口组、系统窗口组 Activity、Dialg应用窗口及PopWindow子窗口的添加原理跟注意事项 窗口的Z次序管理：窗口的分配序号、次序调整等 WMS中窗口次序分配如何影响SurfaceFlinger服务   各种窗口type和窗口类型的对应关系是什么样的？窗口和对应类型   窗口">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB48b062a332232b68f2f86836f1d854dc?method=download&shareKey=694d04d38e9b2467955b50a465d38a4d">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Android窗口管理分析（3）：WMS窗口的组织形式 | SkyAcer's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SkyAcer's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Hacking,Thoughts.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-heartbeat fa-fw"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android窗口管理分析（3）：WMS窗口的组织形式
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-07-03T15:24:37+08:00" content="2018-07-03">
+              2018-07-03
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/framework/" itemprop="url" rel="index">
+                    <span itemprop="name">framework</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Android窗口管理分析（3）：WMS窗口的组织形式"><a href="#Android窗口管理分析（3）：WMS窗口的组织形式" class="headerlink" title="Android窗口管理分析（3）：WMS窗口的组织形式"></a>Android窗口管理分析（3）：WMS窗口的组织形式</h1><blockquote>
+<p>本文总共包括以下几点：</p>
+<ul>
+<li>窗口的分组管理：应用窗口组、子窗口组、系统窗口组</li>
+<li>Activity、Dialg应用窗口及PopWindow子窗口的添加原理跟注意事项</li>
+<li>窗口的Z次序管理：窗口的分配序号、次序调整等</li>
+<li>WMS中窗口次序分配如何影响SurfaceFlinger服务</li>
+</ul>
+</blockquote>
+<h2 id="各种窗口type和窗口类型的对应关系是什么样的？"><a href="#各种窗口type和窗口类型的对应关系是什么样的？" class="headerlink" title="各种窗口type和窗口类型的对应关系是什么样的？"></a>各种窗口type和窗口类型的对应关系是什么样的？</h2><h3 id="窗口和对应类型"><a href="#窗口和对应类型" class="headerlink" title="窗口和对应类型"></a>窗口和对应类型</h3><table>
+<thead>
+<tr>
+<th>窗口type值</th>
+<th>窗口类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIRST_APPLICATION_WINDOW=1</td>
+<td>开始应用程序窗口</td>
+</tr>
+<tr>
+<td>TYPE_BASE_APPLICATION=1</td>
+<td>所有程序窗口的base窗口，其他应用程序都显示在它上面</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION=2</td>
+<td>普通应用程序窗口，token必须设置为Activity的token</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_STARTING=3</td>
+<td>应用程序启动时所显示的窗口</td>
+</tr>
+<tr>
+<td>LAST_APPLICATION_WINDOW=99</td>
+<td>结束应用程序窗口</td>
+</tr>
+</tbody>
+</table>
+<p>一般Activity都是TYPE_BASE_APPLICATION类型的，而TYPE_APPLICATION主要是用于Dialog，再看下子窗口类型</p>
+<h3 id="子窗口和对应类型"><a href="#子窗口和对应类型" class="headerlink" title="子窗口和对应类型"></a>子窗口和对应类型</h3><table>
+<thead>
+<tr>
+<th>窗口type值</th>
+<th>窗口类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIRST_SUB_WINDOW=1000</td>
+<td>SubWindows子窗口，子窗口的Z序和坐标空间</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_PANEL =1000</td>
+<td>面板窗口，显示于宿主窗口的上层</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_MEDIA=1001</td>
+<td>媒体窗口（例如视频），显示于宿主窗口下层</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_SUB_PANEL=1002</td>
+<td>应用程序窗口的子面板，显示于所有面板窗口的上层</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_ATTACHED_DIALOG=1003</td>
+<td>对话框，类似于面板窗口，显示于所有面板窗口的上层</td>
+</tr>
+<tr>
+<td>TYPE_APPLICATION_MEDIA_OVERLAY=1004</td>
+<td>媒体信息，显示在媒体层和程序窗口之间，需要实现半透明效果</td>
+</tr>
+<tr>
+<td>LAST_SUB_WINDOW=1999</td>
+<td>结束子窗口</td>
+</tr>
+</tbody>
+</table>
+<h3 id="系统窗口类型"><a href="#系统窗口类型" class="headerlink" title="系统窗口类型"></a>系统窗口类型</h3><table>
+<thead>
+<tr>
+<th>窗口type值</th>
+<th>窗口类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIRST_SYSTEM_WINDOW=2000</td>
+<td>系统窗口</td>
+</tr>
+<tr>
+<td>TYPE_STATUS_BAR=FIRST_SYSTEM_WINDOW</td>
+<td>状态栏</td>
+</tr>
+<tr>
+<td>TYPE_SYSTEM_ALERT=FIRST_SYSTEM_WINDOW+3</td>
+<td>系统提示，出现在应用程序窗口之上</td>
+</tr>
+<tr>
+<td>TYPE_TOAST=FIRST_SYSTEM_WINDOW+5</td>
+<td>显示Toast</td>
+</tr>
+</tbody>
+</table>
+<h2 id="窗口的分组原理是什么样的？"><a href="#窗口的分组原理是什么样的？" class="headerlink" title="窗口的分组原理是什么样的？"></a>窗口的分组原理是什么样的？</h2><p><strong>Android的窗口是以token来分组的</strong></p>
+<p>windowToken包含一个WindowList，包含一系列的WindowState</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB48b062a332232b68f2f86836f1d854dc?method=download&amp;shareKey=694d04d38e9b2467955b50a465d38a4d" alt="windowtoken"></p>
+<h2 id="Activity对应token和WindowToken的添加过程是什么样的？"><a href="#Activity对应token和WindowToken的添加过程是什么样的？" class="headerlink" title="Activity对应token和WindowToken的添加过程是什么样的？"></a>Activity对应token和WindowToken的添加过程是什么样的？</h2><ol>
+<li>AMS将Activity的token加入WMS中，为Activity创建APPWindowToken。</li>
+<li>Activity分组在Activity显示之前就被AMS添加到WMS中，之后AMS才会去通知App新建Activity，并将Activity的Window添加到WMS中。</li>
+<li>启动Activity步骤：新建一个Activity，并为Activity创建一个appContext，这个Context主要是为了activity.attach使用的，其实是单纯new一个ContextImpl，之后Activity会利用attach函数将ContextImpl绑定在自己身上。</li>
+</ol>
+<h3 id="创建ActivityContext"><a href="#创建ActivityContext" class="headerlink" title="创建ActivityContext"></a>创建ActivityContext</h3><ol>
+<li>为Activity绑定ContextImpl，因为Activity只是一个ContextWrapper。</li>
+<li>new一个PhoneWindow并设置回调。</li>
+<li>利用当前的WindowManagerImpl为Window创建一个WindowManagerImpl并设置它的parentWindow。</li>
+</ol>
+<h3 id="setWindowManager"><a href="#setWindowManager" class="headerlink" title="setWindowManager"></a>setWindowManager</h3><ol>
+<li>将window的WindowManager传递给Activity，作为Activity的WindowManager</li>
+<li>Activity通过getSystemService获取WindowManager服务时，直接返回了Window的WindowManagerImpl</li>
+</ol>
+<h3 id="getSystemService"><a href="#getSystemService" class="headerlink" title="getSystemService"></a>getSystemService</h3><ol>
+<li>通过需要获得的service名字返回不同manager对象。</li>
+</ol>
+<h3 id="handleResumeActivity"><a href="#handleResumeActivity" class="headerlink" title="handleResumeActivity"></a>handleResumeActivity</h3><ol>
+<li>获取activity的window对象，如果用户没有通过setContentView方式新建DecorView，这里会利用PhoneWindow的getDecorView()新建DecorView，并把decorview设置为不可见。</li>
+<li>获取windowManager以及window的各属性。添加decorview到WMS管理。</li>
+</ol>
+<h3 id="WindowManagerImpl的addView"><a href="#WindowManagerImpl的addView" class="headerlink" title="WindowManagerImpl的addView"></a>WindowManagerImpl的addView</h3><ol>
+<li>最终会调用WindowManagerGlobal的addView方法</li>
+<li>调整wparams的token参数</li>
+<li>新建ViewRootImpl，并利用wparams参数添加窗口</li>
+<li>ViewRootImpl设置view</li>
+</ol>
+<h3 id="adjustLayoutParamsForSubWindow"><a href="#adjustLayoutParamsForSubWindow" class="headerlink" title="adjustLayoutParamsForSubWindow"></a>adjustLayoutParamsForSubWindow</h3><ol>
+<li>对于Activity来说，wp.token = mContainer其实是AMS端传过来的IApplicationToken</li>
+<li>在ViewRootImpl中setView的时候，利用IWindowSession代理与WMS端的Session通信，将窗口及token信息传递到WMS端，其中IApplicationToken就是该Activity处于的分组</li>
+<li>在WMS端，根据IApplicationToken IBinder键值，从全局的mTokenMap。</li>
+</ol>
+<h2 id="Dialog必须用Activity的context？"><a href="#Dialog必须用Activity的context？" class="headerlink" title="Dialog必须用Activity的context？"></a>Dialog必须用Activity的context？</h2><p>在添加到WMS时，Dialog窗口属性是WindowManager.LayoutParams.TYPE_APPLICATION，同样属于应用窗口，所以必须使用Activity的AppToken才可以。</p>
+<p>Dialog和Activity共享一个同一个WindowManager（也就是WindowManagerImpl），而WindowManagerImpl里面有个Window类型的mParentWindow变量，这个变量在attach时传入当前Activity的Window。而Activity的Window里面的mAppToken是当前Activity的token。</p>
+<p>所以最终是因为<strong>不能为Dialog提供正确的token</strong></p>
+<h2 id="PopupWindow的子窗口添加流程是什么样的？"><a href="#PopupWindow的子窗口添加流程是什么样的？" class="headerlink" title="PopupWindow的子窗口添加流程是什么样的？"></a>PopupWindow的子窗口添加流程是什么样的？</h2><p>WMS为PopupWindow窗口创建一个子窗口分组WindowToken，每个子窗口都会有一个指向父窗口的引用，因为是利用父窗口IWindow作为键值，父窗口可以方便利用IWindow获取WindowToken，存入map中，进而得到全部的子窗口。</p>
+<h2 id="窗口的Z次序管理是什么样的？"><a href="#窗口的Z次序管理是什么样的？" class="headerlink" title="窗口的Z次序管理是什么样的？"></a>窗口的Z次序管理是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBf6552df5db0595bc726979ae4867e135?method=download&amp;shareKey=81992d5eb5b019920186bbbf1f7ef162" alt="Z序列坐标系"></p>
+<p>在WMS中，窗口被抽象成WindowState，采用了三个int值来标志窗口所在位置。前两个主要根据窗口类型确定窗口位置，mLayer才是真正的值。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">final class WindowState implements WindowManagerPolicy.WindowState &#123;</span><br><span class="line">    </span><br><span class="line">    final WindowList mChildWindows = new WindowList();</span><br><span class="line">    final int mBaseLayer;</span><br><span class="line">    final int mSubLayer;</span><br><span class="line">     &lt;!--最终Z次序的赋值--&gt;</span><br><span class="line">   int mLayer;</span><br><span class="line">    </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>由于前两个都是final修饰的，所以只有最后一个值可以改。</p>
+<p>从坐标系知道，值越大，窗口越靠上。</p>
+<p>对于Activity等应用窗口来说，主序都是一样的，怎么定他们真正的Z-order呢？其实是Activity的顺序由AMS来保证的。</p>
+<p><strong>在系统层面，决定了不同类型窗口所处的位置，比如系统Toast类型的窗口一定处于所有应用窗口之上</strong></p>
+<p>添加窗口的示意代码如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">addWindow()&#123;</span><br><span class="line">    &lt;!--1--&gt;</span><br><span class="line">    new WindowState</span><br><span class="line">    &lt;!--2--&gt;</span><br><span class="line">    addWindowToListInOrderLocked(win, true);</span><br><span class="line">    &lt;!--3--&gt;</span><br><span class="line">    assignLayersLocked(displayContent.getWindowList());</span><br><span class="line"> 	&#125;</span><br></pre></td></tr></table></figure>
+<p>Z-order通过addWindowToListInOrderLocked及assignLayersLocked才能确定</p>
+<ol>
+<li><p>第一步，new一个windowstate实例。</p>
+</li>
+<li><p>第二步，addWindowToListInOrderLocked主要根据窗口的Token找到归属，插入到对应Token的WindowState列表，插入到特定位置后，Z-order就确定了。</p>
+</li>
+<li><p>第三步，通过assignLayersLocked为WindowState分配真正的Z-order mLayer。</p>
+</li>
+</ol>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB438789e52f069cecb59102d2508a6d8c?method=download&amp;shareKey=dbd6fec50b6c1f847a3798dd6b6b17d8" alt=""></p>
+<p>当mLayer(int)确定后，这个顺序最终确定，之后，在SurfaceFlinger图层混排的时候处理。</p>
+<h2 id="WMS中窗口次序分配如何影响SurfaceFlinger服务？"><a href="#WMS中窗口次序分配如何影响SurfaceFlinger服务？" class="headerlink" title="WMS中窗口次序分配如何影响SurfaceFlinger服务？"></a>WMS中窗口次序分配如何影响SurfaceFlinger服务？</h2><p>SurfaceFlinger图层混排的时候不会混排所有的窗口，只会混排可见的窗口，比如有多个全屏Activity的时候，SurfaceFlinger只会处理最上面的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">SurfaceControl.openTransaction();</span><br><span class="line">          try &#123;</span><br><span class="line">              mSurfaceX = left;</span><br><span class="line">              mSurfaceY = top;</span><br><span class="line">               try &#123;</span><br><span class="line">                  mSurfaceControl.setPosition(left, top);</span><br><span class="line">                  mSurfaceLayer = mAnimLayer;</span><br><span class="line">                  final DisplayContent displayContent = w.getDisplayContent();</span><br><span class="line">                  if (displayContent != null) &#123;</span><br><span class="line">                      mSurfaceControl.setLayerStack(displayContent.getDisplay().getLayerStack());</span><br><span class="line">                  &#125;</span><br><span class="line">                  &lt;!--设置次序--&gt;</span><br><span class="line">                  mSurfaceControl.setLayer(mAnimLayer);</span><br><span class="line">                  mSurfaceControl.setAlpha(0);</span><br><span class="line">                  mSurfaceShown = false;</span><br><span class="line">              &#125; catch (RuntimeException e) &#123;</span><br><span class="line">                  mService.reclaimSomeSurfaceMemoryLocked(this, &quot;create-init&quot;, true);</span><br><span class="line">              &#125;</span><br><span class="line">              mLastHidden = true;</span><br><span class="line">          &#125; finally &#123;</span><br><span class="line">              SurfaceControl.closeTransaction();</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+<p>通过事务来确保完整性，包括surface次序调整，通知SurfaceFlinger更新Surface信息。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/View/" rel="tag">#View</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/09/Android窗口管理分析（二）—— WindowManagerService图层管理之窗口的添加/" rel="next" title="Android窗口管理分析（二）——WindowManagerService图层管理之窗口的添加">
+                <i class="fa fa-chevron-left"></i> Android窗口管理分析（二）——WindowManagerService图层管理之窗口的添加
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/20/Android窗口管理分析（四）—— Android-View绘制图层内存的分配、传递、使用/" rel="prev" title="Android窗口管理分析（4）—— Android View绘制图层内存的分配、传递、使用">
+                Android窗口管理分析（4）—— Android View绘制图层内存的分配、传递、使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="SkyAcer" />
+          <p class="site-author-name" itemprop="name">SkyAcer</p>
+          <p class="site-description motion-element" itemprop="description">Little And More.</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">37</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-name">分类</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android窗口管理分析（3）：WMS窗口的组织形式"><span class="nav-number">1.</span> <span class="nav-text">Android窗口管理分析（3）：WMS窗口的组织形式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#各种窗口type和窗口类型的对应关系是什么样的？"><span class="nav-number">1.1.</span> <span class="nav-text">各种窗口type和窗口类型的对应关系是什么样的？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#窗口和对应类型"><span class="nav-number">1.1.1.</span> <span class="nav-text">窗口和对应类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#子窗口和对应类型"><span class="nav-number">1.1.2.</span> <span class="nav-text">子窗口和对应类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统窗口类型"><span class="nav-number">1.1.3.</span> <span class="nav-text">系统窗口类型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#窗口的分组原理是什么样的？"><span class="nav-number">1.2.</span> <span class="nav-text">窗口的分组原理是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Activity对应token和WindowToken的添加过程是什么样的？"><span class="nav-number">1.3.</span> <span class="nav-text">Activity对应token和WindowToken的添加过程是什么样的？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建ActivityContext"><span class="nav-number">1.3.1.</span> <span class="nav-text">创建ActivityContext</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setWindowManager"><span class="nav-number">1.3.2.</span> <span class="nav-text">setWindowManager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getSystemService"><span class="nav-number">1.3.3.</span> <span class="nav-text">getSystemService</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#handleResumeActivity"><span class="nav-number">1.3.4.</span> <span class="nav-text">handleResumeActivity</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WindowManagerImpl的addView"><span class="nav-number">1.3.5.</span> <span class="nav-text">WindowManagerImpl的addView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#adjustLayoutParamsForSubWindow"><span class="nav-number">1.3.6.</span> <span class="nav-text">adjustLayoutParamsForSubWindow</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dialog必须用Activity的context？"><span class="nav-number">1.4.</span> <span class="nav-text">Dialog必须用Activity的context？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PopupWindow的子窗口添加流程是什么样的？"><span class="nav-number">1.5.</span> <span class="nav-text">PopupWindow的子窗口添加流程是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#窗口的Z次序管理是什么样的？"><span class="nav-number">1.6.</span> <span class="nav-text">窗口的Z次序管理是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WMS中窗口次序分配如何影响SurfaceFlinger服务？"><span class="nav-number">1.7.</span> <span class="nav-text">WMS中窗口次序分配如何影响SurfaceFlinger服务？</span></a></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">SkyAcer</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=0.5.0"></script>
+
+
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+
+  
+
+
+</body>
+</html>

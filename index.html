@@ -47,6 +47,8 @@
 
 
 
+  <link rel="alternate" href="/atom.xml" title="SkyAcer's blog" type="application/atom+xml" />
+
 
 
 
@@ -215,6 +217,171 @@
             
               
                 
+                <a class="post-title-link" href="/2018/07/30/Android窗口管理分析（五）-——-硬件加速和软件加速的区别/" itemprop="url">
+                  Android窗口管理分析（五）-——-硬件加速和软件加速的区别
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-07-30T14:54:25+08:00" content="2018-07-30">
+              2018-07-30
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/framework/" itemprop="url" rel="index">
+                    <span itemprop="name">framework</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Android窗口管理分析（五）-——-硬件加速和软件加速的区别"><a href="#Android窗口管理分析（五）-——-硬件加速和软件加速的区别" class="headerlink" title="Android窗口管理分析（五） —— 硬件加速和软件加速的区别"></a>Android窗口管理分析（五） —— 硬件加速和软件加速的区别</h1><blockquote>
+<p>硬件加速直观上说是依赖GPU实现图形绘制加速，软硬件加速的区别是指图形绘制究竟是GPU来处理还是CPU，如果是GPU就认为是硬件加速，反之用CPU就是软件绘制。</p>
+</blockquote>
+<p>主要分为两部分分析：</p>
+<ol>
+<li>前期策略：如何构建需要绘制的区域</li>
+<li>后期绘制：单独渲染线程，依赖GPU进行绘制</li>
+</ol>
+<h2 id="硬-软件加速有什么异同点？"><a href="#硬-软件加速有什么异同点？" class="headerlink" title="硬/软件加速有什么异同点？"></a>硬/软件加速有什么异同点？</h2><h3 id="相同点"><a href="#相同点" class="headerlink" title="相同点"></a>相同点</h3><ol>
+<li>绘制内存的分配都是类似的，都是需要请求SurfaceFlinger服务分配一块内存</li>
+<li>绘制都是在APP端，绘制后同样需要通知SurfaceFlinger进行合成</li>
+</ol>
+<h3 id="不同点"><a href="#不同点" class="headerlink" title="不同点"></a>不同点</h3><ol>
+<li>硬件加速有可能FrameBuffer硬件缓冲区直接分配内存，软件加速都是SurfaceFlinger分配的内存</li>
+<li>在App端的绘制流程不同</li>
+</ol>
+<h2 id="软硬件加速的分歧点在哪？"><a href="#软硬件加速的分歧点在哪？" class="headerlink" title="软硬件加速的分歧点在哪？"></a>软硬件加速的分歧点在哪？</h2><p>在ViewRootImpl的draw方法开始分歧，有个判断点如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">private void draw(boolean fullRedrawNeeded) &#123;</span><br><span class="line">    ...</span><br><span class="line">    if (!dirty.isEmpty() || mIsAnimating || accessibilityFocusDirty) &#123;</span><br><span class="line">        &lt;!--关键点1 是否开启硬件加速--&gt;</span><br><span class="line">        if (mAttachInfo.mHardwareRenderer != null &amp;&amp; mAttachInfo.mHardwareRenderer.isEnabled()) &#123;</span><br><span class="line">             ...</span><br><span class="line">            dirty.setEmpty();</span><br><span class="line">            mBlockResizeBuffer = false;</span><br><span class="line">            &lt;!--关键点2 硬件加速绘制--&gt;</span><br><span class="line">            mAttachInfo.mHardwareRenderer.draw(mView, mAttachInfo, this);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">          ...</span><br><span class="line">           &lt;!--关键点3 软件绘制--&gt;</span><br><span class="line">            if (!drawSoftware(surface, mAttachInfo, xOffset, yOffset, scalingRequired, dirty)) &#123;</span><br><span class="line">                return;</span><br><span class="line">            &#125;</span><br><span class="line">        ...</span><br></pre></td></tr></table></figure>
+<ol>
+<li>4.+的手机一般都是支持硬件加速</li>
+<li>在添加窗口时，ViewRootImpl会enableHardwareAcceleration开启硬件加速，并初始化硬件加速环境</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">private void enableHardwareAcceleration(WindowManager.LayoutParams attrs) &#123;</span><br><span class="line"></span><br><span class="line">    &lt;!--根据配置，获取硬件加速的开关--&gt;</span><br><span class="line">    // Try to enable hardware acceleration if requested</span><br><span class="line">    final boolean hardwareAccelerated =</span><br><span class="line">            (attrs.flags &amp; WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED) != 0;</span><br><span class="line">   if (hardwareAccelerated) &#123;</span><br><span class="line">        ...</span><br><span class="line">            &lt;!--新建硬件加速图形渲染器--&gt;</span><br><span class="line">            mAttachInfo.mHardwareRenderer = HardwareRenderer.create(mContext, translucent);</span><br><span class="line">            if (mAttachInfo.mHardwareRenderer != null) &#123;</span><br><span class="line">                mAttachInfo.mHardwareRenderer.setName(attrs.getTitle().toString());</span><br><span class="line">                mAttachInfo.mHardwareAccelerated =</span><br><span class="line">                        mAttachInfo.mHardwareAccelerationRequested = true;</span><br><span class="line">            &#125;</span><br><span class="line">        ...</span><br></pre></td></tr></table></figure>
+<p>需要硬件加速就利用HardwareRenderer进行draw，否则走软件绘制流程的drawSoftware，就是上一篇讲过的利用Surface.lockCanvas, 向SurfaceFlinger申请一块匿名共享内存分配，同时获取一个普通的SkiaCanvas（2d），用于调用Skia库，并进行图形绘制。</p>
+<p>软件绘制如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">private boolean drawSoftware(Surface surface, AttachInfo attachInfo, int xoff, int yoff,</span><br><span class="line">            boolean scalingRequired, Rect dirty) &#123;</span><br><span class="line">        final Canvas canvas;</span><br><span class="line">        try &#123;</span><br><span class="line">            &lt;!--关键点1 --&gt;</span><br><span class="line">            canvas = mSurface.lockCanvas(dirty);</span><br><span class="line">            ..</span><br><span class="line">            &lt;!--关键点2 绘制--&gt;</span><br><span class="line">            	 mView.draw(canvas);</span><br><span class="line">             ..</span><br><span class="line">             关键点3 通知SurfaceFlinger进行图层合成</span><br><span class="line">                surface.unlockCanvasAndPost(canvas);</span><br><span class="line">            &#125;   ...	        </span><br><span class="line">           return true;  </span><br><span class="line">           &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="硬件加速分为哪两个阶段？"><a href="#硬件加速分为哪两个阶段？" class="headerlink" title="硬件加速分为哪两个阶段？"></a>硬件加速分为哪两个阶段？</h2><ol>
+<li>构建阶段    ，递归遍历所有视图，将需要的操作缓存下来，之后再交给单独的Render线程利用OpenGL渲染。</li>
+<li>绘制阶段    ，View视图被抽象成一个个DrawOp(DisplayListOp)，比如View中drawLine，构建中就会被抽象成一个DrawLintOp，每个DrawOp有对应的OpenGL绘制命令，同时内部也握着绘图所需要的数据。</li>
+</ol>
+<p>如下图所示：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB780ed116c9ad80aac7355683579ac6b3?method=download&amp;shareKey=1d86c23836b1aef7a346b70867ebaed7" alt=""></p>
+<h2 id="绘制上硬件加速有什么优势？"><a href="#绘制上硬件加速有什么优势？" class="headerlink" title="绘制上硬件加速有什么优势？"></a>绘制上硬件加速有什么优势？</h2><p>绘制时，软件绘制，View一般都在主线程中完成绘制。而硬件加速，一般都是在单独线程中完成绘制，如此一来，就分担了主线程很多压力，提高了UI线程的响应速度。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBc61c3f0d1d6ca85681e5a958766fd507?method=download&amp;shareKey=c84c51a991f5d9cb61c38118ba2d1a9f" alt=""></p>
+<h2 id="硬件加速的HardWareRenderer是如何构建DrawOp集的？"><a href="#硬件加速的HardWareRenderer是如何构建DrawOp集的？" class="headerlink" title="硬件加速的HardWareRenderer是如何构建DrawOp集的？"></a>硬件加速的HardWareRenderer是如何构建DrawOp集的？</h2><p>HardWareRenderer是硬件加速绘制的入口，实现是一个ThreadedRenderer对象，跟一个Render线程息息相关，不过ThreadedRenderer是在UI线程中创建的，作用如下：</p>
+<ul>
+<li><ol>
+<li>在UI线程中完成DrawOp集的构建</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>负责跟渲染线程通信</li>
+</ol>
+</li>
+</ul>
+<p>ThreadedRenderer RenderProxy ——&gt; RenderThread 单例线程，不会出现多线程并发访问冲突的问题 ——&gt; ThreadedRenderer的draw函数 ——&gt; updateRootDisplayList构建RootDisplayList，构建View的DrawOp树 ——&gt; 递归完成DrawOp树的构建</p>
+<p>DisplayListCanvas及RenderNode类图如下：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBc56e6da15a3544ff72ae846efc8bfdbe?method=download&amp;shareKey=72f595155a380c480e270021677be648" alt=""></p>
+<p>完成DrawOp树构建之后，可以利用RenderProxy向RenderThread发送消息，请求OpenGL线程进行渲染。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB4b34e2323dbd8f62b7c73b679003ba3b?method=download&amp;shareKey=2d10769b0f602b420b8cbced7b1858c3" alt=""></p>
+<h2 id="RenderThread如何渲染UI到Graphic-Buffer"><a href="#RenderThread如何渲染UI到Graphic-Buffer" class="headerlink" title="RenderThread如何渲染UI到Graphic Buffer?"></a>RenderThread如何渲染UI到Graphic Buffer?</h2><p>在DrawOp树构建完毕之后，开始渲染，大致流程如下：</p>
+<ul>
+<li>首先进行DrawOp的合并</li>
+<li>接着绘制特殊的Layer</li>
+<li>最后绘制其余所有的DrawOpList</li>
+<li>调用swapBuffers将前面已经绘制好的图形缓冲区提交给Surface Flinger合成和显示</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>软件绘制同硬件合成的区别主要是在绘制上，内存分配、合成等整体流程是一样的，只不过硬件加速相比软件绘制算法更加合理，同时减轻了主线程的负担。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/07/20/Android窗口管理分析（四）—— Android-View绘制图层内存的分配、传递、使用/" itemprop="url">
                   Android窗口管理分析（四）—— Android View绘制图层内存的分配、传递、使用
                 </a>
@@ -336,7 +503,7 @@
               
                 
                 <a class="post-title-link" href="/2018/07/03/Android窗口管理分析（三）—— WMS窗口的组织形式/" itemprop="url">
-                  Android窗口管理分析（3）：WMS窗口的组织形式
+                  Android窗口管理分析（三）：WMS窗口的组织形式
                 </a>
               
             
@@ -397,7 +564,7 @@
       
         
           
-            <h1 id="Android窗口管理分析（3）：WMS窗口的组织形式"><a href="#Android窗口管理分析（3）：WMS窗口的组织形式" class="headerlink" title="Android窗口管理分析（3）：WMS窗口的组织形式"></a>Android窗口管理分析（3）：WMS窗口的组织形式</h1><blockquote>
+            <h1 id="Android窗口管理分析（三）：WMS窗口的组织形式"><a href="#Android窗口管理分析（三）：WMS窗口的组织形式" class="headerlink" title="Android窗口管理分析（三）：WMS窗口的组织形式"></a>Android窗口管理分析（三）：WMS窗口的组织形式</h1><blockquote>
 <p>本文总共包括以下几点：</p>
 <ul>
 <li>窗口的分组管理：应用窗口组、子窗口组、系统窗口组</li>
@@ -850,114 +1017,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/05/27/简单易懂的堆排序/" itemprop="url">
-                  简单易懂的堆排序
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-05-27T19:11:30+08:00" content="2018-05-27">
-              2018-05-27
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/基础知识/" itemprop="url" rel="index">
-                    <span itemprop="name">基础知识</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="简单易懂的堆排序"><a href="#简单易懂的堆排序" class="headerlink" title="简单易懂的堆排序"></a>简单易懂的堆排序</h1><p>网上已经有很多文章都在介绍堆排序的原理，这里记录下比较容易理解的代码思路，通过元素下沉的方式，构建大根堆，以及将首尾元素互换后的调整过程。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">public class HeapSort &#123;</span><br><span class="line">    public static void main(String []args)&#123;</span><br><span class="line">        int []arr = &#123;8,9,6,5,10,2,3,2,1&#125;;</span><br><span class="line">        sort(arr);</span><br><span class="line">        System.out.println(Arrays.toString(arr));</span><br><span class="line">    &#125;</span><br><span class="line">    public static void sort(int []arr)&#123;</span><br><span class="line">        //1.构建大顶堆</span><br><span class="line">        for(int i=(arr.length-1)/2;i&gt;=0;i--)&#123;</span><br><span class="line">            //从第一个非叶子结点从下至上，从右至左调整结构</span><br><span class="line">            nodeDown(arr,i,arr.length);</span><br><span class="line">        &#125;</span><br><span class="line">        //2.调整堆结构+交换堆顶元素与末尾元素</span><br><span class="line">        for(int j=arr.length-1;j&gt;0;j--)&#123;</span><br><span class="line">            swap(arr,0,j);//将堆顶元素与末尾元素进行交换</span><br><span class="line">            nodeDown(arr,0,j);//重新对堆进行调整</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 调整大顶堆（仅是调整过程，建立在大顶堆已构建的基础上),即元素下沉,对于2i+1为左子节点</span><br><span class="line">     * 2i+2为右子节点,在子节点中找出最大的一个,并交换,如此一步步下沉到最底部</span><br><span class="line">     * @param arr</span><br><span class="line">     * @param i 需要调整的节点序列</span><br><span class="line">     * @param length</span><br><span class="line">     */</span><br><span class="line">    public static void nodeDown(int []arr, int i, int length)&#123;</span><br><span class="line">        for(int k=i*2+1;k&lt;length;k=k*2+1)&#123;//从i结点的左子结点开始，也就是2i+1处开始</span><br><span class="line">            int temp = arr[i];//先取出当前元素i</span><br><span class="line">            if(k+1&lt;length &amp;&amp; arr[k]&lt;arr[k+1])&#123;//如果左子结点小于右子结点，k指向右子结点</span><br><span class="line">                k++;</span><br><span class="line">            &#125;</span><br><span class="line">            if(arr[k] &gt;temp)&#123;//如果子节点大于父节点，将子节点值赋给父节点（不用进行交换）</span><br><span class="line">                swap(arr, i, k);</span><br><span class="line">                i = k;</span><br><span class="line">            &#125;else&#123;</span><br><span class="line">                break;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 交换元素</span><br><span class="line">     * @param arr</span><br><span class="line">     * @param a</span><br><span class="line">     * @param b</span><br><span class="line">     */</span><br><span class="line">    public static void swap(int []arr,int a ,int b)&#123;</span><br><span class="line">        int temp=arr[a];</span><br><span class="line">        arr[a] = arr[b];</span><br><span class="line">        arr[b] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1003,7 +1062,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">37</span>
+              <span class="site-state-item-count">38</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1028,6 +1087,13 @@
 
         </nav>
 
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
         
 
         <div class="links-of-author motion-element">

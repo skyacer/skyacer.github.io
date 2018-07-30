@@ -47,6 +47,8 @@
 
 
 
+  <link rel="alternate" href="/atom.xml" title="SkyAcer's blog" type="application/atom+xml" />
+
 
 
 
@@ -57,21 +59,21 @@
 
 
 
-<meta name="description" content="Android窗口管理分析（3）：WMS窗口的组织形式 本文总共包括以下几点：  窗口的分组管理：应用窗口组、子窗口组、系统窗口组 Activity、Dialg应用窗口及PopWindow子窗口的添加原理跟注意事项 窗口的Z次序管理：窗口的分配序号、次序调整等 WMS中窗口次序分配如何影响SurfaceFlinger服务   各种窗口type和窗口类型的对应关系是什么样的？窗口和对应类型   窗口">
+<meta name="description" content="Android窗口管理分析（三）：WMS窗口的组织形式 本文总共包括以下几点：  窗口的分组管理：应用窗口组、子窗口组、系统窗口组 Activity、Dialg应用窗口及PopWindow子窗口的添加原理跟注意事项 窗口的Z次序管理：窗口的分配序号、次序调整等 WMS中窗口次序分配如何影响SurfaceFlinger服务   各种窗口type和窗口类型的对应关系是什么样的？窗口和对应类型   窗口">
 <meta name="keywords" content="View">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android窗口管理分析（3）：WMS窗口的组织形式">
+<meta property="og:title" content="Android窗口管理分析（三）：WMS窗口的组织形式">
 <meta property="og:url" content="http://skyacer.github.io/2018/07/03/Android窗口管理分析（三）—— WMS窗口的组织形式/index.html">
 <meta property="og:site_name" content="SkyAcer&#39;s blog">
-<meta property="og:description" content="Android窗口管理分析（3）：WMS窗口的组织形式 本文总共包括以下几点：  窗口的分组管理：应用窗口组、子窗口组、系统窗口组 Activity、Dialg应用窗口及PopWindow子窗口的添加原理跟注意事项 窗口的Z次序管理：窗口的分配序号、次序调整等 WMS中窗口次序分配如何影响SurfaceFlinger服务   各种窗口type和窗口类型的对应关系是什么样的？窗口和对应类型   窗口">
+<meta property="og:description" content="Android窗口管理分析（三）：WMS窗口的组织形式 本文总共包括以下几点：  窗口的分组管理：应用窗口组、子窗口组、系统窗口组 Activity、Dialg应用窗口及PopWindow子窗口的添加原理跟注意事项 窗口的Z次序管理：窗口的分配序号、次序调整等 WMS中窗口次序分配如何影响SurfaceFlinger服务   各种窗口type和窗口类型的对应关系是什么样的？窗口和对应类型   窗口">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB48b062a332232b68f2f86836f1d854dc?method=download&shareKey=694d04d38e9b2467955b50a465d38a4d">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBf6552df5db0595bc726979ae4867e135?method=download&shareKey=81992d5eb5b019920186bbbf1f7ef162">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB438789e52f069cecb59102d2508a6d8c?method=download&shareKey=dbd6fec50b6c1f847a3798dd6b6b17d8">
-<meta property="og:updated_time" content="2018-07-03T07:25:34.000Z">
+<meta property="og:updated_time" content="2018-07-30T06:37:01.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Android窗口管理分析（3）：WMS窗口的组织形式">
-<meta name="twitter:description" content="Android窗口管理分析（3）：WMS窗口的组织形式 本文总共包括以下几点：  窗口的分组管理：应用窗口组、子窗口组、系统窗口组 Activity、Dialg应用窗口及PopWindow子窗口的添加原理跟注意事项 窗口的Z次序管理：窗口的分配序号、次序调整等 WMS中窗口次序分配如何影响SurfaceFlinger服务   各种窗口type和窗口类型的对应关系是什么样的？窗口和对应类型   窗口">
+<meta name="twitter:title" content="Android窗口管理分析（三）：WMS窗口的组织形式">
+<meta name="twitter:description" content="Android窗口管理分析（三）：WMS窗口的组织形式 本文总共包括以下几点：  窗口的分组管理：应用窗口组、子窗口组、系统窗口组 Activity、Dialg应用窗口及PopWindow子窗口的添加原理跟注意事项 窗口的Z次序管理：窗口的分配序号、次序调整等 WMS中窗口次序分配如何影响SurfaceFlinger服务   各种窗口type和窗口类型的对应关系是什么样的？窗口和对应类型   窗口">
 <meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB48b062a332232b68f2f86836f1d854dc?method=download&shareKey=694d04d38e9b2467955b50a465d38a4d">
 
 
@@ -90,7 +92,7 @@
   };
 </script>
 
-  <title> Android窗口管理分析（3）：WMS窗口的组织形式 | SkyAcer's blog </title>
+  <title> Android窗口管理分析（三）：WMS窗口的组织形式 | SkyAcer's blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -218,7 +220,7 @@
             
             
               
-                Android窗口管理分析（3）：WMS窗口的组织形式
+                Android窗口管理分析（三）：WMS窗口的组织形式
               
             
           </h1>
@@ -276,7 +278,7 @@
       
 
       
-        <h1 id="Android窗口管理分析（3）：WMS窗口的组织形式"><a href="#Android窗口管理分析（3）：WMS窗口的组织形式" class="headerlink" title="Android窗口管理分析（3）：WMS窗口的组织形式"></a>Android窗口管理分析（3）：WMS窗口的组织形式</h1><blockquote>
+        <h1 id="Android窗口管理分析（三）：WMS窗口的组织形式"><a href="#Android窗口管理分析（三）：WMS窗口的组织形式" class="headerlink" title="Android窗口管理分析（三）：WMS窗口的组织形式"></a>Android窗口管理分析（三）：WMS窗口的组织形式</h1><blockquote>
 <p>本文总共包括以下几点：</p>
 <ul>
 <li>窗口的分组管理：应用窗口组、子窗口组、系统窗口组</li>
@@ -543,7 +545,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">37</span>
+              <span class="site-state-item-count">38</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -569,6 +571,13 @@
         </nav>
 
         
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
 
         <div class="links-of-author motion-element">
           
@@ -593,7 +602,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android窗口管理分析（3）：WMS窗口的组织形式"><span class="nav-number">1.</span> <span class="nav-text">Android窗口管理分析（3）：WMS窗口的组织形式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#各种窗口type和窗口类型的对应关系是什么样的？"><span class="nav-number">1.1.</span> <span class="nav-text">各种窗口type和窗口类型的对应关系是什么样的？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#窗口和对应类型"><span class="nav-number">1.1.1.</span> <span class="nav-text">窗口和对应类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#子窗口和对应类型"><span class="nav-number">1.1.2.</span> <span class="nav-text">子窗口和对应类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统窗口类型"><span class="nav-number">1.1.3.</span> <span class="nav-text">系统窗口类型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#窗口的分组原理是什么样的？"><span class="nav-number">1.2.</span> <span class="nav-text">窗口的分组原理是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Activity对应token和WindowToken的添加过程是什么样的？"><span class="nav-number">1.3.</span> <span class="nav-text">Activity对应token和WindowToken的添加过程是什么样的？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建ActivityContext"><span class="nav-number">1.3.1.</span> <span class="nav-text">创建ActivityContext</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setWindowManager"><span class="nav-number">1.3.2.</span> <span class="nav-text">setWindowManager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getSystemService"><span class="nav-number">1.3.3.</span> <span class="nav-text">getSystemService</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#handleResumeActivity"><span class="nav-number">1.3.4.</span> <span class="nav-text">handleResumeActivity</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WindowManagerImpl的addView"><span class="nav-number">1.3.5.</span> <span class="nav-text">WindowManagerImpl的addView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#adjustLayoutParamsForSubWindow"><span class="nav-number">1.3.6.</span> <span class="nav-text">adjustLayoutParamsForSubWindow</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dialog必须用Activity的context？"><span class="nav-number">1.4.</span> <span class="nav-text">Dialog必须用Activity的context？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PopupWindow的子窗口添加流程是什么样的？"><span class="nav-number">1.5.</span> <span class="nav-text">PopupWindow的子窗口添加流程是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#窗口的Z次序管理是什么样的？"><span class="nav-number">1.6.</span> <span class="nav-text">窗口的Z次序管理是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WMS中窗口次序分配如何影响SurfaceFlinger服务？"><span class="nav-number">1.7.</span> <span class="nav-text">WMS中窗口次序分配如何影响SurfaceFlinger服务？</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android窗口管理分析（三）：WMS窗口的组织形式"><span class="nav-number">1.</span> <span class="nav-text">Android窗口管理分析（三）：WMS窗口的组织形式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#各种窗口type和窗口类型的对应关系是什么样的？"><span class="nav-number">1.1.</span> <span class="nav-text">各种窗口type和窗口类型的对应关系是什么样的？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#窗口和对应类型"><span class="nav-number">1.1.1.</span> <span class="nav-text">窗口和对应类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#子窗口和对应类型"><span class="nav-number">1.1.2.</span> <span class="nav-text">子窗口和对应类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统窗口类型"><span class="nav-number">1.1.3.</span> <span class="nav-text">系统窗口类型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#窗口的分组原理是什么样的？"><span class="nav-number">1.2.</span> <span class="nav-text">窗口的分组原理是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Activity对应token和WindowToken的添加过程是什么样的？"><span class="nav-number">1.3.</span> <span class="nav-text">Activity对应token和WindowToken的添加过程是什么样的？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建ActivityContext"><span class="nav-number">1.3.1.</span> <span class="nav-text">创建ActivityContext</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setWindowManager"><span class="nav-number">1.3.2.</span> <span class="nav-text">setWindowManager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getSystemService"><span class="nav-number">1.3.3.</span> <span class="nav-text">getSystemService</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#handleResumeActivity"><span class="nav-number">1.3.4.</span> <span class="nav-text">handleResumeActivity</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WindowManagerImpl的addView"><span class="nav-number">1.3.5.</span> <span class="nav-text">WindowManagerImpl的addView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#adjustLayoutParamsForSubWindow"><span class="nav-number">1.3.6.</span> <span class="nav-text">adjustLayoutParamsForSubWindow</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dialog必须用Activity的context？"><span class="nav-number">1.4.</span> <span class="nav-text">Dialog必须用Activity的context？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PopupWindow的子窗口添加流程是什么样的？"><span class="nav-number">1.5.</span> <span class="nav-text">PopupWindow的子窗口添加流程是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#窗口的Z次序管理是什么样的？"><span class="nav-number">1.6.</span> <span class="nav-text">窗口的Z次序管理是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WMS中窗口次序分配如何影响SurfaceFlinger服务？"><span class="nav-number">1.7.</span> <span class="nav-text">WMS中窗口次序分配如何影响SurfaceFlinger服务？</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator">

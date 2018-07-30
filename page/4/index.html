@@ -47,6 +47,8 @@
 
 
 
+  <link rel="alternate" href="/atom.xml" title="SkyAcer's blog" type="application/atom+xml" />
+
 
 
 
@@ -193,6 +195,178 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2018/04/12/JVM内存模型/" itemprop="url">
+                  JVM内存模型
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-04-12T14:49:40+08:00" content="2018-04-12">
+              2018-04-12
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/JVM/" itemprop="url" rel="index">
+                    <span itemprop="name">JVM</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="JVM内存模型"><a href="#JVM内存模型" class="headerlink" title="JVM内存模型"></a>JVM内存模型</h1><h2 id="简单来说JVM内存模型是什么样的？"><a href="#简单来说JVM内存模型是什么样的？" class="headerlink" title="简单来说JVM内存模型是什么样的？"></a>简单来说JVM内存模型是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB9b72e7ca84813b9d70d9e53b2337545f?method=download&amp;shareKey=c659a9b8ad449a74d3a92fd212f495e9" alt=""></p>
+<h3 id="线程私有区："><a href="#线程私有区：" class="headerlink" title="线程私有区："></a>线程私有区：</h3><ul>
+<li>程序计数器，记录正在执行的虚拟机字节码的地址；</li>
+<li>虚拟机栈，方法执行的内存区，每个方法执行时在虚拟机栈中创建栈帧；</li>
+<li>本地方法栈，虚拟机的Native方法执行的内存区；</li>
+</ul>
+<h3 id="线程共享区："><a href="#线程共享区：" class="headerlink" title="线程共享区："></a>线程共享区：</h3><ul>
+<li>Java堆：对象分配内存的区域；</li>
+<li>方法区：存放类信息、常量、静态变量、编译器编译后的代码等数据；<ul>
+<li>常量池：存放编译器生成的字面量和符号引用，是方法区的一部分。 </li>
+</ul>
+</li>
+</ul>
+<h3 id="通常所说的Java堆和Java栈是指什么？"><a href="#通常所说的Java堆和Java栈是指什么？" class="headerlink" title="通常所说的Java堆和Java栈是指什么？"></a>通常所说的Java堆和Java栈是指什么？</h3><p>通常所说的Java堆指的是共享数据区的堆，Java栈指的是线程私有的虚拟机栈。</p>
+<h2 id="JVM中更详细的内存模型是什么样的？"><a href="#JVM中更详细的内存模型是什么样的？" class="headerlink" title="JVM中更详细的内存模型是什么样的？"></a>JVM中更详细的内存模型是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB73bae4dd3b8c5e8b481d92d6cb8a07d5?method=download&amp;shareKey=d9f8bfec8cb4b4af1862d0a6e86bdeea" alt="JVM更详细的内存模型"></p>
+<h3 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h3><ol>
+<li>每个线程都有计数器，是私有内存空间，该区域是整个内存中较小的一块。</li>
+<li>当线程正在执行一个Java方法时，PC计数器记录的是正在执行的虚拟机字节码的地址。</li>
+<li>当线程正在执行Native方法时，PC计数器则为空</li>
+</ol>
+<h3 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h3><blockquote>
+<p>栈祯是用于支持虚拟机进行方法执行的数据结构，是属性运行时数据区的虚拟机的栈元素。</p>
+</blockquote>
+<ol>
+<li>局部变量表，一组变量存储空间，容量以slot为最小单位。</li>
+<li>操作栈（stack大小，编译器确定），操作栈元素的数据必须与字节码指令序列严格匹配。</li>
+<li>动态连接，指向运行时常量池中该栈所属方法的引用，为了动态连接使用。<ul>
+<li>前面的解析过程是静态解析</li>
+<li>对于运行期转化为直接引用，动态解析。</li>
+</ul>
+</li>
+<li>方法返回地址<ul>
+<li>正常退出，执行引擎遇到方法返回的字节码，将返回值传递给调用者。</li>
+<li>异常退出，遇到Exception，并且方法未捕获异常，不会有任何返回值。</li>
+</ul>
+</li>
+<li>额外附加信息，由具体虚拟机实现。</li>
+</ol>
+<p><strong>异常（Exception）</strong></p>
+<ul>
+<li>StackOverFlowError：当线程请求栈深度超出虚拟机栈允许深度时抛出</li>
+<li>OutOfMemoryError：当Java虚拟机动态扩展到无法申请足够内存时抛出</li>
+</ul>
+<h3 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h3><p>本地方法栈为虚拟机使用到的Native方法提供内存空间，而虚拟机栈则为Java方法提供内存空间。</p>
+<h3 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h3><p>Java堆是虚拟机管理的最大一块内存，也是GC的主战场，存放的是几乎所有的对象实例和数组数据。</p>
+<ul>
+<li>从内存回收角度，Java堆被分为新生代和老年代；为了更快地回收内存。</li>
+<li>从内存分配角度，Java堆可以划分出线程私有的分配缓冲区（Thread Local Allocation Buffer,TLAB），为了更快地分配内存。</li>
+</ul>
+<h3 id="对象实例结构是什么样的？"><a href="#对象实例结构是什么样的？" class="headerlink" title="对象实例结构是什么样的？"></a>对象实例结构是什么样的？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEBe2af8709014a9b7dc3005005fda1ea82?method=download&amp;shareKey=14e5e6c91dc5864b718ec8d95003351e" alt="对象实例结构"></p>
+<p>填充数据不一定存在，是为了字节对齐而存在的</p>
+<p>此区域可以抛出OOM Error异常</p>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>主要存放被虚拟机加载的类信息、常量、静态变量、编译器编译后的代码数据。</p>
+<p>此区域可以抛出OOM Error异常</p>
+<h3 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h3><p>属于方法区的一部分，用于存放编译器生成的各种字面量和符号引用。运行时常量池除了编译器产生的Class文件的常量池，还可以在运行期，将新的常量加入常量池，比如String的intern()方法。</p>
+<ul>
+<li>字面量：与Java语言层面的常量概念相近，包含文本字符串，声明为final的常量值等等。</li>
+<li>符号引用：<ul>
+<li>类和接口的全限定名</li>
+<li>字段的名称和描述符</li>
+<li>方法的名称和描述符 </li>
+</ul>
+</li>
+</ul>
+<p>此区域<strong>不会</strong>抛出OOM Error异常</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
     
       
 
@@ -795,186 +969,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/03/27/一个App从启动到主页面经历了什么过程？/" itemprop="url">
-                  一个App从启动到主页面经历了什么过程？
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-27T16:56:28+08:00" content="2018-03-27">
-              2018-03-27
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/源码/" itemprop="url" rel="index">
-                    <span itemprop="name">源码</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="一个APP从启动到主页面经历了哪些过程？"><a href="#一个APP从启动到主页面经历了哪些过程？" class="headerlink" title="一个APP从启动到主页面经历了哪些过程？"></a>一个APP从启动到主页面经历了哪些过程？</h1><h2 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB67dbb29cb8612604b977c7093fd75630?method=download&amp;shareKey=996ecf3b338059cf5d589d2ce53fdeeb" alt="启动流程图"></p>
-<h3 id="启动流程："><a href="#启动流程：" class="headerlink" title="启动流程："></a>启动流程：</h3><ol>
-<li><p>点击桌面App图标，Launcher进程采用Binder IPC向system_server进程发起startActivity请求；</p>
-</li>
-<li><p>system_server进程接收到请求后，向zygote进程发送创建进程的请求；</p>
-</li>
-<li><p>Zygote进程fork出新的子进程，即App进程；</p>
-</li>
-<li><p>App进程，通过Binder IPC向sytem_server进程发起attachApplication请求；</p>
-</li>
-<li><p>system_server进程在收到请求后，进行一系列准备工作后，再通过binder IPC向App进程发送scheduleLaunchActivity请求；</p>
-</li>
-<li><p>App进程的binder线程（ApplicationThread）在收到请求后，通过handler向主线程发送LAUNCH_ACTIVITY消息；</p>
-</li>
-<li><p>主线程在收到Message后，通过反射机制创建目标Activity，并回调Activity.onCreate()等方法。</p>
-</li>
-<li><p>到此，App便正式启动，开始进入Activity生命周期，执行完onCreate/onStart/onResume方法，UI渲染结束后便可以看到App的主界面。</p>
-</li>
-</ol>
-<h2 id="理论基础"><a href="#理论基础" class="headerlink" title="理论基础"></a>理论基础</h2><h3 id="1-zygote"><a href="#1-zygote" class="headerlink" title="1.zygote"></a>1.zygote</h3><p>类似于Linux系统，在Linux中所有进程都是由init进程直接或间接fork出来的。这里的zygote相当于init进程。</p>
-<p>每一个App都是：</p>
-<ul>
-<li>一个单独的dalvik虚拟机</li>
-<li>一个单独的进程</li>
-</ul>
-<p>Android内核加载完后会启动一个zygote进程，之后开启新进程的方式都是通过zygote实现的。</p>
-<h3 id="2-system-server"><a href="#2-system-server" class="headerlink" title="2.system_server"></a>2.system_server</h3><p>system_server进程和zygote进程是Framework里非常重要的两大进程。</p>
-<p>因为系统里面的重要服务都是在这个进程里面开启的，比如：</p>
-<p>AMS(ActivityManagerService)、PMS(PackageManagerService)、WMS(WindowManagerService)</p>
-<h3 id="3-ActivityManagerService"><a href="#3-ActivityManagerService" class="headerlink" title="3.ActivityManagerService"></a>3.ActivityManagerService</h3><p>ActivityManagerService，简称AMS，服务端对象，负责系统中所有Activity的生命周期。</p>
-<p>ActivityManagerService进行初始化的时机很明确，就是在SystemServer进程开启的时候，就会初始化ActivityManagerService。</p>
-<h4 id="什么是Android系统里面的服务器和客户端的概念？"><a href="#什么是Android系统里面的服务器和客户端的概念？" class="headerlink" title="什么是Android系统里面的服务器和客户端的概念？"></a>什么是Android系统里面的服务器和客户端的概念？</h4><p>其实服务器客户端的概念不仅仅存在于Web开发中，在Android的框架设计中，使用的也是这一种模式。服务器端指的就是所有App共用的系统服务，比如我们这里提到的ActivityManagerService，和前面提到的PackageManagerService、WindowManagerService等等，这些基础的系统服务是被所有的App公用的，当某个App想实现某个操作的时候，要告诉这些系统服务，比如你想打开一个App，那么我们知道了包名和MainActivity类名之后就可以打开</p>
-<p>类似于浏览器把网页地址发送给服务器，服务器把资源文件返回给客户端。</p>
-<h4 id="应用启动时，哪些进行的是Binder通信，哪些进行的是Socket通信？"><a href="#应用启动时，哪些进行的是Binder通信，哪些进行的是Socket通信？" class="headerlink" title="应用启动时，哪些进行的是Binder通信，哪些进行的是Socket通信？"></a>应用启动时，哪些进行的是Binder通信，哪些进行的是Socket通信？</h4><p>App与AMS通过Binder进行IPC通信，AMS(SystemServer进程)与zygote通过Socket进行IPC通信，以及App与zygote之间是通过Socket进行IPC通信的。</p>
-<h4 id="启动一个应用和启动一个Activity有什么区别？"><a href="#启动一个应用和启动一个Activity有什么区别？" class="headerlink" title="启动一个应用和启动一个Activity有什么区别？"></a>启动一个应用和启动一个Activity有什么区别？</h4><p>在Android系统中，任何一个Activity的启动都是由AMS和应用程序进程（主要是ActivityThread）相互配合来完成的。AMS服务统一调度系统中所有进程的Activity启动，而每个Activity的启动过程则由其所属的进程具体来完成。</p>
-<h3 id="4-Launcher"><a href="#4-Launcher" class="headerlink" title="4.Launcher"></a>4.Launcher</h3><p>Launcher本质上也是一个应用程序，和App一样，也是继承自Activity.</p>
-<p>packages/apps/Launcher2/src/com/android/launcher2/Launcher.java</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public final class Launcher extends Activity</span><br><span class="line">        implements View.OnClickListener, OnLongClickListener, LauncherModel.Callbacks,</span><br><span class="line">                   View.OnTouchListener &#123;</span><br><span class="line">                   &#125;</span><br></pre></td></tr></table></figure>
-<h4 id="当我们点击图标的时候，是怎么开启的应用呢？"><a href="#当我们点击图标的时候，是怎么开启的应用呢？" class="headerlink" title="当我们点击图标的时候，是怎么开启的应用呢？"></a>当我们点击图标的时候，是怎么开启的应用呢？</h4><p>Launcher通过捕捉图标点击事件，然后startActivity()发送对应的Intent请求。</p>
-<h3 id="5-Instrumentation大管家"><a href="#5-Instrumentation大管家" class="headerlink" title="5.Instrumentation大管家"></a>5.Instrumentation大管家</h3><p>每个Activity都持有Instrumentation对象的一个引用，但是整个进程只会存在一个Instrumentation对象。</p>
-<p><strong>这个类主要是完成对Application和Activity初始化和生命周期的工具类。</strong></p>
-<h3 id="6-ActivityThread外交官"><a href="#6-ActivityThread外交官" class="headerlink" title="6. ActivityThread外交官"></a>6. ActivityThread外交官</h3><p>ActivityThread，依赖于UI线程。App和AMS是通过Binder传递信息的，那么ActivityThread就是专门与AMS的外交工作的。</p>
-<h3 id="7-ApplicationThread"><a href="#7-ApplicationThread" class="headerlink" title="7.ApplicationThread"></a>7.ApplicationThread</h3><h4 id="客户端-gt-服务端"><a href="#客户端-gt-服务端" class="headerlink" title="客户端 -&gt; 服务端"></a>客户端 -&gt; 服务端</h4><p><img src="https://note.youdao.com/yws/api/personal/file/WEBad24716291d99f1f9ca25ba83b100c69?method=download&amp;shareKey=4c8c3a6e8460ddd63e8eb72828fda3a1" alt="AMP传递给AMS"></p>
-<h4 id="服务端-gt-客户端"><a href="#服务端-gt-客户端" class="headerlink" title="服务端 -&gt; 客户端"></a>服务端 -&gt; 客户端</h4><p><img src="https://note.youdao.com/yws/api/personal/file/WEBd318006e8cc52bf3a9b717593c70c25d?method=download&amp;shareKey=886b4431b5a1c51ad3dcf2ff09575630" alt="服务端传递给客户端"></p>
-<h2 id="启动流程"><a href="#启动流程" class="headerlink" title="启动流程"></a>启动流程</h2><h3 id="1-创建进程"><a href="#1-创建进程" class="headerlink" title="1. 创建进程"></a>1. 创建进程</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB62b28d8989bf1a8d94405df446584e4e?method=download&amp;shareKey=fbbe91b9adb634060d1de2798e704061" alt="创建进程"></p>
-<ol>
-<li>App发起进程：从桌面启动应用，发起方位Launcher所在进程；当从App内启动进程，发起方为App所在进程。发起进程先通过binder发送消息给system_server进程。</li>
-<li>system_server进程：调用Process.start()方法，通过socket向zygote进程发送创建新进程的请求。</li>
-<li>zygote进程：在执行ZygoteInit.main()后，进入runSelectLoop()循环体内，当有客户端连接时会执行ZygoteConnection.runOnce()方法，再经过层层调用fork出新的应用进程。</li>
-<li>新进程：执行handleChildProc方法，最后调用ActivityThread.main()方法。</li>
-</ol>
-<h3 id="2-绑定Application"><a href="#2-绑定Application" class="headerlink" title="2. 绑定Application"></a>2. 绑定Application</h3><blockquote>
-<p>这一步的目的是为了将进程和指定的Application绑定起来。</p>
-</blockquote>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB5f1bb2932182343e1daa690cff036688?method=download&amp;shareKey=70b4a4c89b407487e56bffc362bb677a" alt="绑定Application"></p>
-<ul>
-<li>ATP: ApplicationThreadProxy</li>
-<li>AT: ApplicationThread</li>
-<li>AMP: ActivityManagerProxy</li>
-<li>AMS: ActivityManagerService</li>
-<li>AMN: ActivityManagerNative</li>
-</ul>
-<ol>
-<li>ActivityThread调用startProcessLocked方法，利用Zygote fork()方法，</li>
-<li>AMS调用start</li>
-</ol>
-<h3 id="3-显示Activity界面"><a href="#3-显示Activity界面" class="headerlink" title="3. 显示Activity界面"></a>3. 显示Activity界面</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB7fd899056aa28476fb31ef5a286fe31c?method=download&amp;shareKey=5070391fd8a769950d195e99968ec0e7" alt="显示Activity界面"></p>
-<ol>
-<li>system_server进程的AMS调用realStartActivityLocked</li>
-<li>然后ATP调用scheduleLaunchActivity，会调用Application线程对象的scheduleLauchActivity()发送一个LAUNCH_ACTIVITY消息到消息队列中。</li>
-<li>通过handleLaunchActivity的performLaunchActivity()来回调Activity的onCreate()和onStart()方法。</li>
-<li>通过handleResumeActivity()方法，回调Activity的onResume()方法，最终显示Activity界面。</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1020,7 +1014,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">37</span>
+              <span class="site-state-item-count">38</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1045,6 +1039,13 @@
 
         </nav>
 
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
         
 
         <div class="links-of-author motion-element">

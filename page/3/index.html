@@ -47,6 +47,8 @@
 
 
 
+  <link rel="alternate" href="/atom.xml" title="SkyAcer's blog" type="application/atom+xml" />
+
 
 
 
@@ -193,6 +195,152 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2018/05/06/你想知道的HashMap/" itemprop="url">
+                  你想知道的HashMap
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-05-06T16:06:59+08:00" content="2018-05-06">
+              2018-05-06
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/JAVA/" itemprop="url" rel="index">
+                    <span itemprop="name">JAVA</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="你想知道的HashMap，ConcurrentHashMap-锁机制"><a href="#你想知道的HashMap，ConcurrentHashMap-锁机制" class="headerlink" title="你想知道的HashMap，ConcurrentHashMap,锁机制"></a>你想知道的HashMap，ConcurrentHashMap,锁机制</h1><h2 id="为什么HashMap线程不安全？"><a href="#为什么HashMap线程不安全？" class="headerlink" title="为什么HashMap线程不安全？"></a>为什么HashMap线程不安全？</h2><ol>
+<li>如果此时正好存在两个 put 的 key 发生了碰撞(根据 hash 值计算的 bucket 一样)，那么根据 HashMap 的实现，这两个 key 会添加到数组的同一个位置，这样最终就会发生其中一个线程的 put 的数据被覆盖。</li>
+<li>如果多个线程同时检测到元素个数超过数组大小* loadFactor ，这样就会发生多个线程同时对 Node 数组进行扩容，都在重新计算元素位置以及复制数据，但是最终只有一个线程扩容后的数组会赋给 table，也就是说其他线程的都会丢失，并且各自线程 put 的数据也丢失。</li>
+</ol>
+<h2 id="HashMap工作原理是什么？"><a href="#HashMap工作原理是什么？" class="headerlink" title="HashMap工作原理是什么？"></a>HashMap工作原理是什么？</h2><p>通过hash的方法，通过put和get存储和获取对象。存储对象时，我们将K/V传给put方法时，它调用hashCode计算hash从而得到bucket位置，进一步存储，HashMap会根据当前bucket的占用情况自动调整容量(超过Load Facotr则resize为原来的2倍)。获取对象时，我们将K传给get，它调用hashCode计算hash从而得到bucket位置，并进一步调用equals()方法确定键值对。如果发生碰撞的时候，Hashmap通过链表将产生碰撞冲突的元素组织起来，在Java 8中，如果一个bucket中碰撞冲突的元素超过某个限制(默认是8)，则使用红黑树来替换链表，从而提高速度。</p>
+<h2 id="HashMap的hash函数是怎么实现的？"><a href="#HashMap的hash函数是怎么实现的？" class="headerlink" title="HashMap的hash函数是怎么实现的？"></a>HashMap的hash函数是怎么实现的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBb5a0f030f26093770b46ab0ce5441e12?method=download&amp;shareKey=9849ad8d9e67a5002373acadc1bcd37b" alt="hash过程"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">static final int hash(Object key) &#123;</span><br><span class="line">    int h;</span><br><span class="line">    return (key == null) ? 0 : (h = key.hashCode()) ^ (h &gt;&gt;&gt; 16);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="HashMap的Resize实现是什么？"><a href="#HashMap的Resize实现是什么？" class="headerlink" title="HashMap的Resize实现是什么？"></a>HashMap的Resize实现是什么？</h2><p>当put时，如果发现目前的bucket占用程度已经超过了Load Factor所希望的比例（默认是0.75），那么就会发生resize。在resize的过程，简单的说就是把bucket扩充为2倍，之后重新计算index，把节点再放到新的bucket中。resize的注释是这样描述的：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB0bc80d064a1d7246a6b74d5ba08f2e74?method=download&amp;shareKey=dcc5a2b85ccd2b559a3453defb55dba9" alt=""></p>
+<p>因此元素在重新计算hash之后，因为n变为2倍，那么n-1的mask范围在高位多1bit(红色)，因此新的index就会发生这样的变化：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB286b40b60817b00ca67708af92bd6cdd?method=download&amp;shareKey=0412c14a50b377a1fd6ff6e8bdb717cb" alt=""></p>
+<p>因此，我们在扩充HashMap的时候，不需要重新计算hash，只需要看看原来的hash值新增的那个bit是1还是0就好了，是0的话索引没变，是1的话索引变成“原索引+oldCap”。可以看看下图为16扩充为32的resize示意图：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB04e8367bff6229238de7ab2abdb9ce4d?method=download&amp;shareKey=0edc15e5ec1d9c83ef2d1e911fb0cc00" alt=""></p>
+<p>这个设计确实非常的巧妙，既省去了重新计算hash值的时间，而且同时，由于新增的1bit是0还是1可以认为是随机的，因此resize的过程，均匀的把之前的冲突的节点分散到新的bucket了。</p>
+<p><strong>注意HashMap可存储的最大容量是有限的，最大为2的30次方。</strong></p>
+<h2 id="重入锁是什么？"><a href="#重入锁是什么？" class="headerlink" title="重入锁是什么？"></a>重入锁是什么？</h2><p>当一个线程得到一个对象后，再次请求该对象锁时是可以再次得到该对象的锁的。</p>
+<p>简而言之：自己可以再次获取自己的内部锁</p>
+<p>在Java中，sychronized和ReetranLock都是可重入的。</p>
+<p>例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class SynchronizedTest &#123;</span><br><span class="line">    public void method1() &#123;</span><br><span class="line">        synchronized (SynchronizedTest.class) &#123;</span><br><span class="line">            System.out.println(&quot;方法1获得ReentrantTest的锁运行了&quot;);</span><br><span class="line">            method2();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public void method2() &#123;</span><br><span class="line">        synchronized (SynchronizedTest.class) &#123;</span><br><span class="line">            System.out.println(&quot;方法1里面调用的方法2重入锁,也正常运行了&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        new SynchronizedTest().method1();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面便是synchronized的重入锁特性，即调用method1()方法时，已经获得了锁，此时内部调用method2()方法时，由于本身已经具有该锁，所以可以再次获取。</p>
+<p>ReentrantLock锁类似，代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">public class ReentrantLockTest &#123;</span><br><span class="line">    private Lock lock = new ReentrantLock();</span><br><span class="line">    public void method1() &#123;</span><br><span class="line">        lock.lock();</span><br><span class="line">        try &#123;</span><br><span class="line">            System.out.println(&quot;方法1获得ReentrantLock锁运行了&quot;);</span><br><span class="line">            method2();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public void method2() &#123;</span><br><span class="line">        lock.lock();</span><br><span class="line">        try &#123;</span><br><span class="line">            System.out.println(&quot;方法1里面调用的方法2重入ReentrantLock锁,也正常运行了&quot;);</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        new ReentrantLockTest().method1();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="公平锁是什么？"><a href="#公平锁是什么？" class="headerlink" title="公平锁是什么？"></a>公平锁是什么？</h2><p>CPU在调度线程的时候是在等待队列里随机挑选一个线程，由于这种随机性所以是无法保证线程先到先得的（synchronized控制的锁就是这种非公平锁）。但这样就会产生饥饿现象，即有些线程（优先级较低的线程）可能永远也无法获取CPU的执行权，优先级高的线程会不断的强制它的资源。那么如何解决饥饿问题呢，这就需要公平锁了。公平锁可以保证线程<strong>按照时间的先后顺序</strong>执行，避免饥饿现象的产生。但公平锁的效率比较低，因为要实现顺序执行，需要维护一个有序队列。</p>
+<p>ReentrantLock同样支持公平锁，在构造函数中，传入true就是公平锁</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public ReentrantLock(boolean fair) &#123;</span><br><span class="line">        sync = fair ? new FairSync() : new NonfairSync();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="synchronized和ReentrantLock有什么区别呢？"><a href="#synchronized和ReentrantLock有什么区别呢？" class="headerlink" title="synchronized和ReentrantLock有什么区别呢？"></a>synchronized和ReentrantLock有什么区别呢？</h2><ol>
+<li>Lock是一个接口，而synchronized是Java中的关键字，synchronized是内置的语言实现；</li>
+<li>synchronized在发生异常时，会自动释放线程占有的锁，因此不会导致死锁现象发生；而Lock在发生异常时，如果没有主动通过unLock()去释放锁，则很可能造成死锁现象，因此使用Lock时需要在finally块中释放锁；</li>
+<li>Lock可以让等待锁的线程响应中断，而synchronized却不行，使用synchronized时，等待的线程会一直等待下去，不能够响应中断；</li>
+<li>通过Lock可以知道有没有成功获取锁，而synchronized却无法办到。</li>
+<li>Lock可以提高多个线程进行读操作的效率。</li>
+<li>synchronized就不是可中断锁，而Lock是可中断锁。</li>
+<li>synchronized就是非公平锁，它无法保证等待的线程获取锁的顺序。ReentrantLock可以设置成公平锁。</li>
+<li>ReentrantReadWriteLock是读写锁，synchronized不支持读写锁。</li>
+<li>一个ReentrantLock对象可以同时绑定多个Condition对象，而在synchronized中，锁对象的wait()和notify()或notifyAll()方法可以实现一个隐含的条件，如果要和多余一个条件关联的时候，就不得不额外地添加一个锁，而ReentrantLock则无须这么做，只需要多次调用new Condition()方法即可。</li>
+<li>在性能上来说，如果竞争资源不激烈，两者的性能是差不多的，而当竞争资源非常激烈时（即有大量线程同时竞争），此时ReentrantLock的性能要远远优于synchronized。</li>
+<li>上述说的都是jdk1.5及以前，在jdk1.6之后，synchronized做了很多优化，包括锁消除，偏向锁等等，官方提倡优先考虑用synchronized来进行同步。</li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
     
       
 
@@ -823,178 +971,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/04/12/JVM内存模型/" itemprop="url">
-                  JVM内存模型
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-04-12T14:49:40+08:00" content="2018-04-12">
-              2018-04-12
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/JVM/" itemprop="url" rel="index">
-                    <span itemprop="name">JVM</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="JVM内存模型"><a href="#JVM内存模型" class="headerlink" title="JVM内存模型"></a>JVM内存模型</h1><h2 id="简单来说JVM内存模型是什么样的？"><a href="#简单来说JVM内存模型是什么样的？" class="headerlink" title="简单来说JVM内存模型是什么样的？"></a>简单来说JVM内存模型是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB9b72e7ca84813b9d70d9e53b2337545f?method=download&amp;shareKey=c659a9b8ad449a74d3a92fd212f495e9" alt=""></p>
-<h3 id="线程私有区："><a href="#线程私有区：" class="headerlink" title="线程私有区："></a>线程私有区：</h3><ul>
-<li>程序计数器，记录正在执行的虚拟机字节码的地址；</li>
-<li>虚拟机栈，方法执行的内存区，每个方法执行时在虚拟机栈中创建栈帧；</li>
-<li>本地方法栈，虚拟机的Native方法执行的内存区；</li>
-</ul>
-<h3 id="线程共享区："><a href="#线程共享区：" class="headerlink" title="线程共享区："></a>线程共享区：</h3><ul>
-<li>Java堆：对象分配内存的区域；</li>
-<li>方法区：存放类信息、常量、静态变量、编译器编译后的代码等数据；<ul>
-<li>常量池：存放编译器生成的字面量和符号引用，是方法区的一部分。 </li>
-</ul>
-</li>
-</ul>
-<h3 id="通常所说的Java堆和Java栈是指什么？"><a href="#通常所说的Java堆和Java栈是指什么？" class="headerlink" title="通常所说的Java堆和Java栈是指什么？"></a>通常所说的Java堆和Java栈是指什么？</h3><p>通常所说的Java堆指的是共享数据区的堆，Java栈指的是线程私有的虚拟机栈。</p>
-<h2 id="JVM中更详细的内存模型是什么样的？"><a href="#JVM中更详细的内存模型是什么样的？" class="headerlink" title="JVM中更详细的内存模型是什么样的？"></a>JVM中更详细的内存模型是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB73bae4dd3b8c5e8b481d92d6cb8a07d5?method=download&amp;shareKey=d9f8bfec8cb4b4af1862d0a6e86bdeea" alt="JVM更详细的内存模型"></p>
-<h3 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h3><ol>
-<li>每个线程都有计数器，是私有内存空间，该区域是整个内存中较小的一块。</li>
-<li>当线程正在执行一个Java方法时，PC计数器记录的是正在执行的虚拟机字节码的地址。</li>
-<li>当线程正在执行Native方法时，PC计数器则为空</li>
-</ol>
-<h3 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h3><blockquote>
-<p>栈祯是用于支持虚拟机进行方法执行的数据结构，是属性运行时数据区的虚拟机的栈元素。</p>
-</blockquote>
-<ol>
-<li>局部变量表，一组变量存储空间，容量以slot为最小单位。</li>
-<li>操作栈（stack大小，编译器确定），操作栈元素的数据必须与字节码指令序列严格匹配。</li>
-<li>动态连接，指向运行时常量池中该栈所属方法的引用，为了动态连接使用。<ul>
-<li>前面的解析过程是静态解析</li>
-<li>对于运行期转化为直接引用，动态解析。</li>
-</ul>
-</li>
-<li>方法返回地址<ul>
-<li>正常退出，执行引擎遇到方法返回的字节码，将返回值传递给调用者。</li>
-<li>异常退出，遇到Exception，并且方法未捕获异常，不会有任何返回值。</li>
-</ul>
-</li>
-<li>额外附加信息，由具体虚拟机实现。</li>
-</ol>
-<p><strong>异常（Exception）</strong></p>
-<ul>
-<li>StackOverFlowError：当线程请求栈深度超出虚拟机栈允许深度时抛出</li>
-<li>OutOfMemoryError：当Java虚拟机动态扩展到无法申请足够内存时抛出</li>
-</ul>
-<h3 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h3><p>本地方法栈为虚拟机使用到的Native方法提供内存空间，而虚拟机栈则为Java方法提供内存空间。</p>
-<h3 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h3><p>Java堆是虚拟机管理的最大一块内存，也是GC的主战场，存放的是几乎所有的对象实例和数组数据。</p>
-<ul>
-<li>从内存回收角度，Java堆被分为新生代和老年代；为了更快地回收内存。</li>
-<li>从内存分配角度，Java堆可以划分出线程私有的分配缓冲区（Thread Local Allocation Buffer,TLAB），为了更快地分配内存。</li>
-</ul>
-<h3 id="对象实例结构是什么样的？"><a href="#对象实例结构是什么样的？" class="headerlink" title="对象实例结构是什么样的？"></a>对象实例结构是什么样的？</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEBe2af8709014a9b7dc3005005fda1ea82?method=download&amp;shareKey=14e5e6c91dc5864b718ec8d95003351e" alt="对象实例结构"></p>
-<p>填充数据不一定存在，是为了字节对齐而存在的</p>
-<p>此区域可以抛出OOM Error异常</p>
-<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>主要存放被虚拟机加载的类信息、常量、静态变量、编译器编译后的代码数据。</p>
-<p>此区域可以抛出OOM Error异常</p>
-<h3 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h3><p>属于方法区的一部分，用于存放编译器生成的各种字面量和符号引用。运行时常量池除了编译器产生的Class文件的常量池，还可以在运行期，将新的常量加入常量池，比如String的intern()方法。</p>
-<ul>
-<li>字面量：与Java语言层面的常量概念相近，包含文本字符串，声明为final的常量值等等。</li>
-<li>符号引用：<ul>
-<li>类和接口的全限定名</li>
-<li>字段的名称和描述符</li>
-<li>方法的名称和描述符 </li>
-</ul>
-</li>
-</ul>
-<p>此区域<strong>不会</strong>抛出OOM Error异常</p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1040,7 +1016,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">37</span>
+              <span class="site-state-item-count">38</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1065,6 +1041,13 @@
 
         </nav>
 
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
         
 
         <div class="links-of-author motion-element">

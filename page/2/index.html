@@ -217,6 +217,113 @@
             
               
                 
+                <a class="post-title-link" href="/2018/06/05/快速排序简单实现/" itemprop="url">
+                  快速排序简单实现
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-06-05T20:24:23+08:00" content="2018-06-05">
+              2018-06-05
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/基础知识/" itemprop="url" rel="index">
+                    <span itemprop="name">基础知识</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="快速排序简单实现"><a href="#快速排序简单实现" class="headerlink" title="快速排序简单实现"></a>快速排序简单实现</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line">public class QuickSort &#123;</span><br><span class="line"></span><br><span class="line">    public static int partition(int[] arr, int low, int high)&#123;</span><br><span class="line">        if (arr == null || low &gt;= arr.length || low &lt; 0 || high &gt;= arr.length || high &lt; 0)&#123;</span><br><span class="line">            return -1;//错误入参</span><br><span class="line">        &#125;</span><br><span class="line">        int pivotPos = low;</span><br><span class="line">        int pivot = arr[low];</span><br><span class="line">        while(low &lt; high)&#123;</span><br><span class="line">            while (low &lt; high &amp;&amp; arr[high] &gt;= pivot)&#123;</span><br><span class="line">                high--;</span><br><span class="line">            &#125;</span><br><span class="line">            while (low &lt; high &amp;&amp; arr[low] &lt;= pivot)&#123;</span><br><span class="line">                low++;</span><br><span class="line">            &#125;</span><br><span class="line">            if (low &lt; high) &#123;</span><br><span class="line">                swap(arr, low, high);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        swap(arr, pivotPos, low);</span><br><span class="line">        return low;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    public static void swap(int arr[], int a, int b)&#123;</span><br><span class="line">        if (a &gt;= arr.length || a &lt; 0 || b &gt;= arr.length || b &lt; 0)&#123;</span><br><span class="line">            return;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        int temp = arr[a];</span><br><span class="line">        arr[a] = arr[b];</span><br><span class="line">        arr[b] = temp;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void quickSort(int[] arr, int low, int high)&#123;</span><br><span class="line">    //递归实现</span><br><span class="line">         if (arr == null || low &lt; 0 || high &lt;= 0 || low&gt;high)</span><br><span class="line">                return;</span><br><span class="line">         int k = partition(arr, low, high);</span><br><span class="line">        if (k &lt; high)&#123;</span><br><span class="line">            quickSort(arr, k+1, high);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        if (k &gt; low)&#123;</span><br><span class="line">            quickSort(arr, low ,k-1);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public static void quickSortNonRecursion(int[] arr, int low, int high)&#123;</span><br><span class="line">    //非递归，使用stack保存partition返回值</span><br><span class="line">           if (arr == null || low &lt; 0 || high &lt;= 0 || low&gt;high)</span><br><span class="line">               return;</span><br><span class="line">           Stack&lt;Integer&gt; temp = new Stack&lt;&gt;();</span><br><span class="line">           int i, j;</span><br><span class="line">           //（注意保存顺序）先将初始状态的左右指针压栈</span><br><span class="line">           temp.push(high);//先存右指针</span><br><span class="line">           temp.push(low);//再存左指针</span><br><span class="line">           while (!temp.empty()) &#123;</span><br><span class="line">               i = temp.pop();//先弹出左指针</span><br><span class="line">               j = temp.pop();//再弹出右指针</span><br><span class="line">               if (i &lt; j) &#123;</span><br><span class="line">                   int k = partition(arr, i, j);</span><br><span class="line">                   if (k &gt; i) &#123;</span><br><span class="line">                       temp.push(k - 1);//保存中间变量</span><br><span class="line">                       temp.push(i);  //保存中间变量</span><br><span class="line">                   &#125;</span><br><span class="line">                   if (j &gt; k) &#123;</span><br><span class="line">                       temp.push(j);</span><br><span class="line">                       temp.push(k + 1);</span><br><span class="line">                   &#125;</span><br><span class="line">               &#125;</span><br><span class="line"></span><br><span class="line">           &#125;</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    public static void main(String[] args)&#123;</span><br><span class="line">        int[] arr = &#123;8,4,5,1,3,66,6,6&#125;;</span><br><span class="line">        quickSort(arr, 0, arr.length-1);</span><br><span class="line"></span><br><span class="line">        for (int i : arr)&#123;</span><br><span class="line">            System.out.println(i);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/05/27/简单易懂的堆排序/" itemprop="url">
                   简单易懂的堆排序
                 </a>
@@ -821,113 +928,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/05/06/Java虚拟机——双亲委派模型/" itemprop="url">
-                  Java虚拟机——双亲委派模型
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-05-06T21:58:40+08:00" content="2018-05-06">
-              2018-05-06
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/基础知识/" itemprop="url" rel="index">
-                    <span itemprop="name">基础知识</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h1><div class="htmledit_views"><br>                <p><span style="font-size:18px;">说道双亲委派模型，就要从类加载器说起。。。。。。。。。。。</span></p><p></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="font-size:18px;">Java虚拟机类加载过程是把Class类文件加载到内存，并对Class文件中的数据进行校验、转换解析和初始化，最终形成可以被虚拟机直接使用的java类型的过程。</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="font-size:18px;">在加载阶段，java虚拟机需要完成以下3件事：</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="font-size:18px;color:#cc66cc;">a.通过一个类的全限定名来获取定义此类的二进制字节流。</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="font-size:18px;color:#cc66cc;">b.将定义类的二进制字节流所代表的静态存储结构转换为方法区的运行时数据结构。</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="font-size:18px;color:#cc66cc;">c.在java堆中生成一个代表该类的java.lang.Class对象，作为方法区数据的访问入口。</span></p><span style="font-size:18px;">而类的加载过程是通过类加载器完成的。</span><p><span style="font-size:18px;"><br></span></p><p><span style="font-size:18px;"><span style="font-family:Arial;line-height:26px;">在Java中，任意一个类都需要由加载它的类加载器和这个类本身一同确定其在java虚拟机中的唯一性，即比较两个类是否相等，只有在这两个类是由同一个类加载器加载的前提之下才有意义，否则，即使这两个类来源于同一个Class类文件，只要加载它的类加载器不相同，那么这两个类必定不相等(这里的相等包括代表类的Class对象的equals()方法、isAssignableFrom()方法、isInstance()方法和instanceof关键字的结果)。</span><br></span></p><p><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;">看下面的例子：</span></span></p><div class="dp-highlighter bg_java"><div class="bar"><div class="tools"><b>[java]</b> <a href="#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command('ViewSource',this);return false;">view plain</a><span data-mod="popu_168"> <a href="#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command('CopyToClipboard',this);return false;">copy</a><div style="position: absolute; left: 190px; top: 763px; width: 16px; height: 16px; z-index: 99;"><embed id="ZeroClipboardMovie_1" src="https://csdnimg.cn/public/highlighter/ZeroClipboard.swf" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="16" height="16" name="ZeroClipboardMovie_1" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=1&amp;width=16&amp;height=16" wmode="transparent"></div><div style="position: absolute; left: 190px; top: 763px; width: 16px; height: 16px; z-index: 99;"><embed id="ZeroClipboardMovie_3" src="https://csdnimg.cn/public/highlighter/ZeroClipboard.swf" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="16" height="16" name="ZeroClipboardMovie_3" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=3&amp;width=16&amp;height=16" wmode="transparent"></div></span><span data-mod="popu_169"> <a href="#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command('PrintSource',this);return false;">print</a></span><a href="#" class="About" title="?" onclick="dp.sh.Toolbar.Command('About',this);return false;">?</a></div></div><ol start="1" class="dp-j"><li class="alt"><span><span>&nbsp;&nbsp;</span></span></li></ol></div><pre class="java" name="code" style="display: none;"></pre><pre style="background-color:#2b2b2b;color:#a9b7c6;font-family:'Courier New';font-size:11.3pt;"><span style="color:#cc7832;">package </span>com.hfax.common.depository.front.test<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;"><br></span><span style="color:#cc7832;">import </span>java.io.IOException<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">import </span>java.io.InputStream<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;"><br></span><span style="color:#cc7832;"><br></span><span style="color:#cc7832;">public class </span>test2 {<br>    <span style="color:#cc7832;">public static void </span><span style="color:#ffc66d;">main</span>(String[] args)<span style="color:#cc7832;">throws </span>Exception{<br>        <span style="color:#808080;">//匿名内部类实现自定义类加载器<br></span><span style="color:#808080;">        </span><span style="color:#cc7832;">final </span>ClassLoader  myClassLoader = <span style="color:#cc7832;">new </span>ClassLoader(){<br>                <span style="color:#cc7832;">protected </span>Class&lt;?&gt; <span style="color:#ffc66d;">findClass</span>(String name)<span style="color:#cc7832;">throws </span>ClassNotFoundException {<br>                    <span style="color:#808080;">//获取类文件名<br></span><span style="color:#808080;">                    </span>String filename = name.substring(name.lastIndexOf(<span style="color:#6a8759;">“.”</span>) + <span style="color:#6897bb;">1</span>) + <span style="color:#6a8759;">“.class”</span><span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">                    </span>InputStream in = getClass().getResourceAsStream(filename)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">                    try </span>{<br>                        <span style="color:#cc7832;">byte</span>[] b = <span style="color:#cc7832;">new byte</span>[in.available()]<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">                        return </span>defineClass(name<span style="color:#cc7832;">, </span>b<span style="color:#cc7832;">, </span><span style="color:#6897bb;">0</span><span style="color:#cc7832;">, </span>b.<span style="color:#9876aa;">length</span>)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">                    </span>} <span style="color:#cc7832;">catch </span>(IOException e) {<br>                        <span style="color:#cc7832;">throw new </span>ClassNotFoundException(name)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">                    </span>}<br>                }<br>        }<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">        </span>Object obj = myClassLoader.loadClass(<span style="color:#6a8759;">“com.hfax.common.depository.front.test.test2”</span>).newInstance()<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">        </span>System.<span style="color:#9876aa;"><em>out</em></span>.println(obj.getClass())<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">        </span>System.<span style="color:#9876aa;"><em>out</em></span>.println(obj <span style="color:#cc7832;">instanceof </span>com.hfax.common.depository.front.test.test2)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">    </span>}<br>}<br></pre><br><p></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">输出结果如下：</p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">com.test.ClassLoaderTest</p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">false （<span style="color:#ff6666;">jdk1.2版本以后引入了双亲委派模型后，此时会返回true，想得到false结果的小伙伴可以用1.2以前的版本测试</span>）</p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">之所以instanceof会返回false，是因为com.test.ClassLoaderTest类默认使用Application ClassLoader加载，而obj是通过自定义类加载器加载的，类加载不相同，因此不相等。</p><br><p><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;">说到这里就轮到双亲委派模型出场了。</span></span></p><p><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;">先看双亲委派模型的经典体系统：</span></span></p><p style="text-align:center;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;"><img src="https://img-blog.csdn.net/20160102154038185" alt=""><br></span></span></p><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;">做一个简单解释：</span></span></p><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;"></span></span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">(1).BootStrap ClassLoader：启动类加载器，负责加载存放在%JAVA_HOME%\lib目录中的，或者通被-Xbootclasspath参数所指定的路径中的，并且被java虚拟机识别的(仅按照文件名识别，如rt.jar，名字不符合的类库，即使放在指定路径中也不会被加载)类库到虚拟机的内存中，启动类加载器无法被java程序直接引用。</p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">(2).Extension ClassLoader：扩展类加载器，由sun.misc.Launcher$ExtClassLoader实现，负责加载%JAVA_HOME%\lib\ext目录中的，或者被java.ext.dirs系统变量所指定的路径中的所有类库，开发者可以直接使用扩展类加载器。</p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;">(3).Application ClassLoader：应用程序类加载器，由sun.misc.Launcher$AppClassLoader实现，负责加载用户类路径classpath上所指定的类库，是类加载器ClassLoader中的getSystemClassLoader()方法的返回值，开发者可以直接使用应用程序类加载器，如果程序中没有自定义过类加载器，该加载器就是程序中默认的类加载器。</p><br><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;"><span style="color:#ff0000;">这里需要注意的是<span style="font-family:Arial;line-height:26px;">上述三个JDK提供的类加载器虽然是父子类加载器关系，但是没有使用继承，而是使用了组合关系。</span></span></span></span></p><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;"></span></span></span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="color:#3366ff;">从JDK1.2开始，java虚拟机规范推荐开发者使用双亲委派模式(ParentsDelegation Model)进行类加载，其加载过程如下：</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="color:#3366ff;">(1).如果一个类加载器收到了类加载请求，它首先不会自己去尝试加载这个类，而是把类加载请求委派给父类加载器去完成。</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="color:#3366ff;">(2).每一层的类加载器都把类加载请求委派给父类加载器，直到所有的类加载请求都应该传递给顶层的启动类加载器。</span></p><p style="margin-top:0px;margin-bottom:0px;padding-top:0px;padding-bottom:0px;font-family:Arial;line-height:26px;"><span style="color:#3366ff;">(3).如果顶层的启动类加载器无法完成加载请求，子类加载器尝试去加载，如果连最初发起类加载请求的类加载器也无法完成加载请求时，将会抛出ClassNotFoundException，而不再调用其子类加载器去进行类加载。</span></p><span style="font-family:Arial;line-height:26px;"><span style="color:#3366ff;">双亲委派 模式的类加载机制的优点是java类它的类加载器一起具备了一种带优先级的层次关系，越是基础的类，越是被上层的类加载器进行加载，保证了java程序的稳定运行。双亲委派模式的实现：</span></span><br><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-family:Arial;line-height:26px;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;"></span></span></span></span></p><div class="dp-highlighter bg_java"><div class="bar"><div class="tools"><b>[java]</b> <a href="#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command('ViewSource',this);return false;">view plain</a><span data-mod="popu_168"> <a href="#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command('CopyToClipboard',this);return false;">copy</a><div style="position: absolute; left: 190px; top: 2676px; width: 16px; height: 16px; z-index: 99;"><embed id="ZeroClipboardMovie_2" src="https://csdnimg.cn/public/highlighter/ZeroClipboard.swf" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="16" height="16" name="ZeroClipboardMovie_2" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=2&amp;width=16&amp;height=16" wmode="transparent"></div><div style="position: absolute; left: 190px; top: 2676px; width: 16px; height: 16px; z-index: 99;"><embed id="ZeroClipboardMovie_4" src="https://csdnimg.cn/public/highlighter/ZeroClipboard.swf" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="16" height="16" name="ZeroClipboardMovie_4" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=4&amp;width=16&amp;height=16" wmode="transparent"></div></span><span data-mod="popu_169"> <a href="#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command('PrintSource',this);return false;">print</a></span><a href="#" class="About" title="?" onclick="dp.sh.Toolbar.Command('About',this);return false;">?</a></div></div><ol start="1" class="dp-j"><li class="alt"><span><span>&nbsp;&nbsp;</span></span></li></ol></div><pre class="java" name="code" style="display: none;"></pre><pre style="background-color:#2b2b2b;color:#a9b7c6;font-family:'Courier New';font-size:11.3pt;"><span style="color:#cc7832;">protected synchronized </span>Class&lt;?&gt; <span style="color:#ffc66d;">loadClass</span>(String name<span style="color:#cc7832;">, </span>Boolean resolve) <span style="color:#cc7832;">throws </span>ClassNotFoundException{<br>    <span style="color:#808080;">//首先检查请求的类是否已经被加载过<br></span><span style="color:#808080;">    </span>Class c = findLoadedClass(name)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">    if</span>(c == <span style="color:#cc7832;">null</span>){<br><br>        <span style="color:#cc7832;">try</span>{<br>            <span style="color:#cc7832;">if</span>(parent != <span style="color:#cc7832;">null</span>){<span style="color:#808080;">//委派父类加载器加载<br></span><span style="color:#808080;">                </span>c = parent.loadClass(name<span style="color:#cc7832;">, false</span>)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">            </span>}<br>            <span style="color:#cc7832;">else</span>{<span style="color:#808080;">//委派启动类加载器加载<br></span><span style="color:#808080;">                </span>c = findBootstrapClassOrNull(name)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">            </span>}<br>        }<span style="color:#cc7832;">catch</span>(ClassNotFoundException e){<br>            <span style="color:#808080;">//父类加载器无法完成类加载请求<br></span><span style="color:#808080;">        </span>}<br>        <span style="color:#cc7832;">if</span>(c == <span style="color:#cc7832;">null</span>){<span style="color:#808080;">//本身类加载器进行类加载<br></span><span style="color:#808080;">            </span>c = findClass(name)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">        </span>}<br>    }<br>    <span style="color:#cc7832;">if</span>(resolve){<br>        resolveClass(c)<span style="color:#cc7832;">;<br></span><span style="color:#cc7832;">    </span>}<br>    <span style="color:#cc7832;">return </span>c<span style="color:#cc7832;">;<br></span>}</pre><br>通过双亲委派模型我们就能很好解决文章开始我们自定义的类加载器所出现的问题。<p></p><p style="text-align:left;"><span style="font-family:Arial;line-height:26px;"><span style="font-family:Arial;line-height:26px;"><span style="font-family:Arial;line-height:26px;"><span style="font-size:18px;color:#ff0000;">这里需要注意的是<span style="font-family:Arial;line-height:26px;">在JDK1.2之前，类加载尚未引入双亲委派模式，因此实现自定义类加载器时常常重写loadClass方法，提供双亲委派逻辑，从JDK1.2之后，双亲委派模式已经被引入到类加载体系中，自定义类加载器时不需要在自己写双亲委派的逻辑，因此不鼓励重写loadClass方法，而推荐重写findClass方法。</span></span></span></span></span></p>            </div>
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -973,7 +973,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">38</span>
+              <span class="site-state-item-count">39</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -981,7 +981,7 @@
           
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-count">20</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -990,7 +990,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-count">22</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

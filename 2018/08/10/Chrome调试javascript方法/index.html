@@ -1,0 +1,728 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="debug," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="SkyAcer's blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content=".devtools-inline {  max-height: 1em;  vertical-align: middle;}.wf-byline {display: inline-flex; margin: 16px 32px 16px 0;}.wf-byline .attempt-left {margin: 0 16px 0 0;}.wf-byline img {border-radius: 1">
+<meta name="keywords" content="debug">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Chrome调试javascript方法">
+<meta property="og:url" content="http://skyacer.github.io/2018/08/10/Chrome调试javascript方法/index.html">
+<meta property="og:site_name" content="SkyAcer&#39;s blog">
+<meta property="og:description" content=".devtools-inline {  max-height: 1em;  vertical-align: middle;}.wf-byline {display: inline-flex; margin: 16px 32px 16px 0;}.wf-byline .attempt-left {margin: 0 16px 0 0;}.wf-byline img {border-radius: 1">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://developers.google.com/web/images/contributors/kaycebasques.jpg?hl=zh-cn">
+<meta property="og:image" content="https://developers.google.com/web/tools/chrome-devtools/images/expand.png?hl=zh-cn">
+<meta property="og:image" content="https://developers.google.com/web/tools/chrome-devtools/images/step-into.png?hl=zh-cn">
+<meta property="og:image" content="https://developers.google.com/web/tools/chrome-devtools/images/step-over.png?hl=zh-cn">
+<meta property="og:image" content="https://developers.google.com/web/tools/chrome-devtools/images/resume-script-execution.png?hl=zh-cn">
+<meta property="og:image" content="https://developers.google.com/web/tools/chrome-devtools/javascript/imgs/add-expression.png?hl=zh-cn">
+<meta property="og:image" content="https://developers.google.com/web/tools/chrome-devtools/images/deactivate-breakpoints-button.png?hl=zh-cn">
+<meta property="og:image" content="https://developers.google.com/web/tools/chrome-devtools/images/resume-script-execution.png?hl=zh-cn">
+<meta property="og:updated_time" content="2018-08-10T07:35:30.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chrome调试javascript方法">
+<meta name="twitter:description" content=".devtools-inline {  max-height: 1em;  vertical-align: middle;}.wf-byline {display: inline-flex; margin: 16px 32px 16px 0;}.wf-byline .attempt-left {margin: 0 16px 0 0;}.wf-byline img {border-radius: 1">
+<meta name="twitter:image" content="https://developers.google.com/web/images/contributors/kaycebasques.jpg?hl=zh-cn">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Chrome调试javascript方法 | SkyAcer's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SkyAcer's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Hacking,Thoughts.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-heartbeat fa-fw"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Chrome调试javascript方法
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-08-10T15:34:43+08:00" content="2018-08-10">
+              2018-08-10
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/前端/" itemprop="url" rel="index">
+                    <span itemprop="name">前端</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <div class="devsite-article-body clearfix
+            " itemprop="articleBody"><br><br><style><br>.devtools-inline {<br>  max-height: 1em;<br>  vertical-align: middle;<br>}<br></style><br><br><!-- TODO
+     make demo responsive
+--><br><br><br><!-- wf_template: src/templates/contributors/include.html --><br><br><style><br>.wf-byline {display: inline-flex; margin: 16px 32px 16px 0;}<br>.wf-byline .attempt-left {margin: 0 16px 0 0;}<br>.wf-byline img {border-radius: 100%; min-width: 64px; height: 64px;}<br>.wf-byline .wf-byline-desc {font-size: smaller; word-break: break-word;}<br>.wf-byline .wf-byline-social {font-size: smaller;}<br></style><br><br><section class="wf-byline" itemprop="author" itemscope="" itemtype="http://schema.org/Person"><br>  <div class="attempt-left"><br>    <figure><br>      <img itemprop="image" src="https://developers.google.com/web/images/contributors/kaycebasques.jpg?hl=zh-cn" alt="Kayce Basques"><br>    </figure><br>  </div><br>  <section class="wf-byline-meta"><br>    <div class="wf-byline-name"><br>      <strong>By</strong><br>      <span itemprop="name"><br>        <a href="https://developers.google.com/web/resources/contributors/kaycebasques?hl=zh-cn" target="_blank" rel="noopener"><br>          <span itemprop="givenName">Kayce</span><br>          <span itemprop="familyName">Basques</span><br>        </a><br>      </span><br>    </div><br>    <div class="wf-byline-desc"><br>        Technical Writer for Chrome DevTools<br>    </div><br>  </section><br></section><br><br><p>本交互式教程循序渐进地教您在 Chrome DevTools 中调试 JavaScript 的基本工作流程。<br>虽然教程介绍的是如何调试一种具体问题，但您学到的一般工作流程对调试各种类型的 JavaScript 错误均有帮助。</p><br><p>如果您使用 <code>console.log()</code> 来查找和修正代码中的错误，可以考虑改用本教程介绍的工作流程。<br>其速度快得多，也更有效。</p><br><h2 id="step-1"><a href="#top_of_page" class="devsite-back-to-top-link material-icons" data-tooltip-align="b,c" data-tooltip="返回页首" aria-label="返回页首" data-title="返回页首"></a>第 1 步：重现错误</h2><br><p>重现错误始终是调试的第一步。“重现错误”是指找到一系列总是能导致错误出现的操作。</p><br><p>您可能需要多次重现错误，因此要尽量避免任何多余的步骤。</p><br><p>请按照以下说明重现您要在本教程中修正的错误。</p><br><ol><br><li><br><p>点击 <strong>Open Demo</strong>。演示页面在新标签中打开。</p><br><p><a href="https://googlechrome.github.io/devtools-samples/debug-js/get-started" target="devtools" rel="noopener noreferrer"><br>   <button>Open Demo</button><br> </a></p><br></li><br><li><br><p>在演示页面上，输入 <code>5</code> 作为 <strong>Number 1</strong>。</p><br></li><br><li>输入 <code>1</code> 作为 <strong>Number 2</strong>。</li><br><li>点击 <strong>Add Number 1 and Number 2</strong>。</li><br><li>查看输入和按钮下方的标签。上面显示的是 <code>5 + 1 = 51</code>。</li><br></ol><br><p>啊呜。这个结果是错误的。正确结果应为 <code>6</code>。这就是您要修正的错误。</p><br><h2 id="2"><a href="#top_of_page" class="devsite-back-to-top-link material-icons" data-tooltip-align="b,c" data-tooltip="返回页首" aria-label="返回页首" data-title="返回页首"></a>第 2 步：使用断点暂停代码</h2><br><p>DevTools 让您可以暂停执行中的代码，并对暂停时刻的<em>所有</em>变量值进行检查。<br>用于暂停代码的工具称为<strong>断点</strong>。<br>立即试一试：</p><br><ol><br><li><br><p>按 <kbd>Command</kbd>+<kbd>Option</kbd>+<kbd>I</kbd> (Mac) 或 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd>（Windows、Linux）在演示页面上打开 DevTools。</p><br></li><br><li><br><p>点击 <strong>Sources</strong> 标签。</p><br></li><br></ol><br><!-- TODO add a screenshot.Don't create the screenshot until demo design is
+     finished.Add it here rather than previous screenshot in case Sources
+     is hidden --><br><br><ol><br><li>点击 <strong>Event Listener Breakpoints</strong> 将该部分展开。DevTools 显示一个包含 <strong>Animation</strong> 和 <strong>Clipboard</strong> 等可展开事件类别的列表。</li><br></ol><br><!-- TODO or maybe add it here --><br><br><ol><br><li>在 <strong>Mouse</strong> 事件类别旁，点击 <strong>Expand</strong> <img alt="Expand 图标" class="devtools-inline" src="https://developers.google.com/web/tools/chrome-devtools/images/expand.png?hl=zh-cn">。DevTools 显示一个包含 <strong>click</strong> 等 Mouse 事件的列表，事件旁有相应的复选框。</li><br><li><br><p>选中 <strong>click</strong> 复选框。</p><br><p></p><figure><br>   &lt;img src=”<a href="https://developers.google.com/web/tools/chrome-devtools/javascript/imgs/get-started-click-breakpoint.png?hl=zh-cn&quot;" target="_blank" rel="noopener">https://developers.google.com/web/tools/chrome-devtools/javascript/imgs/get-started-click-breakpoint.png?hl=zh-cn&quot;</a> alt=”DevTools 在演示页面上打开，Sources 面板获得焦点，click 事件侦听器断点处于启用状态。” &lt;figcaption=””&gt;<br>     <b>图 1</b>：DevTools 在演示页面上打开，Sources 面板获得焦点，click 事件侦听器断点处于启用状态。<br>     如果 DevTools 窗口较大，则 <b>Event Listener Breakpoints</b> 窗格位于右侧，而不是像屏幕截图中那样位于左下方。<br> </figure><p></p><br></li><br><li><br><p>返回至演示页面，再次点击 <strong>Add Number 1 and Number 2</strong>。DevTools 暂停演示并在 <strong>Sources</strong> 面板中突出显示一行代码。<br>   DevTools 突出显示的是下面这行代码：</p><br><p><code>function onClick() {</code></p><br></li><br></ol><br><p>当您选中 <strong>click</strong> 复选框时，就是在所有 <code>click</code> 事件上设置了一个基于事件的断点。<br>点击了<em>任何</em>节点，并且该节点具有 <code>click</code> 处理程序时，DevTools 会自动暂停在该节点 <code>click</code> 处理程序的第一行。</p><br><aside class="note"><strong>Note:</strong><span> 这不过是 DevTools 提供的众多断点类型中的一种。应使用的断点类型取决于您要调试的问题类型。</span></aside><br><h2 id="3"><a href="#top_of_page" class="devsite-back-to-top-link material-icons" data-tooltip-align="b,c" data-tooltip="返回页首" aria-label="返回页首" data-title="返回页首"></a>第 3 步：单步调试代码</h2><br><p>一个常见的错误原因是脚本执行顺序有误。<br>可以通过单步调试代码一次一行地检查代码执行情况，准确找到执行顺序异常之处。立即试一试：</p><br><ol><br><li><br><p>在 DevTools 的 <strong>Sources</strong> 面板上，点击 <strong>Step into next function call</strong> <img alt="单步执行到下一个函数调用中" class="devtools-inline" src="https://developers.google.com/web/tools/chrome-devtools/images/step-into.png?hl=zh-cn">，一次一行地单步调试 <code>onClick()</code> 函数的执行。DevTools 突出显示下面这行代码：</p><br><p><code>if (inputsAreEmpty()) {</code></p><br></li><br><li><br><p>点击 <strong>Step over next function call</strong> <img alt="单步执行时越过下一个函数调用" class="devtools-inline" src="https://developers.google.com/web/tools/chrome-devtools/images/step-over.png?hl=zh-cn">。<br>DevTools 执行 <code>inputsAreEmpty()</code> 但不进入它。<br>请注意 DevTools 是如何跳过几行代码的。<br>   这是因为 <code>inputsAreEmpty()</code> 求值结果为 false，所以 <code>if</code> 语句的代码块未执行。</p><br></li><br></ol><br><p>这就是单步调试代码的基本思路。如果您看一下 <code>get-started.js</code> 中的代码，就能发现错误多半出在 <code>updateLabel()</code> 函数的某处。您可以不必单步调试每一行代码，而是使用另一种断点在靠近错误位置的地方暂停代码。</p><br><h2 id="4"><a href="#top_of_page" class="devsite-back-to-top-link material-icons" data-tooltip-align="b,c" data-tooltip="返回页首" aria-label="返回页首" data-title="返回页首"></a>第 4 步：设置另一个断点</h2><br><p>代码行断点是最常见的断点类型。如果您想在执行到某一行代码时暂停，请使用代码行断点。立即试一试：</p><br><ol><br><li><br><p>看一下 <code>updateLabel()</code> 中的最后一行代码，其内容类似于：</p><br><p><code>label.textContent = addend1 + ‘ + ‘ + addend2 + ‘ = ‘ + sum;</code></p><br></li><br><li><br><p>在这行代码的左侧，可以看到这行代码的行号：<br><strong>32</strong>。点击 <strong>32</strong>。DevTools 会在 <strong>32</strong> 上放置一个蓝色图标。<br>这意味着这行代码上有一个代码行断点。<br>   DevTools 现在总是会在执行这行代码之前暂停。</p><br></li><br><li>点击 <strong>Resume script execution</strong> <img alt="继续执行脚本" class="devtools-inline" src="https://developers.google.com/web/tools/chrome-devtools/images/resume-script-execution.png?hl=zh-cn">。<br>脚本继续执行，直至到达您设置了断点的代码行。</li><br><li>看一下 <code>updateLabel()</code> 中已执行的代码行。</li><br></ol><br><p>DevTools 打印输出 <code>addend1</code>、<code>addend2</code> 和 <code>sum</code> 的值。</p><br><p><code>sum</code> 的值疑似有问题。其求值结果本应是数字，而实际结果却是字符串。<br>这可能就是造成错误的原因。</p><br><h2 id="5"><a href="#top_of_page" class="devsite-back-to-top-link material-icons" data-tooltip-align="b,c" data-tooltip="返回页首" aria-label="返回页首" data-title="返回页首"></a>第 5 步：检查变量值</h2><br><p>另一种常见的错误原因是，变量或函数产生的值异常。<br>许多开发者都利用 <code>console.log()</code> 来了解值随时间变化的情况，但 <code>console.log()</code> 可能单调乏味而又效率低下，原因有两个。<br>其一，您可能需要手动编辑大量调用 <code>console.log()</code> 的代码。<br>其二，由于您不一定知晓究竟哪一个变量与错误有关，因此可能需要对许多变量进行记录。</p><br><p>DevTools 为 <code>console.log()</code> 提供的其中一个替代工具是监视表达式。可以使用监视表达式来监视变量值随时间变化的情况。顾名思义，监视表达式的监视对象不仅限于变量。您可以将任何有效的 JavaScript 表达式存储在监视表达式中。<br>立即试一试：</p><br><ol><br><li>在 DevTools 的 <strong>Sources</strong> 面板上，点击 <strong>Watch</strong>。该部分随即展开。</li><br><li>点击 <strong>Add Expression</strong> <img alt="添加表达式" class="devtools-inline" src="https://developers.google.com/web/tools/chrome-devtools/javascript/imgs/add-expression.png?hl=zh-cn">。</li><br><li>键入 <code>typeof sum</code>。</li><br><li><br><p>按 <kbd>Enter</kbd>。DevTools 显示 <code>typeof sum: “string”</code>。冒号右侧的值就是监视表达式的结果。</p><br><p></p><figure><br>   &lt;img src=”<a href="https://developers.google.com/web/tools/chrome-devtools/javascript/imgs/get-started-watch-expression.png?hl=zh-cn&quot;" target="_blank" rel="noopener">https://developers.google.com/web/tools/chrome-devtools/javascript/imgs/get-started-watch-expression.png?hl=zh-cn&quot;</a> alt=”“监视表达式”窗格。” &lt;figcaption=””&gt;<br>     <b>图 1</b>：创建  <code>typeof sum</code> 监视表达式后的“监视表达式”窗格（右下方）。<br>     如果 DevTools 窗口较大，则“监视表达式”窗格位于右侧，<b>Event Listener Breakpoints</b> 窗格的上方。<br> </figure><p></p><br></li><br></ol><br><p>正如猜想的那样，<code>sum</code> 的求值结果本应是数字，而实际结果却是字符串。<br>这就是演示页面错误的原因。</p><br><p>DevTools 为 <code>console.log()</code> 提供的另一个替代工具是 Console。可以使用 Console 对任意 JavaScript 语句求值。开发者通常利用 Console 在调试时覆盖变量值。在您所处的情况下，Console 可帮助您测试刚发现的错误的潜在解决方法。<br>立即试一试：</p><br><ol><br><li>如果您尚未打开 Console 抽屉，请按 <kbd>Escape</kbd> 将其打开。<br>它会在 DevTools 窗口底部打开。</li><br><li>在 Console 中，键入 <code>parseInt(addend1) + parseInt(addend2)</code>。</li><br><li><br><p>按 <kbd>Enter</kbd>。DevTools 对语句求值并打印输出 <code>6</code>，即您预料演示页面会产生的结果。</p><br><p></p><figure><br>   &lt;img src=”<a href="https://developers.google.com/web/tools/chrome-devtools/javascript/imgs/get-started-console.png?hl=zh-cn&quot;" target="_blank" rel="noopener">https://developers.google.com/web/tools/chrome-devtools/javascript/imgs/get-started-console.png?hl=zh-cn&quot;</a> alt=”对一个语句求值后的 Console 抽屉。” &lt;figcaption=””&gt;<br>     <b>图 1</b>：对  <code>parseInt(addend1) + parseInt(addend2)</code> 求值后的 Console 抽屉。<br> </figure><p></p><br></li><br></ol><br><h2 id="6"><a href="#top_of_page" class="devsite-back-to-top-link material-icons" data-tooltip-align="b,c" data-tooltip="返回页首" aria-label="返回页首" data-title="返回页首"></a>第 6 步：应用修正</h2><br><p>您已找到错误的潜在解决方法。剩下的工作就是编辑代码后重新运行演示页面来测试修正效果。<br>您不必离开 DevTools 就能应用修正。<br>您可以直接在 DevTools UI 内编辑 JavaScript 代码。<br>立即试一试：</p><br><ol><br><li>在 DevTools 的 <strong>Sources</strong> 面板上的代码编辑器中，将 <code>var sum = addend1 + addend2</code> 替换为 <code>var sum = parseInt(addend1) + parseInt(addend2);</code>。它就是您当前暂停位置上面那行代码。</li><br><li>按 <kbd>Command</kbd>+<kbd>S</kbd> (Mac) 或 <kbd>Ctrl</kbd>+<kbd>S</kbd>（Windows、Linux）保存更改。代码的背景色变为红色，这表示在 DevTools 内更改了脚本。</li><br><li>点击 <strong>Deactivate breakpoints</strong> <img alt="停用断点" class="devtools-inline" src="https://developers.google.com/web/tools/chrome-devtools/images/deactivate-breakpoints-button.png?hl=zh-cn">。它变为蓝色，表示处于活动状态。<br>如果进行了此设置，DevTools 会忽略您已设置的任何断点。</li><br><li>点击 <strong>Resume script execution</strong> <img alt="继续执行脚本" class="devtools-inline" src="https://developers.google.com/web/tools/chrome-devtools/images/resume-script-execution.png?hl=zh-cn">。</li><br><li>使用不同的值测试演示页面。现在演示页面应能正确计算求和。</li><br></ol><br><p>切记，此工作流程只对运行在浏览器中的代码应用修正。<br>它不会为所有运行您的页面的用户修正代码。<br>要实现该目的，您需要修正运行在提供页面的服务器上的代码。</p><br><h2 id="_1"><a href="#top_of_page" class="devsite-back-to-top-link material-icons" data-tooltip-align="b,c" data-tooltip="返回页首" aria-label="返回页首" data-title="返回页首"></a>后续步骤</h2><br><p>恭喜！现在您已掌握了在 DevTools 中调试 JavaScript 的基础知识。</p><br><p>本教程只向您介绍了两种设置断点的方法。DevTools 还提供了许多其他方法，其中包括：</p><br><ul><br><li>仅在满足您指定的条件时触发的条件断点。</li><br><li>发生已捕获或未捕获异常时触发的断点。</li><br><li>当请求的网址与您提供的子字符串匹配时触发的 XHR 断点。</li><br></ul><br><p><a class="gc-analytics-event" data-category="DevTools / Debug JS / Get Started / Next Steps / Breakpoints" href="https://developers.google.com/web/tools/chrome-devtools/javascript/add-breakpoints?hl=zh-cn" target="_blank" rel="noopener noreferrer"><button>为我演示所有断点</button></a></p><br><p>有几个代码单步执行控件在本教程中未予说明。<br>请点击以下链接，了解有关它们的更多信息。</p><br><p><a class="gc-analytics-event" data-category="DevTools / Debug JS / Get Started / Next Steps / Breakpoints" href="https://developers.google.com/web/tools/chrome-devtools/javascript/step-code?hl=zh-cn#stepping_in_action" target="_blank" rel="noopener noreferrer"><button>我想要掌握代码单步调试知识</button></a></p><br><h2 id="_2"><a href="#top_of_page" class="devsite-back-to-top-link material-icons" data-tooltip-align="b,c" data-tooltip="返回页首" aria-label="返回页首" data-title="返回页首"></a></h2><br><br>  </div>
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/debug/" rel="tag">#debug</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/30/Android窗口管理分析（五）-——-硬件加速和软件加速的区别/" rel="next" title="Android窗口管理分析（五）-——-硬件加速和软件加速的区别">
+                <i class="fa fa-chevron-left"></i> Android窗口管理分析（五）-——-硬件加速和软件加速的区别
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="SkyAcer" />
+          <p class="site-author-name" itemprop="name">SkyAcer</p>
+          <p class="site-description motion-element" itemprop="description">Little And More.</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">39</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">20</span>
+                <span class="site-state-item-name">分类</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#step-1"><span class="nav-number">1.</span> <span class="nav-text">第 1 步：重现错误</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2"><span class="nav-number">2.</span> <span class="nav-text">第 2 步：使用断点暂停代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3"><span class="nav-number">3.</span> <span class="nav-text">第 3 步：单步调试代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4"><span class="nav-number">4.</span> <span class="nav-text">第 4 步：设置另一个断点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5"><span class="nav-number">5.</span> <span class="nav-text">第 5 步：检查变量值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6"><span class="nav-number">6.</span> <span class="nav-text">第 6 步：应用修正</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_1"><span class="nav-number">7.</span> <span class="nav-text">后续步骤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#_2"><span class="nav-number">8.</span> <span class="nav-text"></span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">SkyAcer</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=0.5.0"></script>
+
+
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+
+  
+
+
+</body>
+</html>

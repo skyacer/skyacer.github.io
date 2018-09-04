@@ -217,6 +217,179 @@
             
               
                 
+                <a class="post-title-link" href="/2018/05/23/《Android优化专题》——-优化下载效率/" itemprop="url">
+                  《Android优化专题》—— 优化下载效率
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-05-23T20:35:28+08:00" content="2018-05-23">
+              2018-05-23
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android优化专题/" itemprop="url" rel="index">
+                    <span itemprop="name">Android优化专题</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="《Android优化专题》——-优化下载效率"><a href="#《Android优化专题》——-优化下载效率" class="headerlink" title="《Android优化专题》—— 优化下载效率"></a>《Android优化专题》—— 优化下载效率</h1><h2 id="一、用有效率的网络访问方式来优化下载"><a href="#一、用有效率的网络访问方式来优化下载" class="headerlink" title="一、用有效率的网络访问方式来优化下载"></a>一、用有效率的网络访问方式来优化下载</h2><h3 id="1-无线电状态机"><a href="#1-无线电状态机" class="headerlink" title="1.无线电状态机"></a>1.无线电状态机</h3><ul>
+<li>Full power：当无线连接被激活的时候，允许设备以最大的传输速率进行操作。</li>
+<li>Low power：相对Full power来说，算是一种中间状态，差不多50%的传输速率。</li>
+<li>Standby：最低的状态，没有数据连接需要传输。</li>
+</ul>
+<p>典型的3G无线电波状态机图示：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB67e9adfaac62ea0736d6f24b4cc0f165?method=download&amp;shareKey=dc3ce6fbd2dec3ee1b1fd82ae1605f1f" alt=""></p>
+<h3 id="2-apps如何影响无线状态机"><a href="#2-apps如何影响无线状态机" class="headerlink" title="2. apps如何影响无线状态机"></a>2. apps如何影响无线状态机</h3><h4 id="创建新连接"><a href="#创建新连接" class="headerlink" title="创建新连接"></a>创建新连接</h4><p>每次创建一个网络连接，无线电波就会切换到full power状态（这也是为什么降低连接数可以更省电量以及省流量的原因），结束之后会有一个附加的5s时间切换到low power，再之后会经过12s进入到low energy状态，每次数据传输的会话都会引起无线电波持续消耗大概20s的能量。</p>
+<h4 id="传输bundle（序列化）与unbundled（未序列化）数据差别"><a href="#传输bundle（序列化）与unbundled（未序列化）数据差别" class="headerlink" title="传输bundle（序列化）与unbundled（未序列化）数据差别"></a>传输bundle（序列化）与unbundled（未序列化）数据差别</h4><p><img src="https://note.youdao.com/yws/api/personal/file/WEB7ab6e5aa0af3cc84fbf0e5e5bde4be5e?method=download&amp;shareKey=1e98b1be3b6eb2e4299ee7522bdffeb5" alt=""></p>
+<p>一个app传递1秒钟的unbundled data会使得无线电波持续活动18秒【18=1秒的传输数据+5秒过渡时间回到low power+12秒过渡时间回到standby】。因此每一分钟，它会消耗18秒high power的电量，42秒的low power的电量。</p>
+<p>如果每分钟app会传输bundle的data持续3秒的话，其中会使得无线电波持续在high power状态仅仅8秒钟，在low power状态仅仅12秒钟。 上面第二种传输bundle data的例子，可以看到减少了大量的电量消耗。</p>
+<h3 id="3-预取数据"><a href="#3-预取数据" class="headerlink" title="3. 预取数据"></a>3. 预取数据</h3><blockquote>
+<p>预取数据是一种减少独立数据传输会话数量的有效方法。在单次操作的时候，通过一次连接，在最大能力下，根据给出的时间下载到所有的数据。</p>
+</blockquote>
+<p>对于预取，取太多，不仅用户可能根本用不到那么多，而且还耗费了电量和流量。取太少，达不到预取的效果。</p>
+<p>如何控制预取的大小？</p>
+<p>这需要根据正在下载的数据大小与可能被用到的数据量来决定。一个基于上面状态机情况的比较大概的建议是：对于数据来说，大概有50%的机会可能用在当前用户的会话中，那么我们可以预取大约6秒(大约1-2Mb)，这大概使得潜在可能要用的数据量与可能已经下载好的数据量相一致。</p>
+<p>通常来说，预取1-5Mb会比较好，这种情况下，我们仅仅只需要每隔2-5分钟开始另一段下载。根据这个原理，大数据的下载，比如视频文件，应该每隔2-5秒开始另一段下载，这样能有效的预取到下面几分钟内的数据进行预览。</p>
+<h3 id="4-批量传输与连接"><a href="#4-批量传输与连接" class="headerlink" title="4. 批量传输与连接"></a>4. 批量传输与连接</h3><p>每次初始化一个连接（与需要传输的数据量无关），有可能导致无线电波持续花费20s的电量。</p>
+<p>对于数据进行bundle操作，并且创建一个序列可以使得大量数据集中进行发送，这样可以使得无线电波的激活时间尽可能的少，同事减少大部分的电量花费。</p>
+<h3 id="5-减少连接次数"><a href="#5-减少连接次数" class="headerlink" title="5. 减少连接次数"></a>5. 减少连接次数</h3><p>重用之前存在的网络连接比重新创建一个连接是更有效率的。当可以用一个GET请求解决的情况下，不要同时创建多个网络连接。</p>
+<p>可以在一个连接要关闭时，不要立即关闭，而是在timeout之前关闭。</p>
+<p>使用HttpUrlConnection，而不是HttpClient，前者做了response cache</p>
+<h3 id="6-使用DDMS（Dalvik-Debug-Monitor-Server）网络通信工具来检测网络使用情况"><a href="#6-使用DDMS（Dalvik-Debug-Monitor-Server）网络通信工具来检测网络使用情况" class="headerlink" title="6. 使用DDMS（Dalvik Debug Monitor Server）网络通信工具来检测网络使用情况"></a>6. 使用DDMS（Dalvik Debug Monitor Server）网络通信工具来检测网络使用情况</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6200ba40b6d05b617272f233ce870afc?method=download&amp;shareKey=dbfc00a9fc45b3d02971ddadca2c65d4" alt=""></p>
+<p>通过监测数据传输的频率和每次传输的数据量，可以看出哪些地方可以进行优化。类似于图中短小钉子形状的地方，可以和附近位置的请求进行merge操作。</p>
+<p>Traffic Status API可以使用TrafficStats.setThreadStatsTag()的方法标记数据传输发生在某个Thread里面。可以手动使用tagSocket()进行标记或者untagSocket()来取消标记。</p>
+<h2 id="二、调整更新的频率"><a href="#二、调整更新的频率" class="headerlink" title="二、调整更新的频率"></a>二、调整更新的频率</h2><h3 id="1-使用C2DM作为轮询方式之一"><a href="#1-使用C2DM作为轮询方式之一" class="headerlink" title="1.使用C2DM作为轮询方式之一"></a>1.使用C2DM作为轮询方式之一</h3><blockquote>
+<p>C2DM是一个用来从server到特定app传输数据的轻量级机制。使用C2DM，server会在某个app有需要获取新数据的时候通知app有这个消息。</p>
+</blockquote>
+<p>但中国大陆的Google框架通常会被移除，使得C2DM没法在中国大陆的App上使用。</p>
+<p>可参考各大厂商的推送定制。</p>
+<h3 id="2-通过不定时的重复提醒和指数退避来优化轮询操作"><a href="#2-通过不定时的重复提醒和指数退避来优化轮询操作" class="headerlink" title="2.通过不定时的重复提醒和指数退避来优化轮询操作"></a>2.通过不定时的重复提醒和指数退避来优化轮询操作</h3><p>如果必须要使用轮询机制，可以考虑以下几个方面的优化：</p>
+<ol>
+<li>如果多个提醒都安排在某个小的时间段内，考虑把这多个操作在一个无线电状态下操作完。</li>
+<li>使用Alarm时，设置的提醒类型为非wake类型（对于非紧急通知消息时，避免在屏幕熄灭状态下，将设备唤醒），减少电量的损耗。</li>
+<li>在app上一次更新操作之后还未被使用的情况下，使用指数退避算法（exponential back-off algorithm）来减少更新频率。</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">private void retryIn(long interval) &#123;</span><br><span class="line">  boolean success = attemptTransfer();</span><br><span class="line"></span><br><span class="line">  if (!success) &#123;</span><br><span class="line">    retryIn(interval*2 &lt; MAX_RETRY_INTERVAL ?</span><br><span class="line">            interval*2 : MAX_RETRY_INTERVAL);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="二进制退避算法"><a href="#二进制退避算法" class="headerlink" title="二进制退避算法"></a>二进制退避算法</h4><ol>
+<li>确定基本退避时间，一般为端到端的往返时间为2t，2t也成为冲突窗口或争用期。</li>
+<li>定义参数k，k与冲突次数有关，规定k不能超过10，k=Min[冲突次数，10]。在冲突次数大于10，小于16时，k不再增大，一直取值为10。</li>
+<li>从离散的整数集合[0,1,2，……，(2k-1)]中随机的取出一个数r，等待的时延为r倍的基本退避时间，等于r x 2t。r的取值范围与冲突次数k有关，r可选的随机取值为2k个、这也是称为二进制退避算法的起因。</li>
+<li>当冲突次数大于10以后，都是从0—210-1个2t中随机选择一个作为等待时间。</li>
+<li>当冲突次数超过16次后，发送失败，丢弃传输的帧，发送错误报告。</li>
+</ol>
+<h2 id="三、使用缓存来避免重复下载"><a href="#三、使用缓存来避免重复下载" class="headerlink" title="三、使用缓存来避免重复下载"></a>三、使用缓存来避免重复下载</h2><blockquote>
+<p>减少下载的最基本方法是仅仅下载你想要的数据，通过类似上次更新时间来制定查询数据的条件。在下载图片时，server尽量减少图片的大小，比如对图片进行剪裁等处理。</p>
+</blockquote>
+<h3 id="1-缓存到本地"><a href="#1-缓存到本地" class="headerlink" title="1. 缓存到本地"></a>1. 缓存到本地</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">long currentTime = System.currentTimeMillis());</span><br><span class="line"></span><br><span class="line">HttpURLConnection conn = (HttpURLConnection) url.openConnection();</span><br><span class="line"></span><br><span class="line">long expires = conn.getHeaderFieldDate(&quot;Expires&quot;, currentTime);</span><br><span class="line">long lastModified = conn.getHeaderFieldDate(&quot;Last-Modified&quot;, currentTime);</span><br><span class="line"></span><br><span class="line">setDataExpirationDate(expires);</span><br><span class="line"></span><br><span class="line">if (lastModified &lt; lastUpdateTime) &#123;</span><br><span class="line">  // Skip update  </span><br><span class="line">&#125; else &#123;</span><br><span class="line">  // Parse update  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以使用下面的方法获取External缓存目录：目录是Android/data/data/com.xxx.xxx/cache</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Context.getExternalCacheDir();</span><br></pre></td></tr></table></figure>
+<p>获取内部缓存的方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Context.getCache()</span><br></pre></td></tr></table></figure>
+<p>这里注意不要随便在sdcard下创建目录存放缓存，因为这个文件夹不会随着程序的卸载而删除。既影响用户体验，又会把一些不想让用户知道的数据泄露出去。</p>
+<h3 id="2-使用HttpUrlConnect-Response缓存"><a href="#2-使用HttpUrlConnect-Response缓存" class="headerlink" title="2. 使用HttpUrlConnect Response缓存"></a>2. 使用HttpUrlConnect Response缓存</h3><p>我们可以通过反射机制开启HTTP response cache</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">private void enableHttpResponseCache() &#123;</span><br><span class="line">  try &#123;</span><br><span class="line">    long httpCacheSize = 10 * 1024 * 1024; // 10 MiB  </span><br><span class="line">    File httpCacheDir = new File(getCacheDir(), &quot;http&quot;);</span><br><span class="line">    Class.forName(&quot;android.net.http.HttpResponseCache&quot;)</span><br><span class="line">         .getMethod(&quot;install&quot;, File.class, long.class)</span><br><span class="line">         .invoke(null, httpCacheDir, httpCacheSize);</span><br><span class="line">  &#125; catch (Exception httpResponseCacheNotAvailable) &#123;</span><br><span class="line">    Log.d(TAG, &quot;HTTP response cache is unavailable.&quot;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也可以在onCreate中加入以下代码开启</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">protected void onCreate(Bundle savedInstanceState) &#123;</span><br><span class="line">     ...</span><br><span class="line"></span><br><span class="line">     try &#123;</span><br><span class="line">         File httpCacheDir = new File(context.getCacheDir(), &quot;http&quot;);</span><br><span class="line">         long httpCacheSize = 10 * 1024 * 1024; // 10 MiB</span><br><span class="line">         HttpResponseCache.install(httpCacheDir, httpCacheSize);</span><br><span class="line">     &#125; catch (IOException e) &#123;</span><br><span class="line">         Log.i(TAG, &quot;HTTP response cache installation failed:&quot; + e);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> protected void onStop() &#123;</span><br><span class="line">     ...</span><br><span class="line"></span><br><span class="line">     HttpResponseCache cache = HttpResponseCache.getInstalled();</span><br><span class="line">     if (cache != null) &#123;</span><br><span class="line">         cache.flush();</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>以上代码会在Android4.0以上开启response code，所有cache中的HTTP请求都可以直接在本地存储中响应，就不需要开启一个新的网络连接。被cache起来的response可以被server确保没有过期，这样减少了带宽。</p>
+<h2 id="四、根据网络类型来切换下载模式"><a href="#四、根据网络类型来切换下载模式" class="headerlink" title="四、根据网络类型来切换下载模式"></a>四、根据网络类型来切换下载模式</h2><blockquote>
+<p>WIFI要比无线电波消耗的电量要少很多，而且对于无线电波而言（3G,2G,LTE等）也存在不同电量的区别。</p>
+</blockquote>
+<h3 id="1-尽量WIFI"><a href="#1-尽量WIFI" class="headerlink" title="1. 尽量WIFI"></a>1. 尽量WIFI</h3><p>我们尽量要在连接WIFI的时候进行下载，更新数据等操作。</p>
+<h3 id="2-尽量使用更大的带宽下载更多的数据，而不是经常去下载"><a href="#2-尽量使用更大的带宽下载更多的数据，而不是经常去下载" class="headerlink" title="2. 尽量使用更大的带宽下载更多的数据，而不是经常去下载"></a>2. 尽量使用更大的带宽下载更多的数据，而不是经常去下载</h3><p>相对更宽的带宽会有更长的状态切换时间（从full power过渡到standby有更长一段时间的延迟），过渡时间的电量通常是固定的，每次传输会话过程中尽量一次性把事情做完，而不是断断续续请求就更有效率了。</p>
+<p>如果LTE无线电的带宽与电量消耗都是3G无线电的2倍，我们应该在每次会话的时候都下载4倍于3G的数据量，或者是差不多10Mb</p>
+<p>我们可以根据connectivity manager来判断当前激活的无线电波，根据结果来做prefetch。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">ConnectivityManager cm =</span><br><span class="line"> (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);</span><br><span class="line"></span><br><span class="line">TelephonyManager tm =</span><br><span class="line">  (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);</span><br><span class="line"></span><br><span class="line">NetworkInfo activeNetwork = cm.getActiveNetworkInfo();</span><br><span class="line"></span><br><span class="line">int PrefetchCacheSize = DEFAULT_PREFETCH_CACHE;</span><br><span class="line"></span><br><span class="line">switch (activeNetwork.getType()) &#123;</span><br><span class="line">  case (ConnectivityManager.TYPE_WIFI):</span><br><span class="line">    PrefetchCacheSize = MAX_PREFETCH_CACHE; break;</span><br><span class="line">  case (ConnectivityManager.TYPE_MOBILE): &#123;</span><br><span class="line">    switch (tm.getNetworkType()) &#123;</span><br><span class="line">      case (TelephonyManager.NETWORK_TYPE_LTE |</span><br><span class="line">            TelephonyManager.NETWORK_TYPE_HSPAP):</span><br><span class="line">        PrefetchCacheSize *= 4;</span><br><span class="line">        break;</span><br><span class="line">      case (TelephonyManager.NETWORK_TYPE_EDGE |</span><br><span class="line">            TelephonyManager.NETWORK_TYPE_GPRS):</span><br><span class="line">        PrefetchCacheSize /= 2;</span><br><span class="line">        break;</span><br><span class="line">      default: break;</span><br><span class="line">    &#125;</span><br><span class="line">    break;</span><br><span class="line">  &#125;</span><br><span class="line">  default: break;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/05/16/Android热修复笔记/" itemprop="url">
                   Android热修复笔记
                 </a>
@@ -856,161 +1029,11 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/04/24/《Android优化专题》——优化电池续航能力/" itemprop="url">
-                  《Android优化专题》——优化电池续航能力
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-04-24T17:18:56+08:00" content="2018-04-24">
-              2018-04-24
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/Android优化专题/" itemprop="url" rel="index">
-                    <span itemprop="name">Android优化专题</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="《Android优化专题》——优化电池续航能力"><a href="#《Android优化专题》——优化电池续航能力" class="headerlink" title="《Android优化专题》——优化电池续航能力"></a>《Android优化专题》——优化电池续航能力</h1><h2 id="一、监测设备的电量和充电状态"><a href="#一、监测设备的电量和充电状态" class="headerlink" title="一、监测设备的电量和充电状态"></a>一、监测设备的电量和充电状态</h2><blockquote>
-<p>在用户充电时，程序做任何操作都不会太受到电量影响，此时就适合做一些下载，刷新数据等耗电操作。</p>
-</blockquote>
-<h3 id="1-判断当前充电状态"><a href="#1-判断当前充电状态" class="headerlink" title="1. 判断当前充电状态"></a>1. 判断当前充电状态</h3><p>BatteryManager会广播Sticky intent，我们不需要注册BroadcastReiver，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);</span><br><span class="line">Intent batteryStatus = context.registerReceiver(null, ifilter);</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// Are we charging / charged?  </span><br><span class="line">int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);</span><br><span class="line">boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||</span><br><span class="line">                     status == BatteryManager.BATTERY_STATUS_FULL;</span><br><span class="line"></span><br><span class="line">// How are we charging?  </span><br><span class="line">int chargePlug = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);</span><br><span class="line">boolean usbCharge = chargePlug == BATTERY_PLUGGED_USB;</span><br><span class="line">boolean acCharge = chargePlug == BATTERY_PLUGGED_AC;</span><br></pre></td></tr></table></figure>
-<p>通过判断设备此时是不是通过AC充电器，USB充电，不在充电状态三种情况来进行是否耗电操作，通常做法是，在使用AC充电时最大化后台更新操作，在使用USB充电时降低更新操作，不在充电状态时，最小化更新操作。</p>
-<h3 id="2-监测充电状态的改变"><a href="#2-监测充电状态的改变" class="headerlink" title="2. 监测充电状态的改变"></a>2. 监测充电状态的改变</h3><p>充电状态随时改变，通过检查充电状态的改变，来改变App的某些行为。我们需要在Manifest文件里面注册一个监听来接收ACTION_POWER_CONNECTED and ACTION_POWER_DISCONNECTED的intent。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;receiver android:name=&quot;.PowerConnectionReceiver&quot;&gt;</span><br><span class="line">  &lt;intent-filter&gt;</span><br><span class="line">    &lt;action android:name=&quot;android.intent.action.ACTION_POWER_CONNECTED&quot;/&gt;</span><br><span class="line">    &lt;action android:name=&quot;android.intent.action.ACTION_POWER_DISCONNECTED&quot;/&gt;</span><br><span class="line">  &lt;/intent-filter&gt;</span><br><span class="line">&lt;/receiver&gt;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class PowerConnectionReceiver extends BroadcastReceiver &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onReceive(Context context, Intent intent) &#123;</span><br><span class="line">        int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);</span><br><span class="line">        boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||</span><br><span class="line">                            status == BatteryManager.BATTERY_STATUS_FULL;</span><br><span class="line"></span><br><span class="line">        int chargePlug = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);</span><br><span class="line">        boolean usbCharge = chargePlug == BATTERY_PLUGGED_USB;</span><br><span class="line">        boolean acCharge = chargePlug == BATTERY_PLUGGED_AC;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="3-判断当前电池电量"><a href="#3-判断当前电池电量" class="headerlink" title="3. 判断当前电池电量"></a>3. 判断当前电池电量</h3><p>对于一些情况，获取当前电量对于我们是否要进行某个级别的后台操作十分有意义。我们可以从获取电池状态的intent中提取电池电量和容量信息。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int level = battery.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);</span><br><span class="line">int scale = battery.getIntExtra(BatteryManager.EXTRA_SCALE, -1);</span><br><span class="line">float batteryPct = level / (float)scale;</span><br></pre></td></tr></table></figure>
-<h3 id="4-检测电量的有效改变"><a href="#4-检测电量的有效改变" class="headerlink" title="4. 检测电量的有效改变"></a>4. 检测电量的有效改变</h3><p>检测电量的有效改变，包括电量进入低电量模式，充电后离开低电量模式，这两种状态的变更是值得我们关注的。我们仅仅需要监听ACTION_BATTERY_LOW与ACTION_BATTERY_OKAY.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;receiver android:name=&quot;.BatteryLevelReceiver&quot;&gt;</span><br><span class="line">&lt;intent-filter&gt;</span><br><span class="line">  &lt;action android:name=&quot;android.intent.action.ACTION_BATTERY_LOW&quot;/&gt;</span><br><span class="line">  &lt;action android:name=&quot;android.intent.action.ACTION_BATTERY_OKAY&quot;/&gt;</span><br><span class="line">  &lt;/intent-filter&gt;</span><br><span class="line">&lt;/receiver&gt;</span><br></pre></td></tr></table></figure>
-<p>对于设备进入低电量模式我们要尤其注意，这个时候的任何更新、下载等操作是非常影响用户体验，尤其还有可能下载到一半设备就已经关机了。</p>
-<h2 id="二、判断设备的停驻模式"><a href="#二、判断设备的停驻模式" class="headerlink" title="二、判断设备的停驻模式"></a>二、判断设备的停驻模式</h2><blockquote>
-<p>Android设备有好几种停驻状态，为设备充电，包括车载模式，家庭模式，数字对战模拟模式。停驻状态与充电状态是非常密切相关联的。</p>
-</blockquote>
-<h3 id="1-判断当前停驻状态"><a href="#1-判断当前停驻状态" class="headerlink" title="1. 判断当前停驻状态"></a>1. 判断当前停驻状态</h3><p>停驻状态的广播内容是sticky intent，所以不需要注册广播</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">IntentFilter ifilter = new IntentFilter(Intent.ACTION_DOCK_EVENT);</span><br><span class="line">Intent dockStatus = context.registerReceiver(null, ifilter);</span><br><span class="line"></span><br><span class="line">int dockState = battery.getIntExtra(EXTRA_DOCK_STATE, -1);</span><br><span class="line">boolean isDocked = dockState != Intent.EXTRA_DOCK_STATE_UNDOCKED;</span><br></pre></td></tr></table></figure>
-<h3 id="2-判断当前停驻类型"><a href="#2-判断当前停驻类型" class="headerlink" title="2. 判断当前停驻类型"></a>2. 判断当前停驻类型</h3><ul>
-<li>Car</li>
-<li>Desk</li>
-<li>Low-End (Analog) Desk：API level 11开始才有</li>
-<li>High-End (Digital) Desk：API level 11开始才有</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">boolean isCar = dockState == EXTRA_DOCK_STATE_CAR;</span><br><span class="line">boolean isDesk = dockState == EXTRA_DOCK_STATE_DESK ||</span><br><span class="line">                 dockState == EXTRA_DOCK_STATE_LE_DESK ||</span><br><span class="line">                 dockState == EXTRA_DOCK_STATE_HE_DESK;</span><br></pre></td></tr></table></figure>
-<h3 id="3-监测停驻状态或者类型改变"><a href="#3-监测停驻状态或者类型改变" class="headerlink" title="3. 监测停驻状态或者类型改变"></a>3. 监测停驻状态或者类型改变</h3><p>只需要像下面一样注册监听器</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;action android:name=&quot;android.intent.action.ACTION_DOCK_EVENT&quot;/&gt;</span><br></pre></td></tr></table></figure>
-<h2 id="三、判断并监测网络连接状态"><a href="#三、判断并监测网络连接状态" class="headerlink" title="三、判断并监测网络连接状态"></a>三、判断并监测网络连接状态</h2><blockquote>
-<p>通过网络的连接状况改变，相应改变app的行为，减少无谓的操作，从而延长设备的续航能力。</p>
-</blockquote>
-<h3 id="1-判断当前是否有网络连接"><a href="#1-判断当前是否有网络连接" class="headerlink" title="1. 判断当前是否有网络连接"></a>1. 判断当前是否有网络连接</h3><p>检查是否有网络连接</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ConnectivityManager cm =</span><br><span class="line">        (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);</span><br><span class="line"></span><br><span class="line">NetworkInfo activeNetwork = cm.getActiveNetworkInfo();</span><br><span class="line">boolean isConnected = activeNetwork.isConnectedOrConnecting();</span><br></pre></td></tr></table></figure>
-<h3 id="2-判断连接网络的类型"><a href="#2-判断连接网络的类型" class="headerlink" title="2. 判断连接网络的类型"></a>2. 判断连接网络的类型</h3><p>分为移动网络，WiMax，Wi-Fi，以太网等连接类型</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">boolean isWiFi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;</span><br></pre></td></tr></table></figure>
-<p>使用移动网络比WI-FI代价更大，多数情况下，移动网络下减少一些数据的获取操作，在有WIFI的情况下才开始。</p>
-<h3 id="3-监测网络连接的切换"><a href="#3-监测网络连接的切换" class="headerlink" title="3. 监测网络连接的切换"></a>3. 监测网络连接的切换</h3><p>在manifest文件中注册一个带有action的Receiver</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;action android:name=&quot;android.net.conn.CONNECTIVITY_CHANGE&quot;/&gt;</span><br></pre></td></tr></table></figure>
-<p>当然我们也没必要不间断地监听网络改变，我们只需要在完成某件任务时而进行监测即可。</p>
-<h3 id="4-切换是否开启这些Receivers来提高效率"><a href="#4-切换是否开启这些Receivers来提高效率" class="headerlink" title="4. 切换是否开启这些Receivers来提高效率"></a>4. 切换是否开启这些Receivers来提高效率</h3><p>通过使用PackageManager来切换任何一个在mainfest定义好的组件开启状态，可以使用下面的方法来开启或者关闭任何一个broadcast receiver：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ComponentName receiver = new ComponentName(context, myReceiver.class);</span><br><span class="line"></span><br><span class="line">PackageManager pm = context.getPackageManager();</span><br><span class="line"></span><br><span class="line">pm.setComponentEnabledSetting(receiver,</span><br><span class="line">        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,</span><br><span class="line">        PackageManager.DONT_KILL_APP)</span><br></pre></td></tr></table></figure>
-<p>如果判断到了网络连接已经断开，可以在这个时候关闭除了网络环境改变之外的所有Receivers</p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1051,7 +1074,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">40</span>
+              <span class="site-state-item-count">41</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

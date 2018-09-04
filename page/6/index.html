@@ -217,6 +217,123 @@
             
               
                 
+                <a class="post-title-link" href="/2018/03/24/HTTPS浅析/" itemprop="url">
+                  HTTPS浅析
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-24T10:36:44+08:00" content="2018-03-24">
+              2018-03-24
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/网络/" itemprop="url" rel="index">
+                    <span itemprop="name">网络</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="HTTPS浅析"><a href="#HTTPS浅析" class="headerlink" title="HTTPS浅析"></a>HTTPS浅析</h1><h2 id="HTTPS建立过程是什么样的？"><a href="#HTTPS建立过程是什么样的？" class="headerlink" title="HTTPS建立过程是什么样的？"></a>HTTPS建立过程是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB3f3ee5f2823f79209d4b0585ae8d2632?method=download&amp;shareKey=3e4c3f2ff983df9a0f22b5ab2082c44e" alt="HTTPS建立过程"></p>
+<p>注意几点：</p>
+<ol>
+<li>只有在连接阶段才会使用非对称加密，后续传输过程都是使用对称加密，因为非对称加密的效率要比对称加密慢很多，差值将近1000倍。</li>
+<li>证书是解决中间人是否替换密钥的问题的，因为中间人可以将自己的非对称加密的公钥传给客户端，然后用私钥解密后，再用服务端给的公钥加密，传输给服务端，这样既可以做到两边都不自知，而得知报文内容。</li>
+</ol>
+<h2 id="HTTPS中证书是什么？有什么作用？"><a href="#HTTPS中证书是什么？有什么作用？" class="headerlink" title="HTTPS中证书是什么？有什么作用？"></a>HTTPS中证书是什么？有什么作用？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6ba0e1a1bf4a5575ffdcfa87bad111d2?method=download&amp;shareKey=3bc686e3b4978e9bb12ea520de315b23" alt="数字证书"></p>
+<h2 id="客户端使用证书机构的公钥来验证服务端的数字证书，但如果客户端和服务端使用的证书认证中心（CA）不同怎么办呢？"><a href="#客户端使用证书机构的公钥来验证服务端的数字证书，但如果客户端和服务端使用的证书认证中心（CA）不同怎么办呢？" class="headerlink" title="客户端使用证书机构的公钥来验证服务端的数字证书，但如果客户端和服务端使用的证书认证中心（CA）不同怎么办呢？"></a>客户端使用证书机构的公钥来验证服务端的数字证书，但如果客户端和服务端使用的证书认证中心（CA）不同怎么办呢？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6cf10f69316dba45102e9eca3e756690?method=download&amp;shareKey=cfd068ef014e4495a009aa223d469594" alt=""></p>
+<p>从底层CA往上层CA查询，一直到找到共同的信任CA为止。</p>
+<h2 id="HTTPS设计上还有没有什么问题？"><a href="#HTTPS设计上还有没有什么问题？" class="headerlink" title="HTTPS设计上还有没有什么问题？"></a>HTTPS设计上还有没有什么问题？</h2><p>证书设计上太中心化，因为权威的根证书颁发机构就几个，一旦他们内部出了问题，那么全世界很多用HTTPS的公司和个人的信息安全就得不到保证。可以考虑用区块链来解决信任问题。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/03/23/Android中JSBridge的原理和实现/" itemprop="url">
                   Android中JSBridge的原理和实现
                 </a>
@@ -701,158 +818,11 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/03/14/《Head-first-HTML与CSS》读书笔记/" itemprop="url">
-                  《Head first HTML与CSS》读书笔记
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-14T09:38:31+08:00" content="2018-03-14">
-              2018-03-14
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/读书/" itemprop="url" rel="index">
-                    <span itemprop="name">读书</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="《Head-First-HTML与CSS》-读书笔记"><a href="#《Head-First-HTML与CSS》-读书笔记" class="headerlink" title="《Head First HTML与CSS》 读书笔记"></a>《Head First HTML与CSS》 读书笔记</h1><h3 id="img-图像"><a href="#img-图像" class="headerlink" title="img 图像"></a>img 图像</h3><ul>
-<li>JPEG 有损，适合复杂图像</li>
-<li>PNG “无损”，指不会丢掉信息，但会压缩文件大小，适合单色图像或者logo等小图像 。PNG-24支持数百万种颜色，PNG-16支持数千种，PNG-8支持256种颜色</li>
-<li>GIF “无损”，同上 ，类似PNG，唯一支持动画并得到广泛支持的图片格式。</li>
-</ul>
-<p>alt是<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">**如果把一个透明的图像放在Web页面中，则要确保这个图像的蒙版颜色与Web页面的背景色一直。**</span><br><span class="line">**透明图像可以使用PNG或者GIF格式。**</span><br><span class="line"></span><br><span class="line">图像可以用在指向其他Web页面的链接，要由图像创建一个链接，可以使用```img```元素作为```a```元素的内容，将链接放在```a```原色的href属性中。</span><br><span class="line"></span><br><span class="line">### HTML 版本</span><br><span class="line"></span><br><span class="line">在使用标准HTML时，无需指定版本号，在HTML5以后都向后兼容，所以只需 ```&lt;!doctype html&gt;</span><br></pre></td></tr></table></figure></p>
-<p>具体内容看 《Head First HTML5 Programming》</p>
-<h3 id="W3C-验证工具"><a href="#W3C-验证工具" class="headerlink" title="W3C 验证工具"></a>W3C 验证工具</h3><blockquote>
-<p>用于验证html所有标记是否都合法</p>
-</blockquote>
-<h2 id="使用meta指定字符编码"><a href="#使用meta指定字符编码" class="headerlink" title="使用meta指定字符编码"></a>使用meta指定字符编码</h2><figure class="highlight plain"><figcaption><span>charset </span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">要放在head元素中，title上面</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### Web规范</span><br><span class="line"></span><br><span class="line">一定要在head元素中包含title元素</span><br><span class="line"></span><br><span class="line">alt是img元素中的必要属性</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### font-family </span><br><span class="line"></span><br><span class="line">可以列出各种可能用到的字体，因为windows 或 mac平台可能有不同字体区别，A有B没有等等情况。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### woff（Web开放字体格式）</span><br><span class="line"></span><br><span class="line">还可以选择在服务器上托管字体</span><br><span class="line"></span><br><span class="line">1. 找到一个免费授权的字体</span><br><span class="line">2. 确保有所需字体的所有格式  比如.ttf/ .otf / .eot / .svg / .woff</span><br><span class="line">3. 把你的字体放在Web上  一般除了放置.woff还需要放置.ttf作为备选，一些老的浏览器/移动设备等不支持.woff</span><br><span class="line">4. 在CSS中增加 font-face属性</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### 调整字体大小</span><br><span class="line"></span><br><span class="line">font-size : 150%、1.2em  设置百分数/小数点时，相对的是父元素的字体大小，这里的em是字体大小比例的结尾，跟```&lt;em&gt;</span><br></pre></td></tr></table></figure>
-<p>元素没任何关系。</p>
-<p>同样也可以设置small，x-small，medium等等</p>
-<h3 id="改变字体风格"><a href="#改变字体风格" class="headerlink" title="改变字体风格"></a>改变字体风格</h3><p>比如font-style: italic; 斜体风格</p>
-<h3 id="Web颜色成色原理"><a href="#Web颜色成色原理" class="headerlink" title="Web颜色成色原理"></a>Web颜色成色原理</h3><p>三基色：红绿蓝三种颜色配比而成</p>
-<p>background-color: rgb(80%， 40%， 0%);<br>background-color: rgb(204， 102， 0);<br>background-color: #cc6600;</p>
-<h3 id="文本装饰"><a href="#文本装饰" class="headerlink" title="文本装饰"></a>文本装饰</h3><p>text-decoration : line-through; //中划线</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEBf6e2e236fc5ab172ab064db99d404c44?method=download&amp;shareKey=804afb25bc5a50f1dacb2816a070e4c5" alt="第八章总结"></p>
-<h2 id="第九章-与元素亲密接触"><a href="#第九章-与元素亲密接触" class="headerlink" title="第九章 与元素亲密接触"></a>第九章 与元素亲密接触</h2><h3 id="盒模型"><a href="#盒模型" class="headerlink" title="盒模型"></a>盒模型</h3><p>CSS将每个元素看成一个盒子，可以对这个盒子设置内外边距，边框等等参数。</p>
-<p>class 对应 .<br>id 对应 #</p>
-<p>最后链接的css覆盖前面相同属性的css</p>
-<h3 id="样式表不仅可以用在浏览器"><a href="#样式表不仅可以用在浏览器" class="headerlink" title="样式表不仅可以用在浏览器"></a>样式表不仅可以用在浏览器</h3><p>media 可以指定用样式表的设备<br><code>&lt;link href=“lounge-mobile.css” rel=“stylesheet” media=“screen” and (max-device-width: 480px)”&gt;</code><br>指定带屏幕的设备，且屏幕宽度不超过480像素</p>
-<h3 id="媒体查询"><a href="#媒体查询" class="headerlink" title="媒体查询"></a>媒体查询</h3><p>通过@media 规则来查询相应符合条件的设备才能运用以下规则</p>
-<p>IE8之前版本不支持媒体查询</p>
-<h3 id="字体规则"><a href="#字体规则" class="headerlink" title="字体规则"></a>字体规则</h3><p>如果font-family中有字体名中包含空格，要加上引号，比如 “Times New Roman”</p>
-<h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEBbb9945e91a6d0c760dc61cead9fad022?method=download&amp;shareKey=3ec7dd7514527015836ec7232335ec7c" alt="总结"></p>
-<h2 id="第10章-高级Web建设"><a href="#第10章-高级Web建设" class="headerlink" title="第10章 高级Web建设"></a>第10章 高级Web建设</h2><p><code>&lt;div&gt;</code>让元素逻辑分区。在页面中要使用<code>&lt;div&gt;</code>，但不要滥用。如果这样做有助于你将页面分解为逻辑区，从而保证结构清晰并便于指定样式，那么可以增加更多的结构。如果只是为了在页面中创建大量结构而增加<code>&lt;div&gt;</code>，就只会让页面复杂，而没有任何实际好处。</p>
-<p>padding : 0px（上）, 20px（右）, 30px(下), 10px（左）</p>
-<p><code>&lt;span&gt;</code>元素采用类似的方式建立内联内容的逻辑分组。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBc54baf6b170ae5e6b68c829828911f56?method=download&amp;shareKey=9431dc41a0e60418b4d07092062f3651" alt="第10章总结"></p>
-<h2 id="第11章-摆放元素"><a href="#第11章-摆放元素" class="headerlink" title="第11章  摆放元素"></a>第11章  摆放元素</h2><h3 id="使用流"><a href="#使用流" class="headerlink" title="使用流"></a>使用流</h3><p>流实际上就是浏览器在页面上摆放HTML元素所用的方法。</p>
-<h3 id="内联元素"><a href="#内联元素" class="headerlink" title="内联元素"></a>内联元素</h3><p>内联元素在水平方向上会相互挨着，总体上会从左上方流向右下方。</p>
-<h3 id="浏览器并排放置两个内联元素时……"><a href="#浏览器并排放置两个内联元素时……" class="headerlink" title="浏览器并排放置两个内联元素时……"></a>浏览器并排放置两个内联元素时……</h3><p>float属性尽可能地向左或向右（根据float的值）浮动一个元素，然后在它下面所有内容会绕流这个元素（所谓绕流，就是像流体一样绕着这个元素流动）</p>
-<h3 id="如何浮动元素"><a href="#如何浮动元素" class="headerlink" title="如何浮动元素"></a>如何浮动元素</h3><p>使用float属性必须设置width<br>2</p>
-<h2 id="第12章-现代HTML"><a href="#第12章-现代HTML" class="headerlink" title="第12章  现代HTML"></a>第12章  现代HTML</h2><h3 id="重新考虑HTML结构"><a href="#重新考虑HTML结构" class="headerlink" title="重新考虑HTML结构"></a>重新考虑HTML结构</h3><p>移动端浏览器设备都支持HTML5, IE8及更糟版本，safaric3及更早版本</p>
-<h2 id="第13章-表格与更多列表"><a href="#第13章-表格与更多列表" class="headerlink" title="第13章 表格与更多列表"></a>第13章 表格与更多列表</h2><p>用 <code>&lt;table&gt;</code> 代表表格，<code>&lt;tr&gt;</code>是第一行，<code>&lt;th&gt;</code>元素是表头，<code>&lt;td&gt;</code>构成单元行的每一行</p>
-<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB7e6b0b8909c553fd2346d02c83566240?method=download&amp;shareKey=ea290155980e0a26d29c96ac3e77e325" alt="小结"></p>
-<h2 id="第14章-HTML表单"><a href="#第14章-HTML表单" class="headerlink" title="第14章 HTML表单"></a>第14章 HTML表单</h2><p><code>&lt;form&gt;</code>元素如何工作？</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB5da3185c60675d3f90caf67d8f6b262b?method=download&amp;shareKey=fa555bfad25e0b4a1d5c7539f9f163eb" alt="```&lt;form&gt;```元素如何工作？"></p>
-<h3 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB2faa57a81655e6ca0efc1b4efcd829b1?method=download&amp;shareKey=91d409de8667ea13750347676cfa0815" alt="14章小结"></p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -893,7 +863,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">40</span>
+              <span class="site-state-item-count">41</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

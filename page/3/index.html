@@ -217,6 +217,115 @@
             
               
                 
+                <a class="post-title-link" href="/2018/05/26/Android-View分发机制及解决滑动冲突方案/" itemprop="url">
+                  Android View分发机制及解决滑动冲突方案
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-05-26T22:04:52+08:00" content="2018-05-26">
+              2018-05-26
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/基础知识/" itemprop="url" rel="index">
+                    <span itemprop="name">基础知识</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Android-View分发机制及解决滑动冲突方案"><a href="#Android-View分发机制及解决滑动冲突方案" class="headerlink" title="Android View分发机制及解决滑动冲突方案"></a>Android View分发机制及解决滑动冲突方案</h1><div id="article_content" class="article_content clearfix csdn-tracking-statistics" data-pid="blog" data-mod="popu_307" data-dsm="post"><br>                    <div class="markdown_views"><br>                <p></p><div class="toc"><div class="toc"><br><ul><br><li><ul><br><li><a href="#初探view事件" target="">初探View事件</a></li><br><li><a href="#事件分发" target="">事件分发</a><ul><br><li><a href="#理论知识" target="">理论知识</a></li><br><li><a href="#实战讲解" target="">实战讲解</a><ul><br><li><a href="#验证view的事件分发" target="">验证View的事件分发</a></li><br><li><a href="#验证不消耗actiondown事件" target="">验证不消耗ACTION_DOWN事件</a></li><br><li><a href="#验证-viewgroup事件拦截" target="">验证 ViewGroup事件拦截</a></li><br></ul><br></li><br><li><a href="#源码分析viewgroup" target="">源码分析ViewGroup</a><ul><br><li><a href="#activity的事件分发" target="">Activity的事件分发</a></li><br><li><a href="#viewgroup的事件拦截" target="">ViewGroup的事件拦截</a></li><br><li><a href="#viewgroup的事件分发" target="">ViewGroup的事件分发</a></li><br></ul><br></li><br></ul><br></li><br><li><a href="#view的滑动冲突" target="">View的滑动冲突</a><ul><br><li><a href="#外部拦截" target="">外部拦截</a></li><br><li><a href="#内部拦截" target="">内部拦截</a></li><br></ul><br></li><br><li><a href="#总结" target="">总结</a></li><br><iframe id="tmp_downloadhelper_iframe" style="display: none;"></iframe></ul><br></li><br></ul><br></div><br></div><br><p></p><br><br><br><br><h2 id="初探view事件"><a name="t0"></a>初探View事件</h2><br><br><p>前言View的事件分发和滑动冲突处理是老生常谈的知识了，<br>我们常说的View事件是指： 从手指亲密接触屏幕的那一刻到手指离开屏幕的这个过程，<font color="#84331f" size="4">该事件序列以down事件为起点，move事件为过程，up事件为终点</font>。 <br><br>一次down-move-up这一个事件过程我们称为一个<font color="#84331f" size="5">事件序列</font>。所以我们今天研究的对象就是<font color="#84331f" size="4">MotionEvent</font>。</p><br><br><br><br><h2 id="事件分发"><a name="t1"></a>事件分发</h2><br><br><br><br><h3 id="理论知识"><a name="t2"></a>理论知识</h3><br><br><ul><br><li><font color="#f36c21" size="4">public boolean dispatchTouchEvent(MotionEvent ev)</font> <br><br>用来分发事件，即事件序列的大门，如果事件传递到当前View的<code>onTouchEvent</code>或者是子View的<code>dispatchTouchEvent</code>，即该方法被调用了。 <br><br><font color="#f05b72">return true: </font>  表示消耗了当前事件，有可能是当前View的<code>onTouchEvent</code>或者是子View的<code>dispatchTouchEvent</code>消费了，事件终止，不再传递。 <br><br><font color="#f05b72">return false: </font> 调用父ViewGroup或则Activity的<code>onTouchEvent</code>。 （不再往下传）。<font color="#7fb80e">①另外如果不消耗ACTION_DOWN事件，那么down,move,up事件都与该View无关，交由父类处理(父类的<code>onTouchEvent</code>方法)</font> <br><br><font color="#f05b72">return super.dispatherTouchEvent:</font>  则继续往下(子View)传递，或者是调用当前View的onTouchEvent方法;</li><br></ul><br><br><p><br></p><br><br><ul><br><li><font color="#f36c21" size="4">public boolean onInterceptTouchEvent(MotionEvent ev)</font> <br><br>在<code>dispatchTouchEvent</code>内部调用，顾名思义就是判断是否拦截某个事件。(注：ViewGroup才有的方法，View因为没有子View了，所以不需要也没有该方法) <br><br><font color="#f05b72">return true: </font> ViewGroup将该事件拦截，交给自己的<code>onTouchEvent</code>处理。<font color="#7fb80e">②而且这一个事件序列（当前和其它事件）都只能由该ViewGroup处理，并且不会再调用该<code>onInterceptTouchEvent</code>方法去询问是否拦截。</font> <br><br><font color="#f05b72">return false: </font> 继续传递给子元素的<code>dispatchTouchEvent</code>处理。 <br><br><font color="#f05b72">return super.dispatherTouchEvent:</font>   事件默认不会被拦截。 </li><br></ul><br><br><p><br></p><br><br><ul><br><li><font color="#f36c21" size="4">public boolean onTouchEvent(MotionEvent ev)</font> <br><br>在<code>dispatchTouchEvent</code>内部调用 <br><br><font color="#f05b72">return true: </font> 事件消费，当前事件终止。 <br><br><font color="#f05b72">return false: </font>交给父View的<code>onTouchEvent</code>。 <br><br><font color="#f05b72">return super.dispatherTouchEvent:</font>  默认处理事件的逻辑和返回 false 时相同。</li><br></ul><br><br><p><br> <br><br>其实上面的关系可以用以下代码简单描述。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTouchEvent</span>(MotionEvent ev){<br>    <span class="hljs-keyword">boolean</span> consume = <span class="hljs-keyword">false</span>;<span class="hljs-comment">//是否消费事件</span><br>    <span class="hljs-keyword">if</span>(onInterceptTouchEvent(ev)){<span class="hljs-comment">//是否拦截事件</span><br>        consume = onTouchEvent(ev);<span class="hljs-comment">//拦截了，交给自己的View处理</span><br>    }<span class="hljs-keyword">else</span>{<br>        consume = child.dispatchTouchEvent(ev);<span class="hljs-comment">//不拦截，就交给子View处理</span><br>    }<br><br>    <span class="hljs-keyword">return</span> consume;<span class="hljs-comment">//true：消费事件，终止。false:交给父onTouchEvent处理。并不再往下传递当前事件。</span><br>}</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li></ul></pre><br><br><p>有图有真相</p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20171121120051746?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述" title=""></div><p></p><br><br><p>有点类似<a href="http://blog.csdn.net/qian520ao/article/details/73558275" title="optional title" target="_blank">责任链设计模式</a></p><br><br><p><br></p><br><br><h3 id="实战讲解"><a name="t3"></a>实战讲解</h3><br><br><br><br><h4 id="验证view的事件分发">验证View的事件分发</h4><br><br><ul><br><li>创建CustomViewGroup继承FrameLayout</li><br><li>创建CustomView继承View</li><br></ul><br><br><p>xml</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs avrasm has-numbering"><br>&lt;FrameLayout xmlns:android=<span class="hljs-string">“<a href="http://schemas.android.com/apk/res/android&quot;" target="_blank" rel="noopener">http://schemas.android.com/apk/res/android&quot;</a></span><br>    xmlns:tools=<span class="hljs-string">“<a href="http://schemas.android.com/tools&quot;" target="_blank" rel="noopener">http://schemas.android.com/tools&quot;</a></span><br>    android:layout_width=<span class="hljs-string">“match_parent”</span><br>    android:layout_height=<span class="hljs-string">“match_parent”</span><br>    tools:context=<span class="hljs-string">“qdx.viewtouchevent.MainActivity”</span>&gt;<br><br>//最外层为activity（白色背景）<br>    &lt;qdx<span class="hljs-preprocessor">.viewtouchevent</span><span class="hljs-preprocessor">.CustomViewGroup</span><br>        android:layout_width=<span class="hljs-string">“300dp”</span><br>        android:layout_height=<span class="hljs-string">“400dp”</span><br>        android:layout_gravity=<span class="hljs-string">“right”</span><br>        android:background=<span class="hljs-string">“#84bf96”</span>&gt;<br>//CustomViewGroup（绿色背景）包含CustomView（黄色背景）<br>        &lt;qdx<span class="hljs-preprocessor">.viewtouchevent</span><span class="hljs-preprocessor">.CustomView</span><br>            android:layout_width=<span class="hljs-string">“150dp”</span><br>            android:layout_height=<span class="hljs-string">“300dp”</span><br>            android:layout_gravity=<span class="hljs-string">“right”</span><br>            android:background=<span class="hljs-string">“#f2eada”</span> /&gt;<br><br>    &lt;/qdx<span class="hljs-preprocessor">.viewtouchevent</span><span class="hljs-preprocessor">.CustomViewGroup</span>&gt;<br><br>&lt;/FrameLayout&gt;<br></code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li><li style="color: rgb(153, 153, 153);">21</li><li style="color: rgb(153, 153, 153);">22</li><li style="color: rgb(153, 153, 153);">23</li><li style="color: rgb(153, 153, 153);">24</li></ul></pre><br><br><p><br></p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170820190556008?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="无事件处理者" title=""></div><p></p><br><br><p>如上图所示，down事件由activity-&gt;ViewGroup-&gt;View，因为View并没有处理down事件，所以事件消费情况为false，并且最后由View-&gt;ViewGroup-&gt;activity传递。 <br><br><br></p><br><br><h4 id="验证不消耗actiondown事件">验证不消耗ACTION_DOWN事件</h4><br><br><p>我们再来验证<font color="#7fb80e">①另外如果不消耗ACTION_DOWN事件，那么down,move,up事件系列都与该View无关，交由父类处理(父类的<code>onTouchEvent</code>方法)</font> <br><br>根据上面文字描述，因为我们的<code>CustomViewGroup</code>和<code>CustomView</code>都没有去处理任何事件，即当前序列的所有事件都<font color="#f05b72">return false</font>，所以我们也无法接收/处理其他事件(move,up)</p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170820192518176?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt=" 不消耗ACTION_DOWN事件" title=""></div><p></p><br><br><p><br></p><br><br><p>我们再将customView设置为可点击状态，即消费touch事件。<code>setClickable(true);</code></p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170820214522582?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="子View消费touch事件" title=""></div><p></p><br><br><p><br></p><br><br><h4 id="验证-viewgroup事件拦截">验证 ViewGroup事件拦截</h4><br><br><p>viewGroup将事件拦截后，<font color="#7fb80e">②而且这一个事件序列（当前和其它事件）都只能由该ViewGroup处理，并且不会再调用该<code>onInterceptTouchEvent</code>方法去询问是否拦截。</font></p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170820232415501?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="View事件拦截" title=""></div><p></p><br><br><p>通过上面的几个验证，我们越来越接近真相，用通俗的话来解释就是：</p><br><br><blockquote><br>  <p>老板发现BUG解决，一开始是由上级往下级问话。（<a href="http://blog.csdn.net/qian520ao/article/details/73558275" title="optional title" target="_blank">类似责任链设计模式</a>）</p><br><br>  <p>例如突然间出现了BUG，老板问小组A有没有空处理一下BUG(即分发ACTION_DOWN)，小组A说没时间(return false)，那么老板就不会把这个序列的BUG（ACTION_MOVE和ACTION_UP）交给小组A。如果再次出现BUG，老板还会再次询问小组A。①</p><br><br>  <p>如果你举手揽了这个BUG（即拦截），那么这一事件的BUG都交由你解决，并且相同序列的BUG老板不会问话，直接找你处理。②</p><br></blockquote><br><br><p><br></p><br><br><h3 id="源码分析viewgroup"><a name="t4"></a>源码分析ViewGroup</h3><br><br><p>源码分析这一块主要还是基于《Android开发艺术探索》这本书的引导和理解做出的总结。PS：这本书性价比很高，涵盖知识面广。</p><br><br><br><br><h4 id="activity的事件分发">Activity的事件分发</h4><br><br><p>Activity的事件分发还关系到View的绘制和加载机制，等待下一篇来更详细认识这个知识点。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">if</span> (ev.getAction() == MotionEvent.ACTION_DOWN) {<br>            onUserInteraction();<br>        }<br><br>        <span class="hljs-comment">//最终获取到顶级View(ViewGroup)分发事件</span><br>        <span class="hljs-comment">//（getWindow().getDecorView().findViewById(android.R.id.Content)）.getChildAt(0)</span><br>        <span class="hljs-keyword">if</span> (getWindow().superDispatchTouchEvent(ev)) {<br>            <span class="hljs-keyword">return</span> <span class="hljs-keyword">true</span>;<br>        }<br><br>        <span class="hljs-comment">//如果所有的View都没有处理事件，则由Activity亲自出马</span><br>        <span class="hljs-keyword">return</span> onTouchEvent(ev);<br>    }</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li></ul></pre><br><br><p><br></p><br><br><br><br><h4 id="viewgroup的事件拦截">ViewGroup的事件拦截</h4><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">            <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTouchEvent</span>(MotionEvent ev) {<br>            ……<br><br>            <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> action = ev.getAction();<br>            <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> actionMasked = action &amp; MotionEvent.ACTION_MASK;<br><br>            <span class="hljs-keyword">if</span> (actionMasked == MotionEvent.ACTION_DOWN) {<br>                cancelAndClearTouchTargets(ev);<br><br>                <span class="hljs-comment">//清除FLAG_DISALLOW_INTERCEPT，并且设置mFirstTouchTarget为null</span><br>                resetTouchState(){<br>                    <span class="hljs-keyword">if</span>(mFirstTouchTarget!=<span class="hljs-keyword">null</span>){mFirstTouchTarget==<span class="hljs-keyword">null</span>;}<br>                    mGroupFlags &amp;= ~FLAG_DISALLOW_INTERCEPT;<br>                    ……<br>                };<br>            }<br>            <span class="hljs-keyword">final</span> <span class="hljs-keyword">boolean</span> intercepted;<span class="hljs-comment">//ViewGroup是否拦截事件</span><br><br>            <span class="hljs-comment">//mFirstTouchTarget是ViewGroup中处理事件(return true)的子View</span><br>            <span class="hljs-comment">//如果没有子View处理则mFirstTouchTarget=null,ViewGroup自己处理</span><br>            <span class="hljs-keyword">if</span> (actionMasked == MotionEvent.ACTION_DOWN|| mFirstTouchTarget != <span class="hljs-keyword">null</span>) {<br>                <span class="hljs-keyword">final</span> <span class="hljs-keyword">boolean</span> disallowIntercept = (mGroupFlags &amp; FLAG_DISALLOW_INTERCEPT) != <span class="hljs-number">0</span>;<br>                <span class="hljs-keyword">if</span> (!disallowIntercept) {<br>                    intercepted = onInterceptTouchEvent(ev);<span class="hljs-comment">//onInterceptTouchEvent</span><br>                    ev.setAction(action);<br>                } <span class="hljs-keyword">else</span> {<br>                    intercepted = <span class="hljs-keyword">false</span>;<br><br>                    <span class="hljs-comment">//如果子类设置requestDisallowInterceptTouchEvent（true）</span><br>                    <span class="hljs-comment">//ViewGroup将无法拦截MotionEvent.ACTION_DOWN以外的事件</span><br>                }<br>            } <span class="hljs-keyword">else</span> {<br>                intercepted = <span class="hljs-keyword">true</span>;<br><br>                <span class="hljs-comment">//actionMasked != MotionEvent.ACTION_DOWN并且没有子View处理事件，则将事件拦截</span><br>                <span class="hljs-comment">//并且不会再调用onInterceptTouchEvent询问是否拦截</span><br>            }<br><br>            ……<br>            ……<br>}</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li><li style="color: rgb(153, 153, 153);">21</li><li style="color: rgb(153, 153, 153);">22</li><li style="color: rgb(153, 153, 153);">23</li><li style="color: rgb(153, 153, 153);">24</li><li style="color: rgb(153, 153, 153);">25</li><li style="color: rgb(153, 153, 153);">26</li><li style="color: rgb(153, 153, 153);">27</li><li style="color: rgb(153, 153, 153);">28</li><li style="color: rgb(153, 153, 153);">29</li><li style="color: rgb(153, 153, 153);">30</li><li style="color: rgb(153, 153, 153);">31</li><li style="color: rgb(153, 153, 153);">32</li><li style="color: rgb(153, 153, 153);">33</li><li style="color: rgb(153, 153, 153);">34</li><li style="color: rgb(153, 153, 153);">35</li><li style="color: rgb(153, 153, 153);">36</li><li style="color: rgb(153, 153, 153);">37</li><li style="color: rgb(153, 153, 153);">38</li><li style="color: rgb(153, 153, 153);">39</li><li style="color: rgb(153, 153, 153);">40</li><li style="color: rgb(153, 153, 153);">41</li></ul></pre><br><br><p>我们将上面的结论再次写下来，方便对照。 <br><br><font color="#7fb80e">①另外如果不消耗ACTION_DOWN事件，那么down,move,up事件都与该View无关，交由父类处理(父类的<code>onTouchEvent</code>方法)</font>（dispatchTouchEvent） <br><br><font color="#7fb80e">②而且这一个事件序列（当前和其它事件）都只能由该ViewGroup处理，并且不会再调用该<code>onInterceptTouchEvent</code>方法去询问是否拦截。</font>（onInterceptTouchEvent return true）</p><br><br><ul><br><li>首先我们分析上面第21行代码： ViewGroup在两种情况下会拦截事件（ACTION_DOWN || mFirstTouchTarget != null）所以反过来也就是说 <font color="#f15a22">I : 当ACTION_MOVE和ACTION_UP事件到来时，如果没有子元素处理事件（mFirstTouchTarget==null），则ViewGroup的onInterceptTouchEvent不会再被调用，而且同一序列中的其它事件都会默认交给它处理（第34行 intercepted=true）；</font>与上面所说的<font color="#7fb80e">①②</font>呼应。</li><br><li>紧接着22行： ViewGroup<code>disallowIntercept</code>（不拦截）的判定是<code>FLAG_DISALLOW_INTERCEPT</code>标记位，这个标记是通过子View<code>requestDisallowInterceptTouchEvent</code>方法设置的。所以我们可以得出这么一个结论<font color="#f15a22">II : 当子View处理了ACTION_DOWN事件(mFirstTouchTarget =该子View)，而且设置了FLAG_DISALLOW_INTERCEPT标记位，那么ViewGroup将无法拦截除了ACTION_DOWN以外的其它事件。</font>（在11行代码ACTION_DOWN时清除了FLAG_DISALLOW_INTERCEPT标记位，所以ViewGroup无论如何都可以选择是否拦截处理ACTION_DOWN）</li><br></ul><br><br><p>上面变着花样的又一次验证了①②个知识点，不得不说<font color="#fdb933" size="4">read the fuck source code</font>让我们可以找到一个处理滑动冲突的方法：<font color="#7fb80e" size="4">子View处理DOWN事件并且设置<code>FLAG_DISALLOW_INTERCEPT</code>标记位，就可以不让ViewGroup拦截DOWN以外的事件。</font></p><br><br><p><br></p><br><br><br><br><h4 id="viewgroup的事件分发">ViewGroup的事件分发</h4><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">        <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">final</span> View[] children = mChildren;<br><br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = childrenCount - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; i–) {<br>            <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> childIndex = getAndVerifyPreorderedIndex(childrenCount, i, customOrder);<br>            <span class="hljs-keyword">final</span> View child = getAndVerifyPreorderedView(preorderedList, children, childIndex);<br><br>            ……<br><br>            <span class="hljs-keyword">if</span> (!canViewReceivePointerEvents(child) || !isTransformedTouchPointInView(x, y, child, <span class="hljs-keyword">null</span>))<br>            {<br>                ev.setTargetAccessibilityFocus(<span class="hljs-keyword">false</span>);<br>                <span class="hljs-comment">//如果子View没有播放动画，而且点击事件的坐标在子View的区域内，继续下面的判断</span><br>                <span class="hljs-keyword">continue</span>;<br>            }<br>            <span class="hljs-comment">//判断是否有子View处理了事件</span><br>            newTouchTarget = getTouchTarget(child);<br><br>            <span class="hljs-keyword">if</span> (newTouchTarget != <span class="hljs-keyword">null</span>) {<br>                <span class="hljs-comment">//如果已经有子View处理了事件，即mFirstTouchTarget!=null，终止循环。</span><br>                newTouchTarget.pointerIdBits |= idBitsToAssign;<br>                <span class="hljs-keyword">break</span>;<br>            }<br><br>            <span class="hljs-keyword">if</span> (dispatchTransformedTouchEvent(ev, <span class="hljs-keyword">false</span>, child, idBitsToAssign)) {<br>                <span class="hljs-comment">//点击dispatchTransformedTouchEvent代码发现其执行方法实际为</span><br>                <span class="hljs-comment">//return child.dispatchTouchEvent(event); （因为child!=null）</span><br>                <span class="hljs-comment">//所以如果有子View处理了事件，我们就进行下一步：赋值</span><br><br>                ……<br><br>                newTouchTarget = addTouchTarget(child, idBitsToAssign);<br>                <span class="hljs-comment">//addTouchTarget方法里完成了对mFirstTouchTarget的赋值</span><br>                alreadyDispatchedToNewTouchTarget = <span class="hljs-keyword">true</span>;<br><br>                <span class="hljs-keyword">break</span>;<br>            }<br>        }<br>    }<br><br>    <span class="hljs-keyword">private</span> TouchTarget <span class="hljs-title">addTouchTarget</span>(@NonNull View child, <span class="hljs-keyword">int</span> pointerIdBits) {<br>        <span class="hljs-keyword">final</span> TouchTarget target = TouchTarget.obtain(child, pointerIdBits);<br>        target.next = mFirstTouchTarget;<br>        mFirstTouchTarget = target;<br>        <span class="hljs-keyword">return</span> target;<br>    }<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTransformedTouchEvent</span>(MotionEvent event, <span class="hljs-keyword">boolean</span> cancel,<br>            View child, <span class="hljs-keyword">int</span> desiredPointerIdBits) {<br>            ……<br><br>            <span class="hljs-keyword">if</span> (child == <span class="hljs-keyword">null</span>) {<br>            <span class="hljs-comment">//如果没有子View处理事件，就自己处理</span><br>                handled = <span class="hljs-keyword">super</span>.dispatchTouchEvent(event);<br>            } <span class="hljs-keyword">else</span> {<br>           <span class="hljs-comment">//有子View，调用子View的dispatchTouchEvent方法</span><br>                handled = child.dispatchTouchEvent(event);<br><br>            ……<br><br>            <span class="hljs-keyword">return</span> handled;<br>    }<br></code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li><li style="color: rgb(153, 153, 153);">21</li><li style="color: rgb(153, 153, 153);">22</li><li style="color: rgb(153, 153, 153);">23</li><li style="color: rgb(153, 153, 153);">24</li><li style="color: rgb(153, 153, 153);">25</li><li style="color: rgb(153, 153, 153);">26</li><li style="color: rgb(153, 153, 153);">27</li><li style="color: rgb(153, 153, 153);">28</li><li style="color: rgb(153, 153, 153);">29</li><li style="color: rgb(153, 153, 153);">30</li><li style="color: rgb(153, 153, 153);">31</li><li style="color: rgb(153, 153, 153);">32</li><li style="color: rgb(153, 153, 153);">33</li><li style="color: rgb(153, 153, 153);">34</li><li style="color: rgb(153, 153, 153);">35</li><li style="color: rgb(153, 153, 153);">36</li><li style="color: rgb(153, 153, 153);">37</li><li style="color: rgb(153, 153, 153);">38</li><li style="color: rgb(153, 153, 153);">39</li><li style="color: rgb(153, 153, 153);">40</li><li style="color: rgb(153, 153, 153);">41</li><li style="color: rgb(153, 153, 153);">42</li><li style="color: rgb(153, 153, 153);">43</li><li style="color: rgb(153, 153, 153);">44</li><li style="color: rgb(153, 153, 153);">45</li><li style="color: rgb(153, 153, 153);">46</li><li style="color: rgb(153, 153, 153);">47</li><li style="color: rgb(153, 153, 153);">48</li><li style="color: rgb(153, 153, 153);">49</li><li style="color: rgb(153, 153, 153);">50</li><li style="color: rgb(153, 153, 153);">51</li><li style="color: rgb(153, 153, 153);">52</li><li style="color: rgb(153, 153, 153);">53</li><li style="color: rgb(153, 153, 153);">54</li><li style="color: rgb(153, 153, 153);">55</li><li style="color: rgb(153, 153, 153);">56</li><li style="color: rgb(153, 153, 153);">57</li><li style="color: rgb(153, 153, 153);">58</li><li style="color: rgb(153, 153, 153);">59</li><li style="color: rgb(153, 153, 153);">60</li><li style="color: rgb(153, 153, 153);">61</li><li style="color: rgb(153, 153, 153);">62</li><li style="color: rgb(153, 153, 153);">63</li></ul></pre><br><br><p>上面为ViewGroup对事件的分发，主要有2点</p><br><br><ol><br><li>如果有子View，则调用子View的dispatchTouchEvent方法判断是否处理了事件，如果处理了便赋值mFirstTouchTarget，赋值成功则跳出循环。</li><br><li>ViewGroup的事件分发最终还是调用View的<code>dispatchTouchEvent</code>方法，具体如上代码所述。</li><br></ol><br><br><p>至此View的事件分发机制已经演练完毕，如果事件分发机制理解深入的话，那么处理滑动冲突便是手到擒来了。</p><br><br><p><br></p><br><br><br><br><h2 id="view的滑动冲突"><a name="t5"></a>View的滑动冲突</h2><br><br><p>关于View的滑动冲突我们就开门见山吧，因为上述的事件分发已经有足够的理论知识了，我们可以单刀赴会了。</p><br><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170822232321861?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="View的滑动冲突" title=""></div><p></p><br><br><p>针对上图，这个是比较普遍的滑动冲突事件，我们先拿它来开刀。</p><br><br><p><br> <br><br>好记性不如烂笔头，我们再次把结论搬到战场上 <br><br><font color="#7fb80e">①另外如果不消耗ACTION_DOWN事件，那么down,move,up事件都与该View无关，交由父类处理(父类的<code>onTouchEvent</code>方法)</font>（dispatchTouchEvent） <br><br><font color="#7fb80e">②而且这一个事件序列（当前和其它事件）都只能由该ViewGroup处理，并且不会再调用该<code>onInterceptTouchEvent</code>方法去询问是否拦截。</font>（onInterceptTouchEvent return true）</p><br><br><p><font color="#f15a22">I : 当ACTION_MOVE和ACTION_UP事件到来时，如果没有子元素处理事件（mFirstTouchTarget==null），则ViewGroup的onInterceptTouchEvent不会再被调用，而且同一序列中的其它事件都会默认交给它处理（第34行 intercepted=true）；</font></p><br><br><h3 id="外部拦截"><a name="t6"></a>外部拦截</h3><br><br>以下是外部拦截的伪代码：<br><br><img src="https://note.youdao.com/yws/api/personal/file/WEBa5be22d63894c59774c93ed5c167a2b3?method=download&amp;shareKey=66d44259265f8148df25421e0980fd2e" alt="外部拦截法"><br><br><br><p>外部拦截顾名思义就是由父ViewGroup对事件拦截处理（所以重写<code>onInterceptTouchEvent</code>方法即可），子View只能眼巴巴的处理父View“吃剩”的事件。主要有以下几点。</p><br><br><ul><br><li>父类不能拦截ACTION_DOWN，也就是说必须返回false，根据上述<font color="#7fb80e">①②</font>和<font color="#f15a22"> I </font>可得。</li><br><li>父类在ACTION_MOVE的时候根据需求，判断是否拦截。</li><br><li>ACTION_UP事件建议返回false或者<code>super.onInterceptTouchEvent</code>，因为如果已经拦截的话，那么并不会调用<code>onInterceptTouchEvent</code>方法再次询问。如果不拦截，而且返回true，子View可能就无法触发onClick等相关事件。</li><br></ul><br><br><p>ViewGroup ： 需要重写<code>onInterceptTouchEvent</code>，判断是否拦截即可。 <br><br>但是有一种情况：用户正在水平滑动（事件已拦截给ViewGroup），但是水平滑动停止前用户再进行竖直滑动，下面代码我用<code>isSolve</code>进行简单的处理。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">    <span class="hljs-keyword">private</span> <span class="hljs-keyword">boolean</span> isIntercept;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">boolean</span> isSolve;<span class="hljs-comment">//是否完成了拦截判断，如果决定拦截，那么同系列事件就不能设置为不拦截</span><br><br>    <span class="hljs-annotation">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">onInterceptTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">switch</span> (ev.getAction()) {<br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_DOWN:<br>                mPointGapF.x = ev.getX();<br>                mPointGapF.y = ev.getY();<br>                <span class="hljs-keyword">return</span> <span class="hljs-keyword">false</span>;<span class="hljs-comment">//down的时候拦截后，就只能交给自己处理了</span><br><br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_MOVE:<br>                <span class="hljs-keyword">if</span> (!isSolve) {<span class="hljs-comment">//是否已经决定拦截/不拦截？</span><br>                    isIntercept = (Math.abs(ev.getX() - mPointGapF.x) &gt; Math.abs(ev.getY() - mPointGapF.y)<em><span class="hljs-number">2</span>);<span class="hljs-comment">//如果是左右滑动，且水平角度小于30°，就拦截</span><br>                    isSolve = <span class="hljs-keyword">true</span>;<br>                }<br>                <span class="hljs-keyword">return</span> isIntercept;<span class="hljs-comment">//如果是左右滑动，就拦截</span><br>        }<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.onInterceptTouchEvent(ev);<br>    }<br><br>    <span class="hljs-annotation">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">onTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">switch</span> (ev.getAction()) {<br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_MOVE:<br>                scrollBy((<span class="hljs-keyword">int</span>) (mPointGapF.x - ev.getX()), <span class="hljs-number">0</span>);<br><br>                mPointGapF.x = ev.getX();<br>                mPointGapF.y = ev.getY();<br>                <span class="hljs-keyword">break</span>;<br>        }<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.onTouchEvent(ev);<br>    }</em></code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li><li style="color: rgb(153, 153, 153);">21</li><li style="color: rgb(153, 153, 153);">22</li><li style="color: rgb(153, 153, 153);">23</li><li style="color: rgb(153, 153, 153);">24</li><li style="color: rgb(153, 153, 153);">25</li><li style="color: rgb(153, 153, 153);">26</li><li style="color: rgb(153, 153, 153);">27</li><li style="color: rgb(153, 153, 153);">28</li><li style="color: rgb(153, 153, 153);">29</li><li style="color: rgb(153, 153, 153);">30</li><li style="color: rgb(153, 153, 153);">31</li><li style="color: rgb(153, 153, 153);">32</li><li style="color: rgb(153, 153, 153);">33</li></ul></pre><br><br><p>子View ： 和子View没有多大关系，只需要处理自身的移动操作即可。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs avrasm has-numbering">public boolean onTouchEvent(MotionEvent ev) {<br>        switch (ev<span class="hljs-preprocessor">.getAction</span>()) {<br>            case MotionEvent<span class="hljs-preprocessor">.ACTION</span>_DOWN:<br>                mPointGapF<span class="hljs-preprocessor">.x</span> = ev<span class="hljs-preprocessor">.getX</span>()<span class="hljs-comment">;</span><br>                mPointGapF<span class="hljs-preprocessor">.y</span> = ev<span class="hljs-preprocessor">.getY</span>()<span class="hljs-comment">;</span><br>                <span class="hljs-keyword">break</span><span class="hljs-comment">;</span><br>            case MotionEvent<span class="hljs-preprocessor">.ACTION</span>_MOVE:<br>                scrollBy(<span class="hljs-number">0</span>, (int) (mPointGapF<span class="hljs-preprocessor">.y</span> - ev<span class="hljs-preprocessor">.getY</span>()))<span class="hljs-comment">;</span><br>                mPointGapF<span class="hljs-preprocessor">.x</span> = ev<span class="hljs-preprocessor">.getX</span>()<span class="hljs-comment">;</span><br>                mPointGapF<span class="hljs-preprocessor">.y</span> = ev<span class="hljs-preprocessor">.getY</span>()<span class="hljs-comment">;</span><br>                <span class="hljs-keyword">break</span><span class="hljs-comment">;</span><br>        }<br>        return true<span class="hljs-comment">;</span><br>    }</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li></ul></pre><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170823135102485?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="外部拦截冲突" title=""></div><p></p><br><br><p></p><div> <br><br><img src="https://img-blog.csdn.net/20170823134034862?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcWlhbjUyMGFv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="外部拦截冲突" title=""></div><p></p><br><br><p><br></p><br><br><h3 id="内部拦截"><a name="t7"></a>内部拦截</h3><br><br><br>以下是内部拦截方法的伪代码：<br><br><img src="https://note.youdao.com/yws/api/personal/file/WEB895b11d40d1cdddcac2f098c30ae4652?method=download&amp;shareKey=6f0bd71a1c4bb9db90f7e5eef112612a" alt=""><br><br><p><font color="#f15a22">II : 当子View处理了ACTION_DOWN事件(mFirstTouchTarget =该子View)，而且设置了FLAG_DISALLOW_INTERCEPT标记位，那么ViewGroup将无法拦截除了ACTION_DOWN以外的其它事件。</font></p><br><br><p>ViewGroup ： 只需在<code>onInterceptTouchEvent</code>MotionEvent.ACTION_DOWN时候不拦截，其他时候都需要拦截，否则父类的<code>onTouchEvent</code>就不能处理任何事件了。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">onInterceptTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">switch</span> (ev.getAction()) {<br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_DOWN:<br>                <span class="hljs-keyword">return</span> <span class="hljs-keyword">false</span>;<span class="hljs-comment">//down的时候拦截后，就只能交给自己处理了</span><br>        }<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">true</span>;<span class="hljs-comment">//如果不拦截，父类的onTouchEvent方法就无事件可以处理。</span><br>    }<br><br>    <span class="hljs-annotation">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">onTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">switch</span> (ev.getAction()) {<br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_MOVE:<br>                scrollBy((<span class="hljs-keyword">int</span>) (mPointGapF.x - ev.getX()), <span class="hljs-number">0</span>);<br><br>                mPointGapF.x = ev.getX();<br>                mPointGapF.y = ev.getY();<br>                <span class="hljs-keyword">break</span>;<br>        }<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.onTouchEvent(ev);<br>    }</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li></ul></pre><br><br><p>子View ： 需要在ACTION_DOWN事件设置getParent().requestDisallowInterceptTouchEvent(true)，并且在ACTION_MOVE的时候通过判断是否禁止父类的拦截。</p><br><br><br><br><pre class="prettyprint" name="code"><code class="hljs java has-numbering">    <span class="hljs-keyword">private</span> <span class="hljs-keyword">boolean</span> isSolve;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">boolean</span> isIntercept;<br><br>    <span class="hljs-annotation">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">dispatchTouchEvent</span>(MotionEvent ev) {<br>        <span class="hljs-keyword">switch</span> (ev.getAction()) {<br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_DOWN:<br>                isIntercept = <span class="hljs-keyword">false</span>;<br>                isSolve = <span class="hljs-keyword">false</span>;<br>                mPointGapF.x = ev.getX();<br>                mPointGapF.y = ev.getY();<br>                getParent().requestDisallowInterceptTouchEvent(<span class="hljs-keyword">true</span>);<br>                <span class="hljs-keyword">break</span>;<br><br>            <span class="hljs-keyword">case</span> MotionEvent.ACTION_MOVE:<br>                <span class="hljs-keyword">if</span> (!isSolve) {<br>                    isSolve = <span class="hljs-keyword">true</span>;<br>                    isIntercept = (Math.abs(ev.getX() - mPointGapF.x) &lt; Math.abs(ev.getY() - mPointGapF.y)  <span class="hljs-number">2</span>);<br>                    getParent().requestDisallowInterceptTouchEvent(isIntercept);<br>                }<br>                <span class="hljs-keyword">break</span>;<br>        }<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.dispatchTouchEvent(ev);<br>    }</code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li><li style="color: rgb(153, 153, 153);">6</li><li style="color: rgb(153, 153, 153);">7</li><li style="color: rgb(153, 153, 153);">8</li><li style="color: rgb(153, 153, 153);">9</li><li style="color: rgb(153, 153, 153);">10</li><li style="color: rgb(153, 153, 153);">11</li><li style="color: rgb(153, 153, 153);">12</li><li style="color: rgb(153, 153, 153);">13</li><li style="color: rgb(153, 153, 153);">14</li><li style="color: rgb(153, 153, 153);">15</li><li style="color: rgb(153, 153, 153);">16</li><li style="color: rgb(153, 153, 153);">17</li><li style="color: rgb(153, 153, 153);">18</li><li style="color: rgb(153, 153, 153);">19</li><li style="color: rgb(153, 153, 153);">20</li><li style="color: rgb(153, 153, 153);">21</li><li style="color: rgb(153, 153, 153);">22</li><li style="color: rgb(153, 153, 153);">23</li><li style="color: rgb(153, 153, 153);">24</li></ul></pre><br><br><p>最终的效果图和外部拦截的效果一致，这里就不再次贴出来了。 <br><br><br></p><br><br><br>## 一图看懂分发机制<br><br><img src="https://note.youdao.com/yws/api/personal/file/WEBe578b38e326c625af6d4bf41d73cd0c6?method=download&amp;shareKey=fc0868e4d6f2132ec5353a4a77e46a5a" alt="一图看懂分发机制"><br><br><br><h2 id="总结"><a name="t8"></a>总结</h2><br><br><p>通过理论和实战，更清晰的了解了事件的分发机制，从而这些理论知识使得我们更有效的处理滑动冲突事件，所以以后只要再遇见滑动冲突事件，再次巩固View的事件分发，万变不离其宗，定能手到擒来解决这一问题！</p>            </div><br>            <link rel="stylesheet" href="https://csdnimg.cn/release/phoenix/template/css/markdown_views-ea0013b516.css"><br>                </div>
+
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/05/23/《Android优化专题》——-优化下载效率/" itemprop="url">
                   《Android优化专题》—— 优化下载效率
                 </a>
@@ -857,178 +966,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/05/04/HTTP浅析（二）HTTP结构/" itemprop="url">
-                  HTTP浅析（二）HTTP结构
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-05-04T14:33:40+08:00" content="2018-05-04">
-              2018-05-04
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/基础知识/" itemprop="url" rel="index">
-                    <span itemprop="name">基础知识</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="HTTP浅析（二）HTTP结构"><a href="#HTTP浅析（二）HTTP结构" class="headerlink" title="HTTP浅析（二）HTTP结构"></a>HTTP浅析（二）HTTP结构</h1><blockquote>
-<p>本篇主要介绍HTTP服务器、代理、缓存等</p>
-</blockquote>
-<h2 id="web服务器主流有哪几种？"><a href="#web服务器主流有哪几种？" class="headerlink" title="web服务器主流有哪几种？"></a>web服务器主流有哪几种？</h2><ul>
-<li>免费的Apache软件占据了所有web服务器大约60%的市场</li>
-<li>微软的Web服务器占据了另外30%</li>
-<li>Sun的iPlanet占据了另外的3%</li>
-</ul>
-<p><strong>数据仅供参考</strong></p>
-<h2 id="web服务器会做些什么？"><a href="#web服务器会做些什么？" class="headerlink" title="web服务器会做些什么？"></a>web服务器会做些什么？</h2><ol>
-<li>建立连接——接受一个客户端连接，如果不希望与这个客户端连接，就将其关闭。</li>
-<li>接收请求——从网络中读取一条HTTP请求报文</li>
-<li>处理请求——对请求报文进行解释，并采取行动。</li>
-<li>访问资源——访问报文中指定的资源。</li>
-<li>构建资源——创建带有正确首部的HTTP响应报文。</li>
-<li>发送响应——将响应回送给客户端</li>
-<li>记录事物处理过程——将与已完成事物有关的内容记录在一个日志文件中。</li>
-</ol>
-<h2 id="代理和网关有什么区别？"><a href="#代理和网关有什么区别？" class="headerlink" title="代理和网关有什么区别？"></a>代理和网关有什么区别？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB53413a837c5da0d75510df33c6728a07?method=download&amp;shareKey=fc560d0b484a2350a1895cd1bc2ff918" alt="代理和网关的区别"></p>
-<p>代理连接的是两个或多个使用相同协议的应用程序，而网关连接的是两个或者多个不同协议的端点。<strong>区别在于网关的前后协议不同</strong></p>
-<h2 id="我们为什么要使用代理？"><a href="#我们为什么要使用代理？" class="headerlink" title="我们为什么要使用代理？"></a>我们为什么要使用代理？</h2><ul>
-<li>儿童过滤器，可以利用过滤器代理来阻止儿童访问成人内容</li>
-<li>文档访问控制，可以用代理服务器在大量Web服务器和Web资源之间实现统一的访问控制策略，创建审核跟踪机制。</li>
-<li>安全防火墙，网络安全工程师会使用代理服务器来提高安全性。</li>
-<li>Web缓存，代理缓存维护了常用文档的本地副本，将它们按需提供，减少缓慢且昂贵的因特网通信。</li>
-<li>反向代理，代理可以假扮Web服务器。这些被称为替代物或者反向代理的代理接收发给Web服务器的真实请求，它们可以发起与其他服务器的通信，以便按需定位所请求的内容。<img src="https://note.youdao.com/yws/api/personal/file/WEB6203273834d2ab2ca34dc6925e688d16?method=download&amp;shareKey=be2b266753fa27bcb7c3bd3ea0305295" alt="反向代理"></li>
-<li>内容路由器，代理服务器可以作为“内容路由器”使用，根据因特网流量状况以及内容类型将请求导向特定的Web服务器。</li>
-<li>转码器，可以修改内容的主体格式。在这些数据表示法之间进行的透明转换被称为转码。</li>
-</ul>
-<h2 id="代理是如何获取流量的？"><a href="#代理是如何获取流量的？" class="headerlink" title="代理是如何获取流量的？"></a>代理是如何获取流量的？</h2><ul>
-<li>修改客户端，支持手工和自动的代理配置，将客户端的HTTP请求有意地发送给代理，而不是原始服务器。</li>
-<li>修改网络，网络基础设施在客户端不知情的情况，对其进行拦截，这种代理称为“拦截代理”。</li>
-<li>修改DNS的命名空间，放在Web服务器的代理服务器——替代物，假扮服务器的host和ip地址，所有的请求就会发送给替代物，通过编辑DNS名称列表。</li>
-<li>修改Web服务器，通过HTTP重定向命令，将HTTP请求重定向到代理上去。</li>
-</ul>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEBe669168e6c40e032e8eebfb03fa00399?method=download&amp;shareKey=019b8fac2e513182bca57a96d8fefbbc" alt="代理是如何获取流量"></p>
-<h2 id="客户端发给代理的URL与发给服务器的URL有什么不同？"><a href="#客户端发给代理的URL与发给服务器的URL有什么不同？" class="headerlink" title="客户端发给代理的URL与发给服务器的URL有什么不同？"></a>客户端发给代理的URL与发给服务器的URL有什么不同？</h2><ol>
-<li>没有设置客户端使用代理时，它会发送部分URI</li>
-<li>设置客户端使用代理时，它会发送完整URI</li>
-</ol>
-<h2 id="Web缓存有哪些好处？"><a href="#Web缓存有哪些好处？" class="headerlink" title="Web缓存有哪些好处？"></a>Web缓存有哪些好处？</h2><ul>
-<li>缓存减少了冗余的数据传输，节省了你的网络费用。</li>
-<li>缓存缓解了网络瓶颈的问题。不需要更多的带宽就能够更快地加载页面。</li>
-<li>缓存降低了对原始服务器的要求。服务器可以更快地响应，避免过载的出现。</li>
-<li>缓存降低了距离时延，因为从较远的地方加载页面会更慢一些。</li>
-<li>缓存在解决瞬间拥塞时显得很重要，类似场景比如突发的新闻事件，大量的人几乎同时搜索一个事件，过多的流量峰值可能会造成Web服务器瞬间瘫痪。</li>
-</ul>
-<h2 id="缓存分为哪两种？"><a href="#缓存分为哪两种？" class="headerlink" title="缓存分为哪两种？"></a>缓存分为哪两种？</h2><ul>
-<li>缓存命中，直接取缓存数据。</li>
-<li>缓存未命中，需要从原始服务器获取数据。</li>
-</ul>
-<h2 id="缓存再验证是什么？"><a href="#缓存再验证是什么？" class="headerlink" title="缓存再验证是什么？"></a>缓存再验证是什么？</h2><p>原始服务器的内容可能会发生变化，缓存需要时不时对其进行检测，看看保存的副本是否仍然是服务器的最新副本。“新鲜度检测”被称为HTTP再验证。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB3d4f91be96f1c4293b99bb891dfd783e?method=download&amp;shareKey=cc7737dd187bdc1c61d54d81d335a877" alt="缓存再验证"></p>
-<p>缓存再验证时，这种方式确实比和原始服务器核对要慢，因为没有从服务器中获取数据，又比未命中情况要快。</p>
-<h2 id="缓存的命中率一般是多少？"><a href="#缓存的命中率一般是多少？" class="headerlink" title="缓存的命中率一般是多少？"></a>缓存的命中率一般是多少？</h2><p>都希望缓存命中率越高越好，实际上对于现在中等规模的缓存来说，40%已经很不错了，能够显著地提升性能，减少流量了。</p>
-<h2 id="if-modified-since失败会怎么样？"><a href="#if-modified-since失败会怎么样？" class="headerlink" title="if-modified-since失败会怎么样？"></a>if-modified-since失败会怎么样？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB18a92614cfebb53440fd75c7af210d1a?method=download&amp;shareKey=949295f354ec7d9af6f2a7f98f12acf6" alt="if-modified-since失败"></p>
-<h2 id="网关有什么用？"><a href="#网关有什么用？" class="headerlink" title="网关有什么用？"></a>网关有什么用？</h2><p>网关可以作为某种翻译器使用，网关是资源和应用程序之间的粘合剂。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB8998a6d50acb662be32a0c2b6dbd4ccb?method=download&amp;shareKey=1a834af067bc263ad9dc026c265a0674" alt=""></p>
-<h2 id="为什么SSL需要搭载HTTP进行传输？"><a href="#为什么SSL需要搭载HTTP进行传输？" class="headerlink" title="为什么SSL需要搭载HTTP进行传输？"></a>为什么SSL需要搭载HTTP进行传输？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB6b10bdf7dc7589c88d9815ca57e2c65a?method=download&amp;shareKey=01d6de53e06328f1422e6550ed536df5" alt=""></p>
-<h2 id="HTTP在发展中存在哪些问题？"><a href="#HTTP在发展中存在哪些问题？" class="headerlink" title="HTTP在发展中存在哪些问题？"></a>HTTP在发展中存在哪些问题？</h2><ul>
-<li>复杂性，HTTP相当复杂，而且特性之间是相互依存的，比如处理连接管理，报文处理等等。</li>
-<li>可扩展性，HTTP很难实现增式扩展。很多传下来的HTTP都没有自助的功能性扩展，使协议的扩展无法兼容。</li>
-<li>有些部分效率不高，其中很多低效特性会随着高时延，低吞吐量的无线访问技术而变得更加严重。</li>
-<li>传输依赖性，HTTP对于底层替换TCP/IP有很大的依赖性，想要替换底层的传输协议并没有什么很好的办法。</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1074,7 +1011,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">41</span>
+              <span class="site-state-item-count">42</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1091,7 +1028,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

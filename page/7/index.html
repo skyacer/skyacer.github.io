@@ -217,6 +217,117 @@
             
               
                 
+                <a class="post-title-link" href="/2018/03/16/责任链模式/" itemprop="url">
+                  责任链模式
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-16T19:34:14+08:00" content="2018-03-16">
+              2018-03-16
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/设计模式/" itemprop="url" rel="index">
+                    <span itemprop="name">设计模式</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="责任链模式"><a href="#责任链模式" class="headerlink" title="责任链模式"></a>责任链模式</h1><h2 id="什么是责任链模式？"><a href="#什么是责任链模式？" class="headerlink" title="什么是责任链模式？"></a>什么是责任链模式？</h2><p>责任链模式（Chain of Responsibility）是一种对象的行为模式。在责任链模式里，很多对象由每一个对象对其下家的引用而连接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。发出这个请求的客户端并不知道链上的哪一个对象最终处理这个请求，这使得系统可以在不影响客户端的情况下动态地重新组织和分配责任。</p>
+<h2 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB2f74e00f1f1a7694b473eaf7ecbc01e6?method=download&amp;shareKey=b998dd209a69d50e3ee4e5f4c884d60b" alt="责任链模式类图"></p>
+<h2 id="Handler接口"><a href="#Handler接口" class="headerlink" title="Handler接口"></a>Handler接口</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public abstract class Handler &#123;</span><br><span class="line">    protected Handler nextHandler;</span><br><span class="line">    public void setHandler(Handler nextHandler)&#123;</span><br><span class="line">        this.nextHandler = nextHandler;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public abstract void handle(int request);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="ConcreteHandler实现类"><a href="#ConcreteHandler实现类" class="headerlink" title="ConcreteHandler实现类"></a>ConcreteHandler实现类</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class ConcreteHandler1 extends Handler &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void handle(int request) &#123;</span><br><span class="line">        if (request&lt;10)&#123;</span><br><span class="line">            System.out.println(&quot;handler1 receive:&quot;+request);</span><br><span class="line">        &#125;else &#123;</span><br><span class="line">            nextHandler.handle(request);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Client调用类"><a href="#Client调用类" class="headerlink" title="Client调用类"></a>Client调用类</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class Client &#123;</span><br><span class="line">    public static void main(String[] args)&#123;</span><br><span class="line">        Handler handler1 = new ConcreteHandler1();</span><br><span class="line">        Handler handler2 = new ConcreteHandler2();</span><br><span class="line">        Handler handler3 = new ConcreteHandler3();</span><br><span class="line"></span><br><span class="line">        handler1.setHandler(handler2);</span><br><span class="line">        handler2.setHandler(handler3);</span><br><span class="line"></span><br><span class="line">        int[] n=&#123;1,23,4,5,6,12,15,16,18,21,25,32,36&#125;;</span><br><span class="line"></span><br><span class="line">        for (int i=0;i&lt;n.length;i++)&#123;</span><br><span class="line">            handler1.handle(n[i]);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/03/15/Smali浅析及dex-java互转/" itemprop="url">
                   Smali浅析及dex,java互转
                 </a>
@@ -747,209 +858,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/02/28/直播技术点之编解码基础（一）——-硬编码之MediaCodec/" itemprop="url">
-                  直播技术点之编解码基础（一）—— 硬编码之MediaCodec
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-02-28T10:44:28+08:00" content="2018-02-28">
-              2018-02-28
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/programming/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文主要介绍直播所需要的编解码基础，实际的运用，以及在严选项目中需要做的工作。</p>
-<h2 id="什么是码？"><a href="#什么是码？" class="headerlink" title="什么是码？"></a>什么是码？</h2><p>这里的码指码流(Data Rate)，是指视频文件在单位时间内使用的数据流量，也叫码率或码流率，通俗一点的理解就是取样率,是视频编码中画面质量控制中最重要的部分，一般我们用的单位是kb/s或者Mb/s。一般来说同样分辨率下，视频文件的码流越大，压缩比就越小，画面质量就越高。码流越大，说明单位时间内取样率越大，数据流，精度就越高，处理出来的文件就越接近原始文件，图像质量越好，画质越清晰，要求播放设备的解码能力也越高。</p>
-<h2 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h2><p>编码又分为硬编码和软编码，下面会着重介绍。</p>
-<p>整个视频直播分为以下几个步骤：<br>采集—&gt;处理—&gt;编码和封装—&gt;推流到服务器—&gt;服务器流分发—&gt;播放器流播放</p>
-<p>如下图所示：</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/4287000-775884226a042cf8?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="编码"></p>
-<p>如果把整个流媒体比喻成一个物流系统，那么编解码就是其中配货和装货的过程，这个过程非常重要，它的速度和压缩比对物流系统的意义非常大，影响物流系统的整体速度和成本。同样，对流媒体传输来说，编码也非常重要，它的编码性能、编码速度和编码压缩比会直接影响整个流媒体传输的用户体验和传输成本。</p>
-<h3 id="为什么要编码？"><a href="#为什么要编码？" class="headerlink" title="为什么要编码？"></a>为什么要编码？</h3><p><img src="http://upload-images.jianshu.io/upload_images/4287000-8c8623fce31f690e?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="意义"></p>
-<p>如上所示，10Mbps的带宽传输上述7s视频需要11分钟，而经过H.264编码之后，传输只需要500ms，时间上前后差距达1000多倍，可以满足实时传输的需求，所以从视频采集传感器采集来的原始视频势必要经过视频编码。</p>
-<h3 id="基本原理"><a href="#基本原理" class="headerlink" title="基本原理"></a>基本原理</h3><p>为什么巨大的原始视频可以编码成很小的视频呢?这其中的技术是什么呢?<strong>核心思想就是去除冗余信息</strong></p>
-<ol>
-<li>空间冗余：图像相邻像素之间有较强的相关性 </li>
-<li>时间冗余：视频序列的相邻图像之间内容相似 </li>
-<li>编码冗余：不同像素值出现的概率不同 </li>
-<li>视觉冗余：人的视觉系统对某些细节不敏感 </li>
-<li>知识冗余：规律性的结构可由先验知识和背景知识得到</li>
-</ol>
-<h3 id="编码标准的选择"><a href="#编码标准的选择" class="headerlink" title="编码标准的选择"></a>编码标准的选择</h3><p>经过数十年的发展，从开始的只支持帧内编码演进到现如今的H.265和VP9为代表的新一代编码标准，下面是一些常见的视频编码标准： </p>
-<ol>
-<li>H.264/AVC </li>
-<li>HEVC/H.265 </li>
-<li>VP8 </li>
-<li>VP9 </li>
-<li>FFmpeg </li>
-<li>…</li>
-</ol>
-<p>下面是一些常见的音频编码标准</p>
-<ol>
-<li>MP3</li>
-<li>AAC</li>
-<li>WMA</li>
-<li>PCM</li>
-<li>…</li>
-</ol>
-<h3 id="封装"><a href="#封装" class="headerlink" title="封装"></a>封装</h3><p>　　封装就是媒体的容器，而容器就是把编码器生成的多媒体内容(视频，音频，字幕，章节信息等)混合封装在一起的标准。容器使得不同多媒体内容同步播放变得很简单，而容器的另一个作用就是为多媒体内容提供索引，也就是说如果没有容器存在的话一部影片你只能从一开始看到最后，不能拖动进度条，而且打开的视频也没有声音。下面是几种常见的封装格式： </p>
-<ol>
-<li>AVI 格式(后缀为 .avi) </li>
-<li>DV-AVI 格式(后缀为 .avi) </li>
-<li>QuickTime File Format 格式(后缀为 .mov) </li>
-<li>MPEG 格式(文件后缀可以是 .mpg .mpeg .mpe .dat .vob .asf .3gp .mp4等) </li>
-<li>WMV 格式(后缀为.wmv .asf) </li>
-<li>Real Video 格式(后缀为 .rm .rmvb) </li>
-<li>Flash Video 格式(后缀为 .flv) </li>
-<li>Matroska 格式(后缀为 .mkv) </li>
-<li>MPEG2-TS 格式 (后缀为 .ts) </li>
-</ol>
-<p>　　目前，我们在流媒体传输，尤其是直播中主要采用的就是 FLV 和 MPEG2-TS 格式，分别用于 RTMP/HTTP-FLV 和 HLS 协议。</p>
-<h2 id="硬件编码"><a href="#硬件编码" class="headerlink" title="硬件编码"></a>硬件编码</h2><p>在Android 4.1 之前，Android是没有提供硬件编码的API，所以之前都是采用FFMPEG来进行软编码的，而FFMPEG都是用C语言开发的，对于阅读源码及学习都有一定的门槛。对于同一平台，同一硬件环境，硬件编码速度快于软件编码，CPU占有率更低，所以<strong>能用硬件编码的条件下，我们尽量用硬件编码。</strong></p>
-<h2 id="MediaCodec"><a href="#MediaCodec" class="headerlink" title="MediaCodec"></a>MediaCodec</h2><p>　　MediaCodec类可用于访问Android底层的多媒体编解码器，例如，编码器/解码器组件。它是Android底层多媒体支持基础架构的一部分（通常与MediaExtractor, MediaSync, MediaMuxer, MediaCrypto, MediaDrm, Image, Surface, 以及AudioTrack一起使用）。</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/4287000-475e318a04d02c44?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="MediaCodec"></p>
-<p>　　从广义上讲，编解码器就是处理输入数据来产生输出数据。MediaCodec采用异步方式处理数据，并且使用了一组输入输出缓存（input and output buffers）。简单来讲，你请求或接收到一个空的输入缓存（input buffer），向其中填充满数据并将它传递给编解码器处理。编解码器处理完这些数据并将处理结果输出至一个空的输出缓存（output buffer）中。最终，你请求或接收到一个填充了结果数据的输出缓存（output buffer），使用完其中的数据，并将其释放给编解码器再次使用。</p>
-<h3 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h3><p>编解码器可以处理三种类型的数据：</p>
-<ol>
-<li>压缩数据（即为经过H254. H265. 等编码的视频数据或AAC等编码的音频数据）</li>
-<li>原始音频数据</li>
-<li>原始视频数据。</li>
-</ol>
-<p>三种类型的数据均可以利用ByteBuffers进行处理，但是对于原始视频数据应提供一个Surface以提高编解码器的性能。Surface直接使用本地视频数据缓存（native video buffers），而没有映射或复制数据到ByteBuffers，因此，这种方式会更加高效。在使用Surface的时候，通常不能直接访问原始视频数据，但是可以使用ImageReader类来访问非安全的解码（原始）视频帧。这仍然比使用ByteBuffers更加高效，因为一些本地缓存（native buffer）可以被映射到 direct ByteBuffers。当使用ByteBuffer模式，你可以利用Image类和getInput/OutputImage(int)方法来访问到原始视频数据帧。</p>
-<h4 id="压缩缓存"><a href="#压缩缓存" class="headerlink" title="压缩缓存"></a>压缩缓存</h4><p>输入缓存（对于解码器）和输出缓存（对于编码器）中包含由多媒体格式类型决定的压缩数据。对于视频类型是单个压缩的视频帧。对于音频数据通常是单个可访问单元(一个编码的音频片段，通常包含几毫秒的遵循特定格式类型的音频数据)，但这种要求也不是十分严格，一个缓存内可能包含多个可访问的音频单元。在这两种情况下，缓存不会在任意的字节边界上开始或结束，而是在帧或可访问单元的边界上开始或结束。</p>
-<h4 id="原始音频缓存（Raw-Audio-Buffers）"><a href="#原始音频缓存（Raw-Audio-Buffers）" class="headerlink" title="原始音频缓存（Raw Audio Buffers）"></a>原始音频缓存（Raw Audio Buffers）</h4><p>原始的音频数据缓存包含完整的PCM（脉冲编码调制）音频数据帧，这是每一个通道按照通道顺序的一个样本。每一个样本是一个按照本机字节顺序的16位带符号整数（16-bit signed integer in native byte order）。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">short[] getSamplesForChannel(MediaCodec codec, int bufferId, int channelIx) &#123;</span><br><span class="line">　　ByteBuffer outputBuffer = codec.getOutputBuffer(bufferId);</span><br><span class="line">　　MediaFormat format = codec.getOutputFormat(bufferId);</span><br><span class="line">　　ShortBuffer samples = outputBuffer.order(ByteOrder.nativeOrder()).asShortBuffer();</span><br><span class="line">　　int numChannels = formet.getInteger(MediaFormat.KEY_CHANNEL_COUNT);</span><br><span class="line">　　if (channelIx &lt; 0 || channelIx &gt;= numChannels) &#123;</span><br><span class="line">　　　　return null;</span><br><span class="line">　　&#125;</span><br><span class="line">　　short[] res = new short[samples.remaining() / numChannels];</span><br><span class="line">　　for (int i = 0; i &lt; res.length; ++i) &#123;</span><br><span class="line">　　　　res[i] = samples.get(i * numChannels + channelIx);</span><br><span class="line">　　&#125;</span><br><span class="line">　　return res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="原始视频缓存（Raw-Video-Buffers）"><a href="#原始视频缓存（Raw-Video-Buffers）" class="headerlink" title="原始视频缓存（Raw Video Buffers）"></a>原始视频缓存（Raw Video Buffers）</h4><p>　　在ByteBuffer模式下，视频缓存（video buffers）根据它们的颜色格式（color format）进行展现。你可以通过调用getCodecInfo().getCapabilitiesForType(…).colorFormats方法获得编解码器支持的颜色格式数组。视频编解码器可以支持三种类型的颜色格式：</p>
-<ul>
-<li>本地原始视频格式（native raw video format）：这种格式通过COLOR_FormatSurface标记，并可以与输入或输出Surface一起使用。</li>
-<li>灵活的YUV缓存（flexible YUV buffers）(例如：COLOR_FormatYUV420Flexible)：利用一个输入或输出Surface，或在在ByteBuffer模式下，可以通过调用getInput/OutputImage(int)方法使用这些格式。</li>
-<li>其他，特定的格式（other, specific formats）：通常只在ByteBuffer模式下被支持。有些颜色格式是特定供应商指定的。其他的一些被定义在 MediaCodecInfo.CodecCapabilities中。这些颜色格式同 flexible format相似，你仍然可以使用 getInput/OutputImage(int)方法。</li>
-</ul>
-<p>　　从Android 5.1（LOLLIPOP_MR1）开始，所有的视频编解码器都支持灵活的YUV4:2:0缓存（flexible YUV 4:2:0 buffers）。
-　　</p>
-<h3 id="状态（state）"><a href="#状态（state）" class="headerlink" title="状态（state）"></a>状态（state）</h3><p>在编解码器的生命周期内有三种理论状态：<strong>停止态-Stopped、执行态-Executing、释放态-Released</strong>，停止状态（Stopped）包括了三种子状态：未初始化（Uninitialized）、配置（Configured）、错误（Error）。执行状态（Executing）在概念上会经历三种子状态：刷新（Flushed）、运行（Running）、流结束（End-of-Stream）。<br>　<br><img src="http://upload-images.jianshu.io/upload_images/4287000-18dfc15fc58a1e1f?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="编解码器状态"></p>
-<ul>
-<li>当你使用任意一种工厂方法（factory methods）创建了一个编解码器，此时编解码器处于未初始化状态（Uninitialized）。首先，你需要使用configure(…)方法对编解码器进行配置，这将使编解码器转为配置状态（Configured）。然后调用start()方法使其转入执行状态（Executing）。在这种状态下你可以通过上述的缓存队列操作处理数据。</li>
-<li>执行状态（Executing）包含三个子状态： 刷新（Flushed）、运行（ Running） 以及流结束（End-of-Stream）。在调用start()方法后编解码器立即进入刷新子状态（Flushed），此时编解码器会拥有所有的缓存。一旦第一个输入缓存（input buffer）被移出队列，编解码器就转入运行子状态（Running），编解码器的大部分生命周期会在此状态下度过。当你将一个带有end-of-stream 标记的输入缓存入队列时，编解码器将转入流结束子状态（End-of-Stream）。在这种状态下，编解码器不再接收新的输入缓存，但它仍然产生输出缓存（output buffers）直到end-of- stream标记到达输出端。你可以在执行状态（Executing）下的任何时候通过调用flush()方法使编解码器重新返回到刷新子状态（Flushed）。</li>
-<li>通过调用stop()方法使编解码器返回到未初始化状态（Uninitialized），此时这个编解码器可以再次重新配置 。当你使用完编解码器后，你必须调用release()方法释放其资源。</li>
-<li>在极少情况下编解码器会遇到错误并进入错误状态（Error）。这个错误可能是在队列操作时返回一个错误的值或者有时候产生了一个异常导致的。通过调用 reset()方法使编解码器再次可用。你可以在任何状态调用reset()方法使编解码器返回到未初始化状态（Uninitialized）。否则，调用 release()方法进入最终的Released状态。</li>
-</ul>
-<h3 id="数据处理（Data-Processing）"><a href="#数据处理（Data-Processing）" class="headerlink" title="数据处理（Data Processing）"></a>数据处理（Data Processing）</h3><p> 　　每一个编解码器都包含一组输入和输出缓存（input and output buffers），这些缓存在API调用中通过buffer-id进行引用。当成功调用start()方法后客户端将不会“拥有”输入或输出buffers。在同步模式下，通过调用dequeue Input/OutputBuffer(…) 方法从编解码器获得一个输入或输出buffer的所有权。在异步模式下，你可以通过MediaCodec.Callback.onInput/OutputBufferAvailable(…)的回调方法自动地获得可用的buffers。</p>
-<p>　　在获得一个输入buffer后，向其中填充数据，并利用queueInputBuffer方法将其提交给编解码器，若使用解密，则利用queueSecureInputBuffer方法提交。不要提交多个具有相同时间戳的输入buffers（除非它是也被同样标记的codec-specific data）。</p>
-<p>　　在异步模式下通过onOutputBufferAvailable方法的回调或者在同步模式下响应dequeueOutputBuffer的调用，编解码器返回一个只读的output buffer。在这个output buffer被处理后，调用一个releaseOutputBuffer方法将这个buffer返回给编解码器。</p>
-<p>　　当你不需要立即向编解码器重新提交或释放buffers时，保持对输入或输出buffers的所有权可使编解码器停止工作，当然这些行为依赖于设备情况。特别地，编解码器可能延迟产生输出buffers直到输出的buffers被释放或重新提交。因此，尽可能短时间地持有可用的buffers。根据API版本情况，你有三种处理相关数据的方式：</p>
-<ol>
-<li>Synchronous API using buffer arrays(Android 5.0之前，之后弃用)</li>
-<li>Synchronous API using buffers(适用于Android 5.0之后)</li>
-<li>Asynchronous API using buffers(适用于Android 5.0之后)</li>
-</ol>
-<h4 id="使用缓存的异步处理方式-Asynchronous-Processing-using-Buffers"><a href="#使用缓存的异步处理方式-Asynchronous-Processing-using-Buffers" class="headerlink" title="使用缓存的异步处理方式(Asynchronous Processing using Buffers)"></a>使用缓存的异步处理方式(Asynchronous Processing using Buffers)</h4><p>从Android 5.0（LOLLIPOP）开始，首选的方法是调用configure之前通过设置回调异步地处理数据。异步模式稍微改变了状态转换方式，因为你必须在调用flush()方法后再调用start()方法才能使编解码器的状态转换为Running子状态并开始接收输入buffers。同样，初始调用start方法将编解码器的状态直接变化为Running 子状态并通过回调方法开始传递可用的输入buffers。</p>
-<p>异步模式下，典型的使用示例如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">MediaCodec codec = MediaCodec.createByCodecName(name);</span><br><span class="line">MediaFormat mOutputFormat; // member variable</span><br><span class="line">codec.setCallback(new MediaCodec.Callback() &#123;</span><br><span class="line">  @Override</span><br><span class="line">  void onInputBufferAvailable(MediaCodec mc, int inputBufferId) &#123;</span><br><span class="line">    ByteBuffer inputBuffer = codec.getInputBuffer(inputBufferId);</span><br><span class="line">    // fill inputBuffer with valid data</span><br><span class="line">    …</span><br><span class="line">    codec.queueInputBuffer(inputBufferId, …);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  @Override</span><br><span class="line">  void onOutputBufferAvailable(MediaCodec mc, int outputBufferId, …) &#123;</span><br><span class="line">    ByteBuffer outputBuffer = codec.getOutputBuffer(outputBufferId);</span><br><span class="line">    MediaFormat bufferFormat = codec.getOutputFormat(outputBufferId); // option A</span><br><span class="line">    // bufferFormat is equivalent to mOutputFormat</span><br><span class="line">    // outputBuffer is ready to be processed or rendered.</span><br><span class="line">    …</span><br><span class="line">    codec.releaseOutputBuffer(outputBufferId, …);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  @Override</span><br><span class="line">  void onOutputFormatChanged(MediaCodec mc, MediaFormat format) &#123;</span><br><span class="line">    // Subsequent data will conform to new format.</span><br><span class="line">    // Can ignore if using getOutputFormat(outputBufferId)</span><br><span class="line">    mOutputFormat = format; // option B</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  @Override</span><br><span class="line">  void onError(…) &#123;</span><br><span class="line">    …</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line">codec.configure(format, …);</span><br><span class="line">mOutputFormat = codec.getOutputFormat(); // option B</span><br><span class="line">codec.start();</span><br><span class="line">// wait for processing to complete</span><br><span class="line">codec.stop();</span><br><span class="line">codec.release();</span><br></pre></td></tr></table></figure>
-<h4 id="使用缓存的同步处理方式（Synchronous-Processing-using-Buffers）"><a href="#使用缓存的同步处理方式（Synchronous-Processing-using-Buffers）" class="headerlink" title="使用缓存的同步处理方式（Synchronous Processing using Buffers）"></a>使用缓存的同步处理方式（Synchronous Processing using Buffers）</h4><p> 　　从Android5.0（LOLLIPOP）开始，即使在同步模式下使用编解码器你应该通过getInput/OutputBuffer(int) 或 getInput/OutputImage(int) 方法检索输入和输出buffers。这允许通过框架进行某些优化，例如，在处理动态内容过程中。如果你调用getInput/OutputBuffers()方法这种优化方式是不可用的。</p>
-<p> 　　注意，不要同时混淆使用缓存和缓存数组的方法。特别地，仅仅在调用start()方法后或取出一个值为INFO_OUTPUT_FORMAT_CHANGED的输出buffer ID后你才可以直接调用getInput/OutputBuffers方法。</p>
-<p> 　　同步模式下MediaCodec的典型应用如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">MediaCodec codec = MediaCodec.createByCodecName(name);</span><br><span class="line">codec.configure(format, …);</span><br><span class="line">MediaFormat outputFormat = codec.getOutputFormat(); // option B</span><br><span class="line">codec.start();</span><br><span class="line">for (;;) &#123;</span><br><span class="line">  int inputBufferId = codec.dequeueInputBuffer(timeoutUs);</span><br><span class="line">  if (inputBufferId &gt;= 0) &#123;</span><br><span class="line">    ByteBuffer inputBuffer = codec.getInputBuffer(…);</span><br><span class="line">    // 通过有效数据来装填inputBuffer</span><br><span class="line">    …</span><br><span class="line">    codec.queueInputBuffer(inputBufferId, …);</span><br><span class="line">  &#125;</span><br><span class="line">  int outputBufferId = codec.dequeueOutputBuffer(…);</span><br><span class="line">  if (outputBufferId &gt;= 0) &#123;</span><br><span class="line">    ByteBuffer outputBuffer = codec.getOutputBuffer(outputBufferId);</span><br><span class="line">    MediaFormat bufferFormat = codec.getOutputFormat(outputBufferId); // option A</span><br><span class="line">    // 缓存格式等同于输出格式</span><br><span class="line">    // 输出格式已经准备好了执行和渲染</span><br><span class="line">    …</span><br><span class="line">    codec.releaseOutputBuffer(outputBufferId, …);</span><br><span class="line">  &#125; else if (outputBufferId == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) &#123;</span><br><span class="line">    //数据流会遵循新的格式</span><br><span class="line">    //如果使用getOutputFormat(outputBufferId)，则会被忽略</span><br><span class="line">    outputFormat = codec.getOutputFormat(); // option B</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">codec.stop();</span><br><span class="line">codec.release();</span><br></pre></td></tr></table></figure>
-<h4 id="使用缓存数组的同步处理方式-Synchronous-Processing-using-Buffer-Arrays）–-deprecated"><a href="#使用缓存数组的同步处理方式-Synchronous-Processing-using-Buffer-Arrays）–-deprecated" class="headerlink" title="使用缓存数组的同步处理方式(Synchronous Processing using Buffer Arrays）– (deprecated)"></a>使用缓存数组的同步处理方式(Synchronous Processing using Buffer Arrays）– (deprecated)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">MediaCodec codec = MediaCodec.createByCodecName(name);</span><br><span class="line">codec.configure(format, …);</span><br><span class="line">codec.start();</span><br><span class="line">ByteBuffer[] inputBuffers = codec.getInputBuffers();</span><br><span class="line">ByteBuffer[] outputBuffers = codec.getOutputBuffers();</span><br><span class="line">for (;;) &#123;</span><br><span class="line">  int inputBufferId = codec.dequeueInputBuffer(…);</span><br><span class="line">  if (inputBufferId &gt;= 0) &#123;</span><br><span class="line">    // 通过有效数据来装填InputBuffers[inputBufferId]</span><br><span class="line">    …</span><br><span class="line">    codec.queueInputBuffer(inputBufferId, …);</span><br><span class="line">  &#125;</span><br><span class="line">  int outputBufferId = codec.dequeueOutputBuffer(…);</span><br><span class="line">  if (outputBufferId &gt;= 0) &#123;</span><br><span class="line">    // outputBuffers[outputBufferId]已经准备好了被执行或渲染</span><br><span class="line">    …</span><br><span class="line">    codec.releaseOutputBuffer(outputBufferId, …);</span><br><span class="line">  &#125; else if (outputBufferId == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) &#123;</span><br><span class="line">    outputBuffers = codec.getOutputBuffers();</span><br><span class="line">  &#125; else if (outputBufferId == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) &#123;</span><br><span class="line">    // 数据流会遵循新的格式</span><br><span class="line">    MediaFormat format = codec.getOutputFormat();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">codec.stop();</span><br><span class="line">codec.release();</span><br></pre></td></tr></table></figure>
-<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><ol>
-<li><a href="https://developer.android.com/reference/android/media/MediaCodec.html" target="_blank" rel="noopener">Android API</a></li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -995,7 +903,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">42</span>
+              <span class="site-state-item-count">43</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1003,7 +911,7 @@
           
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">20</span>
+                <span class="site-state-item-count">22</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -1012,7 +920,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-count">24</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

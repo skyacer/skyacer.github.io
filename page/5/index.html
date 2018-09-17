@@ -217,6 +217,141 @@
             
               
                 
+                <a class="post-title-link" href="/2018/04/15/《Android优化专题》——音频播放/" itemprop="url">
+                  《Android优化专题》——音频播放
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-04-15T15:37:51+08:00" content="2018-04-15">
+              2018-04-15
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android优化/" itemprop="url" rel="index">
+                    <span itemprop="name">Android优化</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="《Android优化专题》——音频播放"><a href="#《Android优化专题》——音频播放" class="headerlink" title="《Android优化专题》——音频播放"></a>《Android优化专题》——音频播放</h1><h2 id="一、控制app的音量与播放"><a href="#一、控制app的音量与播放" class="headerlink" title="一、控制app的音量与播放"></a>一、控制app的音量与播放</h2><h3 id="使用硬件音量键来控制音量"><a href="#使用硬件音量键来控制音量" class="headerlink" title="使用硬件音量键来控制音量"></a>使用硬件音量键来控制音量</h3><p>需要在Activity或者Fragment创建的时候就设置音量控制，这样确保不管App是否可见，音频控制功能都正常工作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setVolumeControlStream(AudioManager.STREAM_MUSIC);</span><br></pre></td></tr></table></figure>
+<h3 id="使用硬件的播放控制按键来控制App的音频播放"><a href="#使用硬件的播放控制按键来控制App的音频播放" class="headerlink" title="使用硬件的播放控制按键来控制App的音频播放"></a>使用硬件的播放控制按键来控制App的音频播放</h3><p>无论用户通过手机或者线控耳机等按下哪些控制按钮，比如播放、暂停，系统都会广播一个带有ACTION_MEDIA_BUTTON的Intent。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;receiver android:name=&quot;.RemoteControlReceiver&quot;&gt;</span><br><span class="line">    &lt;intent-filter&gt;</span><br><span class="line">        &lt;action android:name=&quot;android.intent.action.MEDIA_BUTTON&quot; /&gt;</span><br><span class="line">    &lt;/intent-filter&gt;</span><br><span class="line">&lt;/receiver&gt;</span><br></pre></td></tr></table></figure>
+<p>Receiver需要判断广播来自哪个按钮</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class RemoteControlReceiver extends BroadcastReceiver &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onReceive(Context context, Intent intent) &#123;</span><br><span class="line">        if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) &#123;</span><br><span class="line">            KeyEvent event = (KeyEvent)intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);</span><br><span class="line">            if (KeyEvent.KEYCODE_MEDIA_PLAY == event.getKeyCode()) &#123;</span><br><span class="line">                // Handle key press.  </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="如何注册监听和取消监听"><a href="#如何注册监听和取消监听" class="headerlink" title="如何注册监听和取消监听"></a>如何注册监听和取消监听</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">AudioManager am = mContext.getSystemService(Context.AUDIO_SERVICE);</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">// Start listening for button presses</span><br><span class="line">am.registerMediaButtonEventReceiver(RemoteControlReceiver);</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">// Stop listening for button presses</span><br><span class="line">am.unregisterMediaButtonEventReceiver(RemoteControlReceiver);</span><br></pre></td></tr></table></figure>
+<h2 id="二、管理音频焦点"><a href="#二、管理音频焦点" class="headerlink" title="二、管理音频焦点"></a>二、管理音频焦点</h2><h3 id="请求获取音频焦点"><a href="#请求获取音频焦点" class="headerlink" title="请求获取音频焦点"></a>请求获取音频焦点</h3><p>requestAudioFocus() 来获取到音频流焦点。</p>
+<ul>
+<li>短暂的焦点锁定：当期待播放一个短暂的音频时候（比如推送声音）</li>
+<li>永久的焦点锁定：当计划播放可预期到的较长的音频时候（比如播放音乐）</li>
+</ul>
+<p>我们必须在开始播放前请求音频焦点，比如用户此时点击了播放按钮</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">AudioManager am = mContext.getSystemService(Context.AUDIO_SERVICE);</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">// Request audio focus for playback  </span><br><span class="line">int result = am.requestAudioFocus(afChangeListener,</span><br><span class="line">                                 // Use the music stream.  </span><br><span class="line">                                 AudioManager.STREAM_MUSIC,</span><br><span class="line">                                 // Request permanent focus.  </span><br><span class="line">                                 AudioManager.AUDIOFOCUS_GAIN);</span><br><span class="line"></span><br><span class="line">if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) &#123;</span><br><span class="line">    am.unregisterMediaButtonEventReceiver(RemoteControlReceiver);</span><br><span class="line">    // Start playback.  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一旦结束播放，需要调用abandonAudioFocus()方法，通知系统说不再需要获取焦点并且取消注册AudioManager.OnAudioFocusChangeListener的焦点。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// Abandon audio focus when playback complete</span><br><span class="line">am.abandonAudioFocus(afChangeListener);</span><br></pre></td></tr></table></figure>
+<p>当请求短暂音频焦点，我们可以选择是否开启”ducking”，Ducking机制可以允许音频间歇性短暂播放。可以让其他App继续播放，仅在短暂的时间内降低自己的音量。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// Request audio focus for playback  </span><br><span class="line">int result = am.requestAudioFocus(afChangeListener,</span><br><span class="line">                             // Use the music stream.  </span><br><span class="line">                             AudioManager.STREAM_MUSIC,</span><br><span class="line">                             // Request permanent focus.  </span><br><span class="line">                             AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);</span><br><span class="line"></span><br><span class="line">if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) &#123;</span><br><span class="line">    // Start playback.  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="处理失去音频焦点"><a href="#处理失去音频焦点" class="headerlink" title="处理失去音频焦点"></a>处理失去音频焦点</h3><ul>
+<li>失去短暂焦点：在这种情况下，暂停当前音频的播放或者降低音量，需要准备恢复播放在重新获取到焦点之后。</li>
+<li>失去永久焦点：假设另一个程序开始播放音乐，此时我们的程序就应该彻底结束。停止播放，放弃自己的音频焦点。</li>
+<li>Ducking：降低音量，让其余短暂声音突出，之后恢复原音量。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">OnAudioFocusChangeListener afChangeListener = new OnAudioFocusChangeListener() &#123;</span><br><span class="line">    public void onAudioFocusChange(int focusChange) &#123;</span><br><span class="line">        if (focusChange == AUDIOFOCUS_LOSS_TRANSIENT</span><br><span class="line">            // Pause playback  </span><br><span class="line">            //失去短暂焦点</span><br><span class="line">        &#125; else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) &#123;</span><br><span class="line">            // Resume playback</span><br><span class="line">            //恢复焦点   </span><br><span class="line">        &#125; else if (focusChange==AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK</span><br><span class="line">            // Lower the volume  </span><br><span class="line">        &#125; else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) &#123;</span><br><span class="line">    am.unregisterMediaButtonEventReceiver(RemoteControlReceiver);</span><br><span class="line">            am.abandonAudioFocus(afChangeListener);</span><br><span class="line">            // Stop playback  </span><br><span class="line">            // 失去永久焦点</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="三、音频设备的相关问题"><a href="#三、音频设备的相关问题" class="headerlink" title="三、音频设备的相关问题"></a>三、音频设备的相关问题</h2><h3 id="检测目前正在使用的硬件设备"><a href="#检测目前正在使用的硬件设备" class="headerlink" title="检测目前正在使用的硬件设备"></a>检测目前正在使用的硬件设备</h3><p>可以使用AudioManager来查询某个音频是否输出到扬声器，有线耳机还是蓝牙上。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">if (isBluetoothA2dpOn()) &#123;</span><br><span class="line">    // Adjust output for Bluetooth.  </span><br><span class="line">&#125; else if (isSpeakerphoneOn()) &#123;</span><br><span class="line">    // Adjust output for Speakerphone.  </span><br><span class="line">&#125; else if (isWiredHeadsetOn()) &#123;</span><br><span class="line">    // Adjust output for headsets  </span><br><span class="line">&#125; else &#123;</span><br><span class="line">    // If audio plays and noone can hear it, is it still playing?  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="处理音频输出设备的改变"><a href="#处理音频输出设备的改变" class="headerlink" title="处理音频输出设备的改变"></a>处理音频输出设备的改变</h3><p>当耳机线被拔出，或者蓝牙耳机连接断开时，如果在播放音乐/视频，为了用户体验，避免突如其来的扬声器播放，我们通常做法是暂停此时正在播放的音乐/视频。</p>
+<p>在这种情况下，系统会广播带有ACTION_AUDIO_BECOMING_NOISY的intent。我们只需要接受这种广播，对其进行处理即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">private class NoisyAudioStreamReceiver extends BroadcastReceiver &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onReceive(Context context, Intent intent) &#123;</span><br><span class="line">        if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) &#123;</span><br><span class="line">            // Pause the playback  </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);</span><br><span class="line"></span><br><span class="line">private void startPlayback() &#123;</span><br><span class="line">    registerReceiver(myNoisyAudioStreamReceiver(), intentFilter);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private void stopPlayback() &#123;</span><br><span class="line">    unregisterReceiver(myNoisyAudioStreamReceiver);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/04/12/JVM内存模型/" itemprop="url">
                   JVM内存模型
                 </a>
@@ -825,150 +960,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/03/28/SurfaceView和TextureView对比/" itemprop="url">
-                  SurfaceView和TextureView对比
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-03-28T13:52:58+08:00" content="2018-03-28">
-              2018-03-28
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/视频/" itemprop="url" rel="index">
-                    <span itemprop="name">视频</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="SurfaceView及TextureView对比"><a href="#SurfaceView及TextureView对比" class="headerlink" title="SurfaceView及TextureView对比"></a>SurfaceView及TextureView对比</h1><h2 id="SurfaceView是什么？"><a href="#SurfaceView是什么？" class="headerlink" title="SurfaceView是什么？"></a>SurfaceView是什么？</h2><p>它继承自类View，因此它本质上是一个View。但与普通View不同的是，它有自己的Surface。有自己的Surface，在WMS中有对应的WindowState，在SurfaceFlinger中有Layer。我们知道，一般的Activity包含的多个View会组成View hierachy的树形结构，只有最顶层的DecorView，也就是根结点视图，才是对WMS可见的。这个DecorView在WMS中有一个对应的WindowState。相应地，在SF中对应的Layer。而SurfaceView自带一个Surface，这个Surface在WMS中有自己对应的WindowState，在SF中也会有自己的Layer。虽然在App端它仍在View hierachy中，但在Server端（WMS和SF）中，它与宿主窗口是分离的。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB683a92bd2aaadb2aa9eb3a9312c787d0?method=download&amp;shareKey=e3be2c2ca348fa888942b849536dd92c" alt="SurfaceView结构"></p>
-<h2 id="SurfaceView这样设计的优势和缺陷是什么？"><a href="#SurfaceView这样设计的优势和缺陷是什么？" class="headerlink" title="SurfaceView这样设计的优势和缺陷是什么？"></a>SurfaceView这样设计的优势和缺陷是什么？</h2><h3 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h3><p>这样的好处是对这个Surface的渲染可以放到单独线程去做，渲染时可以有自己的GL context。这对于一些游戏、视频等性能相关的应用非常有益，因为它不会影响主线程对事件的响应。</p>
-<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><p>因为这个Surface不在View hierachy中，它的显示也不受View的属性控制，所以不能进行平移，缩放等变换，也不能放在其它ViewGroup中，一些View中的特性也无法使用。</p>
-<h2 id="SurfaceView双缓冲是什么？"><a href="#SurfaceView双缓冲是什么？" class="headerlink" title="SurfaceView双缓冲是什么？"></a>SurfaceView双缓冲是什么？</h2><blockquote>
-<p>通俗来讲就是有两个缓冲区，一个后台缓冲区和一个前台缓冲区，每次后台缓冲区接受数据，当填充完整后交换给前台缓冲，这样就保证了前台缓冲里的数据都是完整的。</p>
-</blockquote>
-<p>双缓冲：SurfaceView在更新视图时用到了两张Canvas：</p>
-<ol>
-<li>frontCanvas：实际显示的canvas</li>
-<li>backCanvas：存储的是上一次更改前的canvas</li>
-</ol>
-<p>流程如下：</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB870926aec79c9b78404e61e7674605cf?method=download&amp;shareKey=73fb3846d2744ca54f31f516067f4a39" alt="双缓冲流程"></p>
-<h3 id="好处是什么？"><a href="#好处是什么？" class="headerlink" title="好处是什么？"></a>好处是什么？</h3><ol>
-<li>提高渲染效率</li>
-<li>可以避免刷新频率过高而出现的闪烁现象</li>
-</ol>
-<h2 id="TextureView是什么？"><a href="#TextureView是什么？" class="headerlink" title="TextureView是什么？"></a>TextureView是什么？</h2><blockquote>
-<p>在Android4.0(API level 14)中引入，与SurfaceView一样继承View，它可以将内容流直接投影到View中，它可以将内容流直接投影到View中，可以用于实现Live preview等功能。</p>
-</blockquote>
-<ol>
-<li>和SurfaceView不同，不在WMS中单独创建窗口，而是作为View  hierachy中的一个普通view，因此可以合其他普通View一样进行移动，旋转，缩放，动画等变化。</li>
-<li>和SurfaceView不同，TextureView必须在硬件加速的窗口中。</li>
-<li>它显示的内容流数据可以来自App进程或是远端进程。</li>
-<li>TextureView继承自View，它与其它的View一样在View hierachy中管理与绘制。TextureView重载了draw()方法，其中主要SurfaceTexture中收到的图像数据作为纹理更新到对应的HardwareLayer中。</li>
-</ol>
-<h2 id="TextureView优点和缺点？"><a href="#TextureView优点和缺点？" class="headerlink" title="TextureView优点和缺点？"></a>TextureView优点和缺点？</h2><p><strong>优点</strong>：支持移动、旋转、缩放等动画，支持截图<br><strong>缺点</strong>：必须在硬件加速的窗口中使用，占用内存比SurfaceView高，在5.0以前在主线程渲染，5.0以后有单独的渲染线程。</p>
-<h2 id="TextureView和SurfaceView区别是什么？"><a href="#TextureView和SurfaceView区别是什么？" class="headerlink" title="TextureView和SurfaceView区别是什么？"></a>TextureView和SurfaceView区别是什么？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB7529fdd04d9cf09323a2d83303427b22?method=download&amp;shareKey=5c37edeaf1c1d09ee6d5f42631733ebd" alt="区别"></p>
-<h2 id="播放器应该选哪个？"><a href="#播放器应该选哪个？" class="headerlink" title="播放器应该选哪个？"></a>播放器应该选哪个？</h2><p>从性能和安全性角度出发，<strong>优先选SurfaceView</strong></p>
-<ol>
-<li>在android 7.0上系统surfaceview的性能比TextureView更有优势，支持对象的内容位置和包含的应用内容同步更新，平移、缩放不会产生黑边。 在7.0以下系统如果使用场景有动画效果，可以选择性使用TextureView</li>
-<li>由于失效(invalidation)和缓冲的特性，TextureView增加了额外1~3帧的延迟显示画面更新</li>
-<li>TextureView总是使用GL合成，而SurfaceView可以使用硬件overlay后端，可以占用更少的内存带宽，消耗更少的能量</li>
-<li>TextureView的内部缓冲队列导致比SurfaceView使用更多的内存</li>
-<li>SurfaceView： 内部自己持有surface，surface 创建、销毁、大小改变时系统来处理的，通过surfaceHolder 的callback回调通知。当画布创建好时，可以将surface绑定到MediaPlayer中。SurfaceView如果为用户可见的时候，创建SurfaceView的SurfaceHolder用于显示视频流解析的帧图片，如果发现SurfaceView变为用户不可见的时候，则立即销毁SurfaceView的SurfaceHolder，以达到节约系统资源的目的</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1014,7 +1005,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">43</span>
+              <span class="site-state-item-count">44</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1031,7 +1022,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

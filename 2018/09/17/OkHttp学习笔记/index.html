@@ -1,0 +1,789 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="NetWork," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="SkyAcer's blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="OkHttp浅析 最近在看HTTP相关内容时，突然想到OkHttp是支持HTTP2.0的，所以特地看了下OkHttp的源码，并以此记录。  OkHttp VS Volley这两个库都是项目用的比较多的  OkHttp有什么优势？ 支持HTTP2/SPDY socket自动选择最好的路线，并支持自动重连 拥有自动维护的socket连接池，减少握手次数 拥有队列线程池，轻松写并发 拥有Intercep">
+<meta name="keywords" content="NetWork">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OkHttp学习笔记">
+<meta property="og:url" content="http://skyacer.github.io/2018/09/17/OkHttp学习笔记/index.html">
+<meta property="og:site_name" content="SkyAcer&#39;s blog">
+<meta property="og:description" content="OkHttp浅析 最近在看HTTP相关内容时，突然想到OkHttp是支持HTTP2.0的，所以特地看了下OkHttp的源码，并以此记录。  OkHttp VS Volley这两个库都是项目用的比较多的  OkHttp有什么优势？ 支持HTTP2/SPDY socket自动选择最好的路线，并支持自动重连 拥有自动维护的socket连接池，减少握手次数 拥有队列线程池，轻松写并发 拥有Intercep">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBc3056a3fe7ffc37b8ed61b0508b468ec?method=download&shareKey=1aa7702ea6420ae8e6d485681662c02c">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB3b3610cfa78ca057ce2f6bd46b25f148?method=download&shareKey=a6dc32f937949ea6386792976c9db3a8">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB58ecc76b8e1c1d79a3d0615672eee643?method=download&shareKey=fdc78298c194712e7d69200271192a6b">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB39cbb7447d770b7a5088178056f0d880?method=download&shareKey=bea0599daf13ae0753651bbd77cb146d">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEBb32a29069d1040bc97497d537b605ee4?method=download&shareKey=e2373291a124fe5def50de9805536c05">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB349d2f5ae57717fca19b65bac17080c8?method=download&shareKey=f9ab16fcc2c6c1232493a6b924ef4efe">
+<meta property="og:updated_time" content="2018-09-17T03:30:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OkHttp学习笔记">
+<meta name="twitter:description" content="OkHttp浅析 最近在看HTTP相关内容时，突然想到OkHttp是支持HTTP2.0的，所以特地看了下OkHttp的源码，并以此记录。  OkHttp VS Volley这两个库都是项目用的比较多的  OkHttp有什么优势？ 支持HTTP2/SPDY socket自动选择最好的路线，并支持自动重连 拥有自动维护的socket连接池，减少握手次数 拥有队列线程池，轻松写并发 拥有Intercep">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEBc3056a3fe7ffc37b8ed61b0508b468ec?method=download&shareKey=1aa7702ea6420ae8e6d485681662c02c">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> OkHttp学习笔记 | SkyAcer's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SkyAcer's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">Hacking,Thoughts.</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-heartbeat fa-fw"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                OkHttp学习笔记
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-09-17T11:29:19+08:00" content="2018-09-17">
+              2018-09-17
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/library/" itemprop="url" rel="index">
+                    <span itemprop="name">library</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="OkHttp浅析"><a href="#OkHttp浅析" class="headerlink" title="OkHttp浅析"></a>OkHttp浅析</h1><blockquote>
+<p>最近在看HTTP相关内容时，突然想到OkHttp是支持HTTP2.0的，所以特地看了下OkHttp的源码，并以此记录。</p>
+</blockquote>
+<h2 id="OkHttp-VS-Volley"><a href="#OkHttp-VS-Volley" class="headerlink" title="OkHttp VS Volley"></a>OkHttp VS Volley</h2><p>这两个库都是项目用的比较多的</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBc3056a3fe7ffc37b8ed61b0508b468ec?method=download&amp;shareKey=1aa7702ea6420ae8e6d485681662c02c" alt="volley与okhttp对比图"></p>
+<h2 id="OkHttp有什么优势？"><a href="#OkHttp有什么优势？" class="headerlink" title="OkHttp有什么优势？"></a>OkHttp有什么优势？</h2><ol>
+<li>支持HTTP2/SPDY</li>
+<li>socket自动选择最好的路线，并支持自动重连</li>
+<li>拥有自动维护的socket连接池，减少握手次数</li>
+<li>拥有队列线程池，轻松写并发</li>
+<li>拥有Interceptors轻松处理请求与响应（比如透明GZIP压缩，LOGGING）</li>
+<li>基于Headers的缓存策略</li>
+</ol>
+<h2 id="OkHttp能竞争过其他库的核心功能是什么？"><a href="#OkHttp能竞争过其他库的核心功能是什么？" class="headerlink" title="OkHttp能竞争过其他库的核心功能是什么？"></a>OkHttp能竞争过其他库的核心功能是什么？</h2><p>okhttp使用Dispatcher进行线程分发，它有两种方法，一个是普通的同步单线程；另一种是使用了队列进行并发任务的分发(Dispatch)与回调，这也是okhttp能够竞争过其它库的核心功能之一</p>
+<h2 id="OkHttp请求流程是什么样的？"><a href="#OkHttp请求流程是什么样的？" class="headerlink" title="OkHttp请求流程是什么样的？"></a>OkHttp请求流程是什么样的？</h2><p>总体分为两种：一种同步请求，一种异步请求</p>
+<p>大体流程如下：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB3b3610cfa78ca057ce2f6bd46b25f148?method=download&amp;shareKey=a6dc32f937949ea6386792976c9db3a8" alt="工作流程"></p>
+<h3 id="同步请求"><a href="#同步请求" class="headerlink" title="同步请求"></a>同步请求</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB58ecc76b8e1c1d79a3d0615672eee643?method=download&amp;shareKey=fdc78298c194712e7d69200271192a6b" alt="同步请求"></p>
+<h3 id="异步请求"><a href="#异步请求" class="headerlink" title="异步请求"></a>异步请求</h3><p><img src="https://note.youdao.com/yws/api/personal/file/WEB39cbb7447d770b7a5088178056f0d880?method=download&amp;shareKey=bea0599daf13ae0753651bbd77cb146d" alt="异步请求"></p>
+<h2 id="OkHttp中Intercept是什么？"><a href="#OkHttp中Intercept是什么？" class="headerlink" title="OkHttp中Intercept是什么？"></a>OkHttp中Intercept是什么？</h2><p>Intecept基于责任链模式实现，是一个监视、重写、重试请求的强有力机制。拦截器可以串联。</p>
+<p>拦截器分为两类：</p>
+<ul>
+<li>应用拦截器，在发送请求之前和获取响应之后进行操作的。通过addInterceptor来进行添加。</li>
+<li>网络拦截器，在进行网络获取前进行操作的。通过addNetworkInterceptor进行添加。</li>
+</ul>
+<p>拦截器执行顺序:</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBb32a29069d1040bc97497d537b605ee4?method=download&amp;shareKey=e2373291a124fe5def50de9805536c05" alt=""></p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB349d2f5ae57717fca19b65bac17080c8?method=download&amp;shareKey=f9ab16fcc2c6c1232493a6b924ef4efe" alt=""></p>
+<h2 id="应用拦截器和网络拦截器各有什么优势？"><a href="#应用拦截器和网络拦截器各有什么优势？" class="headerlink" title="应用拦截器和网络拦截器各有什么优势？"></a>应用拦截器和网络拦截器各有什么优势？</h2><p><strong>应用拦截器</strong></p>
+<ul>
+<li>不需要考虑中间状态的响应，比如重定向或者重试</li>
+<li>应用拦截器只会调用一次，即便数据来源于缓存</li>
+<li>只考虑应用的初始意图，不考虑OkHttp注入的Header，比如：if-None-Match，意思就是不管其他外在因素，只考虑最终的返回结果</li>
+<li>自定义的应用拦截器是第一个开始的执行的拦截器，所以可以决定是否执行其他的拦截器，通过Chain.proceed()方法。</li>
+<li>允许重试和发送多条请求，调用Chain.proceed()方法</li>
+</ul>
+<p><strong>网络拦截器</strong></p>
+<ul>
+<li>网络拦截器可以操作重定向和失败重连的返回值</li>
+<li>我们可以看出，取缓存中的数据不会去进行网络请求，也就不会执行Chain.proceed()。</li>
+<li>意思是通过网络拦截器可以观察到所有通过网络传输的数据</li>
+<li>请求服务连接的拦截器先于网络拦截器执行，在进行网络拦截器的时候，可以看到Request中服务器的请求连接信息。</li>
+</ul>
+<h2 id="OkHttp是怎么复用连接池的？"><a href="#OkHttp是怎么复用连接池的？" class="headerlink" title="OkHttp是怎么复用连接池的？"></a>OkHttp是怎么复用连接池的？</h2><p>OkHttp支持5个并发的KeepAlive，默认链路生命为5分钟（链路空闲后，保持存活的时间）</p>
+<p>StreamAllocation是计数对象,通过引用计数来管理socket，专门用于淘汰末位的Socket，淘汰策略如下：</p>
+<ol>
+<li>并发socket空闲连接数超过5个</li>
+<li>某个socket的keepalive的时间大于五分钟</li>
+</ol>
+<h2 id="Connection自动回收是怎么实现的？"><a href="#Connection自动回收是怎么实现的？" class="headerlink" title="Connection自动回收是怎么实现的？"></a>Connection自动回收是怎么实现的？</h2><p>这段死循环是一个阻塞的清理任务，首先进行清理，返回下次需要清理的间隔时间，当等待时间到了之后，再次进行清理。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">//Socket清理的Runnable，每当put操作时，就会被主动调用</span><br><span class="line">//注意put操作是在网络线程</span><br><span class="line">//而Socket清理是在`OkHttp ConnectionPool`线程池中调用</span><br><span class="line">while (true) &#123;</span><br><span class="line">  //执行清理并返回下场需要清理的时间</span><br><span class="line">  long waitNanos = cleanup(System.nanoTime());</span><br><span class="line">  if (waitNanos == -1) return;</span><br><span class="line">  if (waitNanos &gt; 0) &#123;</span><br><span class="line">  	long waitMillis = waitNanos / 1000000L;</span><br><span class="line">  	waitNanos -= (waitMillis * 1000000L);</span><br><span class="line">    synchronized (ConnectionPool.this) &#123;</span><br><span class="line">      try &#123;</span><br><span class="line">        //在timeout内释放锁与时间片</span><br><span class="line">        ConnectionPool.this.wait(TimeUnit.NANOSECONDS.toMillis(waitNanos));</span><br><span class="line">      &#125; catch (InterruptedException ignored) &#123;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Connection的清除逻辑是什么样的？"><a href="#Connection的清除逻辑是什么样的？" class="headerlink" title="Connection的清除逻辑是什么样的？"></a>Connection的清除逻辑是什么样的？</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">long cleanup(long now) &#123;</span><br><span class="line">  int inUseConnectionCount = 0;</span><br><span class="line">  int idleConnectionCount = 0;</span><br><span class="line">  RealConnection longestIdleConnection = null;</span><br><span class="line">  long longestIdleDurationNs = Long.MIN_VALUE;</span><br><span class="line"></span><br><span class="line">  //遍历`Deque`中所有的`RealConnection`，标记泄漏的连接</span><br><span class="line">  synchronized (this) &#123;</span><br><span class="line">    for (RealConnection connection : connections) &#123;</span><br><span class="line">      // 查询此连接内部StreamAllocation的引用数量</span><br><span class="line">      if (pruneAndGetAllocationCount(connection, now) &gt; 0) &#123;</span><br><span class="line">        inUseConnectionCount++;</span><br><span class="line">        continue;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      idleConnectionCount++;</span><br><span class="line"></span><br><span class="line">      //选择排序法，标记出空闲连接</span><br><span class="line">      long idleDurationNs = now - connection.idleAtNanos;</span><br><span class="line">      if (idleDurationNs &gt; longestIdleDurationNs) &#123;</span><br><span class="line">        longestIdleDurationNs = idleDurationNs;</span><br><span class="line">        longestIdleConnection = connection;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (longestIdleDurationNs &gt;= this.keepAliveDurationNs</span><br><span class="line">        || idleConnectionCount &gt; this.maxIdleConnections) &#123;</span><br><span class="line">      //如果(`空闲socket连接超过5个`</span><br><span class="line">      //且`keepalive时间大于5分钟`)</span><br><span class="line">      //就将此泄漏连接从`Deque`中移除</span><br><span class="line">      connections.remove(longestIdleConnection);</span><br><span class="line">    &#125; else if (idleConnectionCount &gt; 0) &#123;</span><br><span class="line">      //返回此连接即将到期的时间，供下次清理</span><br><span class="line">      //这里依据是在上文`connectionBecameIdle`中设定的计时</span><br><span class="line">      return keepAliveDurationNs - longestIdleDurationNs;</span><br><span class="line">    &#125; else if (inUseConnectionCount &gt; 0) &#123;</span><br><span class="line">      //全部都是活跃的连接，5分钟后再次清理</span><br><span class="line">      return keepAliveDurationNs;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">      //没有任何连接，跳出循环</span><br><span class="line">      cleanupRunning = false;</span><br><span class="line">      return -1;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  //关闭连接，返回`0`，也就是立刻再次清理</span><br><span class="line">  closeQuietly(longestIdleConnection.socket());</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>清除逻辑：</p>
+<ol>
+<li>遍历Deque中所有的RealConnection，标记泄漏的连接</li>
+<li>如果被标记的连接满足(空闲socket连接超过5个&amp;&amp;keepalive时间大于5分钟)，就将此连接从Deque中移除，并关闭连接，返回0，也就是将要执行wait(0)，提醒立刻再次扫描</li>
+<li>如果(目前还可以塞得下5个连接，但是有可能泄漏的连接(即空闲时间即将达到5分钟))，就返回此连接即将到期的剩余时间，供下次清理</li>
+<li>如果(全部都是活跃的连接)，就返回默认的keep-alive时间，也就是5分钟后再执行清理</li>
+<li>如果(没有任何连接)，就返回-1,跳出清理的死循环</li>
+</ol>
+<h2 id="如何标记并找到最不活跃的连接？"><a href="#如何标记并找到最不活跃的连接？" class="headerlink" title="如何标记并找到最不活跃的连接？"></a>如何标记并找到最不活跃的连接？</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">//类似于引用计数法，如果引用全部为空，返回立刻清理</span><br><span class="line">private int pruneAndGetAllocationCount(RealConnection connection, long now) &#123;</span><br><span class="line">  //虚引用列表</span><br><span class="line">  List&lt;Reference&lt;StreamAllocation&gt;&gt; references = connection.allocations;</span><br><span class="line">  //遍历弱引用列表</span><br><span class="line">  for (int i = 0; i &lt; references.size(); ) &#123;</span><br><span class="line">    Reference&lt;StreamAllocation&gt; reference = references.get(i);</span><br><span class="line">    //如果正在被使用，跳过，接着循环</span><br><span class="line">    //是否置空是在上文`connectionBecameIdle`的`release`控制的</span><br><span class="line">    if (reference.get() != null) &#123;</span><br><span class="line">      //非常明显的引用计数</span><br><span class="line">      i++;</span><br><span class="line">      continue;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //否则移除引用</span><br><span class="line">    references.remove(i);</span><br><span class="line">    connection.noNewStreams = true;</span><br><span class="line"></span><br><span class="line">    //如果所有分配的流均没了，标记为已经距离现在空闲了5分钟</span><br><span class="line">    if (references.isEmpty()) &#123;</span><br><span class="line">      connection.idleAtNanos = now - keepAliveDurationNs;</span><br><span class="line">      return 0;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">    </span><br><span class="line">  return references.size();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>遍历Deque中所有的RealConnection，标记泄漏的连接</li>
+<li>如果被标记的连接满足(空闲socket连接超过5个&amp;&amp;keepalive时间大于5分钟)，就将此连接从Deque中移除，并关闭连接，返回0，也就是将要执行wait(0)，提醒立刻再次扫描</li>
+<li>如果(目前还可以塞得下5个连接，但是有可能泄漏的连接(即空闲时间即将达到5分钟))，就返回此连接即将到期的剩余时间，供下次清理</li>
+<li>如果(全部都是活跃的连接)，就返回默认的keep-alive时间，也就是5分钟后再执行清理</li>
+<li>如果(没有任何连接)，就返回-1,跳出清理的死循环</li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/NetWork/" rel="tag">#NetWork</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/06/Android6如何进行权限适配/" rel="next" title="Android6.0如何进行权限适配">
+                <i class="fa fa-chevron-left"></i> Android6.0如何进行权限适配
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="SkyAcer" />
+          <p class="site-author-name" itemprop="name">SkyAcer</p>
+          <p class="site-description motion-element" itemprop="description">Little And More.</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">分类</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#OkHttp浅析"><span class="nav-number">1.</span> <span class="nav-text">OkHttp浅析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#OkHttp-VS-Volley"><span class="nav-number">1.1.</span> <span class="nav-text">OkHttp VS Volley</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OkHttp有什么优势？"><span class="nav-number">1.2.</span> <span class="nav-text">OkHttp有什么优势？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OkHttp能竞争过其他库的核心功能是什么？"><span class="nav-number">1.3.</span> <span class="nav-text">OkHttp能竞争过其他库的核心功能是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OkHttp请求流程是什么样的？"><span class="nav-number">1.4.</span> <span class="nav-text">OkHttp请求流程是什么样的？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#同步请求"><span class="nav-number">1.4.1.</span> <span class="nav-text">同步请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异步请求"><span class="nav-number">1.4.2.</span> <span class="nav-text">异步请求</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OkHttp中Intercept是什么？"><span class="nav-number">1.5.</span> <span class="nav-text">OkHttp中Intercept是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#应用拦截器和网络拦截器各有什么优势？"><span class="nav-number">1.6.</span> <span class="nav-text">应用拦截器和网络拦截器各有什么优势？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OkHttp是怎么复用连接池的？"><span class="nav-number">1.7.</span> <span class="nav-text">OkHttp是怎么复用连接池的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Connection自动回收是怎么实现的？"><span class="nav-number">1.8.</span> <span class="nav-text">Connection自动回收是怎么实现的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Connection的清除逻辑是什么样的？"><span class="nav-number">1.9.</span> <span class="nav-text">Connection的清除逻辑是什么样的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何标记并找到最不活跃的连接？"><span class="nav-number">1.10.</span> <span class="nav-text">如何标记并找到最不活跃的连接？</span></a></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">SkyAcer</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=0.5.0"></script>
+
+
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+
+  
+
+
+</body>
+</html>

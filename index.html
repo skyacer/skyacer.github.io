@@ -1002,6 +1002,45 @@
   </p>
 <h3 id="android-finishOnTaskLaunch"><a href="#android-finishOnTaskLaunch" class="headerlink" title="android:finishOnTaskLaunch"></a>android:finishOnTaskLaunch</h3><p>如果将finishOnTaskLauch属性值设置为true，离开这个Activity所依赖的任务栈后，重新返回时，该Activity会被finish掉，其他的Activity不受影响。</p>
 <h3 id="android-alwaysRetainTaskState"><a href="#android-alwaysRetainTaskState" class="headerlink" title="android:alwaysRetainTaskState"></a>android:alwaysRetainTaskState</h3><p>当该属性设置为true时，该Activity不受到任何清理命令的影响，一直保持当前任务栈状态。</p>
+<h2 id="各启动模式下的生命周期"><a href="#各启动模式下的生命周期" class="headerlink" title="各启动模式下的生命周期"></a>各启动模式下的生命周期</h2><h3 id="standard"><a href="#standard" class="headerlink" title="standard"></a>standard</h3><p>这个最好理解，A -&gt; B，当A跳转到B时，先是B的onCreate-&gt;onStart-&gt;onResume，再是前一个Activity的onStop。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB20959b72a372085e53aef56b19baebf1?method=download&amp;shareKey=63c3277d4a37fb1e7b64f5b93276c2ee" alt=""></p>
+<h3 id="singletop"><a href="#singletop" class="headerlink" title="singletop"></a>singletop</h3><blockquote>
+<p>栈顶复用模式</p>
+</blockquote>
+<p>当A是standard启动模式，B是singleTop启动模式时，分几种情况：</p>
+<ol>
+<li>A启动B时，当栈中无B实例、B不在栈顶时，和启动一个standard Activity没有区别，流程如上。</li>
+</ol>
+<ol start="2">
+<li>B启动B时，当B在栈顶时，会经过B的onNewIntent -&gt; onResume<br><img src="https://note.youdao.com/yws/api/personal/file/WEBcdb236539ce65adc1728e399e70953d3?method=download&amp;shareKey=f0d0d21d1bd1c1cd76b6c3017f138300" alt=""></li>
+</ol>
+<h3 id="singleTask"><a href="#singleTask" class="headerlink" title="singleTask"></a>singleTask</h3><blockquote>
+<p>栈内复用模式</p>
+</blockquote>
+<p>当A是standard启动模式，B是singleTask启动模式时，分几种情况：</p>
+<ol>
+<li><p>A启动B时，当栈内无B实例时，和启动一个standard Activity没有区别。</p>
+</li>
+<li><p>B启动B时，B在栈顶时，和启动一个在栈顶的singleTop Activity没有区别。<br><img src="https://note.youdao.com/yws/api/personal/file/WEBf6ad1d3646178b89c836e89b3739745c?method=download&amp;shareKey=383b4ebef79dc52c0bfcffb639d9e1c0" alt=""></p>
+</li>
+<li><p>A启动B时，B不在栈顶时，在之前的singleTask Activity之上的所有Activity按顺序出栈（这个顺序是添加到栈的顺序），如B是singleTask，A、C都是Standard，栈内从底到顶的顺序依次为BACAC，这时C再跳转B时，那么会相继调用A,C,A的onDestroy,再调用B的onNewIntent，onStart，onResume，最后再是C的onStop，onDestroy。<br><img src="https://note.youdao.com/yws/api/personal/file/WEB0bb677117c966cabfdf858e1b6dc0f9d?method=download&amp;shareKey=cce28872e6dc7bfa3b65de5ab1da9c23" alt=""></p>
+</li>
+</ol>
+<h3 id="singleInstance"><a href="#singleInstance" class="headerlink" title="singleInstance"></a>singleInstance</h3><blockquote>
+<p> 全局单例模式</p>
+</blockquote>
+<p>当A是standard启动模式，B是singleInstance启动模式</p>
+<ol>
+<li><p>A启动B时，当全局无该实例时，与启动一个standard Activity在生命周期上没区别，但是在所属任务栈上有区别，任务栈id是不同的。<br><img src="https://note.youdao.com/yws/api/personal/file/WEB7879305c7d40119a00361b3270673ae0?method=download&amp;shareKey=2b135ddf86850d71cd51694c582400bc" alt=""></p>
+</li>
+<li><p>B启动B时，和singleTop/singleTask在顶部时没有区别</p>
+</li>
+<li><p>B启动A时，和启动一个standard Activity在生命周期上没有区别，任务栈id也是不同的，同1的情况。且id等同于A启动B时，A的任务栈id。<br><img src="https://note.youdao.com/yws/api/personal/file/WEB93ca494527a8d6259135e38840a9a0a6?method=download&amp;shareKey=4404474784701cb16d67753b9849556f" alt=""></p>
+</li>
+<li><p>singleInstance实例会独占一个任务栈，该任务栈仅存在该一个实例。</p>
+</li>
+<li>当A启动B时，在B中回退，会先把该任务栈清空，也就是B的实例清空，再切换到A的任务栈中。当B启动A时，如果A有多个实例，则回退时会一直清空到A的任务栈无任何实例时，最后才会转到B的任务栈清空该singleInstance实例。</li>
+</ol>
 
           
         

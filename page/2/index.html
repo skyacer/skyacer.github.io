@@ -217,6 +217,213 @@
             
               
                 
+                <a class="post-title-link" href="/2018/09/04/Android四大组件之Activity的启动模式/" itemprop="url">
+                  Android四大组件之Activity的启动模式
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-09-04T14:19:50+08:00" content="2018-09-04">
+              2018-09-04
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/framework/" itemprop="url" rel="index">
+                    <span itemprop="name">framework</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Android四大组件之Activity的启动模式"><a href="#Android四大组件之Activity的启动模式" class="headerlink" title="Android四大组件之Activity的启动模式"></a>Android四大组件之Activity的启动模式</h1><h2 id="简单的Launchmode"><a href="#简单的Launchmode" class="headerlink" title="简单的Launchmode"></a>简单的Launchmode</h2><ul>
+<li>standard: 标准启动模式，每次都会启动一个新的activity实例</li>
+<li>singleTop: 单独使用这种模式时，<strong>如果Activity实例位于当前任务栈顶</strong>，就重用栈顶实例，而不新建，并回调该实例onNewIntent()方法，否则走新建流程。</li>
+</ul>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBe890f0a6c728b0483f1488f944a8f497?method=download&amp;shareKey=5a98551511c9f170759b5473e357d65d" alt=""></p>
+<ul>
+<li>singleTask: 又称为栈内复用模式。这是一种单例模式，与singTop点类似，只不过singTop是检测栈顶元素是否有需要启动的Activity，而singTask则是检测整个栈中是否存在当前需要启动的Activity，如果存在就直接将该Activity置于栈顶，并将该Activity以上的Activity都从任务栈中移出销毁，同时也会回调onNewIntent方法</li>
+</ul>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBec1daa96a120de9938157f6585c49d38?method=download&amp;shareKey=44ff4caa4a0ad3ed629c5266772f9fae" alt=""></p>
+<ul>
+<li>singleInstance: 该Activity在<strong>整个android系统内存</strong>中有且只有一个实例，而且该实例单独尊享一个Task。换句话说，A应用需要启动的MainActivity 是singleInstance模式，当A启动后，系统会为它创建一个新的任务栈，然后A单独在这个新的任务栈中，如果此时B应用也要激活MainActivity，由于栈内复用的特性，则不会重新创建，而是两个应用共享一个Activity的实例。</li>
+</ul>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB6509384afecf0f84738e09246228e86f?method=download&amp;shareKey=d8547aa7eac86b329b8b9a4e55a87f0e" alt=""></p>
+<p><strong>上面只适用于Activity启动Activity，而且采用的都是默认Intent，没有额外添加任何Flag</strong>，尤其主要的是FLAG_ACTIVITY_NEW_TASK的使用。</p>
+<h2 id="Intent-FLAG-ACTIVITY-NEW-TASK分析"><a href="#Intent-FLAG-ACTIVITY-NEW-TASK分析" class="headerlink" title="Intent.FLAG_ACTIVITY_NEW_TASK分析"></a>Intent.FLAG_ACTIVITY_NEW_TASK分析</h2><ol>
+<li>对于非Activity启动的Activity（比如Service或者通知中启动的Activity）需要显示地设置Intent.FLAG_ACTIVITY_NEW_TASK。</li>
+<li>singleTask及singleInstance两种模式，被AMS处理后，会隐形设置Intent.FLAG_ACTIVITY_NEW_TASK</li>
+<li>standard和singleTop的Activity不会被设置成Intent.FLAG_ACTIVITY_NEW_TASK，除非通过显示的intent.setFlag进行设置</li>
+</ol>
+<p><strong>Intent.FLAG_ACTIVITY_NEW_TASK的初衷是Activity目标taskAffinity的task中启动</strong></p>
+<h2 id="Intent-FLAG-ACTIVITY-CLEAR-TASK分析"><a href="#Intent-FLAG-ACTIVITY-CLEAR-TASK分析" class="headerlink" title="Intent.FLAG_ACTIVITY_CLEAR_TASK分析"></a>Intent.FLAG_ACTIVITY_CLEAR_TASK分析</h2><ol>
+<li>CLEAR_TASK必须配合FLAG_ACTIVITY_NEW_TASK使用</li>
+<li>如果目标task已经存在，将清空已存在的目标Task，否则，会新建一个Task栈</li>
+<li>在新建或清空后，会新建一个Activity作为根Activity。Intent.FLAG_ACTIVITY_CLEAR_TASK的优先级最高。</li>
+<li>可以无视所有的配置，包括启动模式及Intent Flag，哪怕是singleInstance也会被finish并重建。</li>
+</ol>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEBaf8f745c56f6ef3796510aaed21a92c6?method=download&amp;shareKey=d3d237c58770d949edac74372c85543b" alt="CLEAR_TASK标识"></p>
+<h2 id="Intent-FLAG-ACTIVITY-CLEAR-TOP分析"><a href="#Intent-FLAG-ACTIVITY-CLEAR-TOP分析" class="headerlink" title="Intent.FLAG_ACTIVITY_CLEAR_TOP分析"></a>Intent.FLAG_ACTIVITY_CLEAR_TOP分析</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB95a60412c1c372688a92cdb1cca836c8?method=download&amp;shareKey=506250f1deca84ea6de7002162c18c4f" alt=""></p>
+<p>在TASK2中的D采用CLEAR_TOP唤起B，首先CD先出栈，B会不会重建，取决于B有没有设置SINGLE_TOP启动模式，如果设置则不会重新，回调onNewIntent方法，如果没有设置，则先出栈，然后创建B入栈。</p>
+<p>如果没有会新建，但不会去另一个任务栈中寻找。<br><img src="https://note.youdao.com/yws/api/personal/file/WEB515b74e655e9c2a9946d24f3d806c0f3?method=download&amp;shareKey=19ce94d5422734c23d789ab277fe877f" alt=""></p>
+<p>该标志位表示使用singleTask模式来启动一个Activity，与在清单文件指定android：launchMode=”singleTask”效果相同。</p>
+<h2 id="Intent-FLAG-ACTIVITY-SINGLE-TOP"><a href="#Intent-FLAG-ACTIVITY-SINGLE-TOP" class="headerlink" title="Intent.FLAG_ACTIVITY_SINGLE_TOP"></a>Intent.FLAG_ACTIVITY_SINGLE_TOP</h2><p>和launchmode中的singleTop一致，有的话就创建，没有的话就新建。</p>
+<h2 id="为什么非Activity启动Activity要强制使用参数FLAG-ACTIVITY-NEW-TASK？"><a href="#为什么非Activity启动Activity要强制使用参数FLAG-ACTIVITY-NEW-TASK？" class="headerlink" title="为什么非Activity启动Activity要强制使用参数FLAG_ACTIVITY_NEW_TASK？"></a>为什么非Activity启动Activity要强制使用参数FLAG_ACTIVITY_NEW_TASK？</h2><p>在ContextImpl中的startActivity做了检查，如果没添加，则会抛出AndroidRuntimeException。</p>
+<h2 id="Intent-FLAG-ACTIVITY-NO-HISTORY"><a href="#Intent-FLAG-ACTIVITY-NO-HISTORY" class="headerlink" title="Intent.FLAG_ACTIVITY_NO_HISTORY"></a>Intent.FLAG_ACTIVITY_NO_HISTORY</h2><p>使用该模式来启动Activity，当该Activity启动其他Activity后，该Activity就被销毁了，不会保留在任务栈中。如A-B,B中以这种模式启动C，C再启动D，则任务栈只有ABD。</p>
+<h2 id="Intent-FLAG-ACTIVITY-EXCLUDE-FROM-RECENTS"><a href="#Intent-FLAG-ACTIVITY-EXCLUDE-FROM-RECENTS" class="headerlink" title="Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS"></a>Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS</h2><p>  使用该标识位启动的Activity不添加到最近应用列表，也即我们从最近应用里面查看不到我们启动的这个activity。与属性android:excludeFromRecents=”true”效果相同。</p>
+<h2 id="Android任务栈是什么？"><a href="#Android任务栈是什么？" class="headerlink" title="Android任务栈是什么？"></a>Android任务栈是什么？</h2><ol>
+<li>android任务栈又称为Task，它是一个栈结构，具有后进先出的特性，用于存放我们的Activity组件。 </li>
+<li>我们每次打开一个新的Activity或者退出当前Activity都会在一个称为任务栈的结构中添加或者减少一个Activity组件，因此一个任务栈包含了一个activity的集合, android系统可以通过Task有序地管理每个activity，并决定哪个Activity与用户进行交互:只有在任务栈栈顶的activity才可以跟用户进行交互。 </li>
+<li>在我们退出应用程序时，必须把所有的任务栈中所有的activity清除出栈时,任务栈才会被销毁。当然任务栈也可以移动到后台, 并且保留了每一个activity的状态. 可以有序的给用户列出它们的任务, 同时也不会丢失Activity的状态信息。 </li>
+<li>需要注意的是，<strong>一个App中可能不止一个任务栈，某些特殊情况下，单独一个Actvity可以独享一个任务栈。还有一点就是一个Task中的Actvity可以来自不同的App，同一个App的Activity也可能不在一个Task中。</strong></li>
+</ol>
+<h2 id="TaskAffinity属性是什么？"><a href="#TaskAffinity属性是什么？" class="headerlink" title="TaskAffinity属性是什么？"></a>TaskAffinity属性是什么？</h2><ul>
+<li>TaskAffinity标识着Activity所需要的任务栈名称，默认情况下，一个应用中所有的Activity所需要的任务栈名称都为该应用的包名。</li>
+<li>TaskAffinity属性一般跟singleTask模式或者allowTaskReparenting属性结合使用，其他情况下没有实际意义。</li>
+<li>TaskAffinity属性的值不能与当前应用包名相同，否则其值跟作废没两样。</li>
+</ul>
+<h2 id="allowTaskReparenting属性是什么？"><a href="#allowTaskReparenting属性是什么？" class="headerlink" title="allowTaskReparenting属性是什么？"></a>allowTaskReparenting属性是什么？</h2><p>首先我们来聊聊allowTaskReparenting属性，它的主要作用是activity的迁移，即从一个task迁移到另一个task，这个迁移跟activity的taskAffinity有关。当allowTaskReparenting的值为“true”时，则表示Activity能从启动的Task移动到有着affinity的Task（当这个Task进入到前台时），当allowTaskReparenting的值为“false”，表示它必须呆在启动时呆在的那个Task里。如果这个特性没有被设定，元素(当然也可以作用在每次activity元素上)上的allowTaskReparenting属性的值会应用到Activity上。默认值为“false”。这样说可能还比较难理解，我们举个例子，比如现在有两个应用A和B，A启动了B的一个ActivityC，然后按Home键回到桌面，再单击B应用时，如果此时，allowTaskReparenting的值为“true”，那么这个时候并不会启动B的主Activity，而是直接显示已被应用A启动的ActivityC，我们也可以认为ActivityC从A的任务栈转移到了B的任务栈中。这就好比我们在路边收养了一只与主人走失了的猫，养着养着突然有一天，主人找上门来了，这只猫也就被带回去了。我们通过图解来更好地理解这种情景： </p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB9ca1c10c00630f9721831a729e848376?method=download&amp;shareKey=eb5ee6463ed6ffee39a32ca04f8692c8" alt="allowTaskReparenting"></p>
+<p>  对比发现，如果allowTaskReparenting值为false时，ActivityC并不会直接从A应用的任务栈迁移到B应用的任务栈，而是B应用直接重新创建了ActivityC的实例。到此我们对于allowTaskReparenting和taskAffinity属性的了解就已经相当深入了，不过有点需要说明的是allowTaskReparenting仅限于singleTop和standard模式，这是因为一个activity的affinity属性由它的taskAffinity属性定义（代表栈名），而一个task的affinity由它的root activity定义。所以，一个task的root activity总是拥有和它所在task相同的affinity。由于以singleTask和singleInstance启动的activity只能是一个task的root activity，因此allowTaskReparenting仅限于以standard 和singleTop启动的activity，大家可以自行测试一下，这里我们就不测试了哈，下面我们再来说说它们可能应用用场景。</p>
+<h2 id="怎么指定Activity所属的栈？"><a href="#怎么指定Activity所属的栈？" class="headerlink" title="怎么指定Activity所属的栈？"></a>怎么指定Activity所属的栈？</h2><p>通过设置TaskAffinity属性值为android:taskAffinity=”xxx”</p>
+<h2 id="TaskAffinity和SingleTask结合的应用场景"><a href="#TaskAffinity和SingleTask结合的应用场景" class="headerlink" title="TaskAffinity和SingleTask结合的应用场景"></a>TaskAffinity和SingleTask结合的应用场景</h2><p>假如现在有这么一个需求,我们的客户端app正处于后台运行，此时我们因为某些需要，让微信调用自己客户端app的某个页面，用户完成相关操作后，我们不做任何处理，按下回退或者当前Activity.finish()，页面都会停留在自己的客户端（此时我们的app回退栈不为空），这显然不符合逻辑的，用户体验也是相当出问题的。我们要求是，回退必须回到微信客户端,而且要保证不杀死自己的app.这时候我们的处理方案就是，设置当前被调起Activity的属性为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LaunchMode=&quot;&quot;SingleTask&quot; taskAffinity=&quot;com.tencent.mm&quot;</span><br></pre></td></tr></table></figure>
+<p>其中com.tencent.mm是借助于工具找到的微信包名，就是把自己的Activity放到微信默认的Task栈里面，这样回退时就会遵循“Task只要有Activity一定从本Task剩余Activity回退”的原则，不会回到自己的客户端；而且也不会影响自己客户端本来的Activity和Task逻辑。</p>
+<h2 id="TaskAffinity与allowTaskReparenting的应用场景"><a href="#TaskAffinity与allowTaskReparenting的应用场景" class="headerlink" title="TaskAffinity与allowTaskReparenting的应用场景"></a>TaskAffinity与allowTaskReparenting的应用场景</h2><p>一个e-mail应用消息包含一个网页链接，点击这个链接将出发一个activity来显示这个页面，虽然这个activity是浏览器应用定义的，但是activity由于e-mail应用程序加载的，所以在这个时候该activity也属于e-mail这个task。如果e-mail应用切换到后台，浏览器在下次打开时由于allowTaskReparenting值为true，此时浏览器就会显示该activity而不显示浏览器主界面，同时actvity也将从e-mail的任务栈迁移到浏览器的任务栈，下次打开e-mail时并不会再显示该activity </p>
+<p>在AndroidMainifest的<activity>标签设置该activity的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">allowTaskReparenting:true</span><br></pre></td></tr></table></figure></activity></p>
+<h2 id="如何清空任务栈？"><a href="#如何清空任务栈？" class="headerlink" title="如何清空任务栈？"></a>如何清空任务栈？</h2><p>我们只需要在<activity>标签指明相应的属性值</activity></p>
+<h3 id="android-clearTaskOnLaunch"><a href="#android-clearTaskOnLaunch" class="headerlink" title="android:clearTaskOnLaunch"></a>android:clearTaskOnLaunch</h3><p>  这个属性用来标记是否从task清除除根Activity之外的所有的Activity，“true”表示清除，“false”表示不清除，默认为“false”。这里有点我们必须要注意的，这个属性只对任务栈内的root Activity起作用，任务栈内其他的Activity都会被忽略。如果android:clearTaskOnLaunch属性为“true”，每次我们重新进入这个应用时，我们只会看到根Activity，任务栈中的其他Activity都会被清除出栈。<br>  比如一个应用的Activity A,B,C，其中clearTaskOnLaunch设置为true，C为默认值，我们依次启动A,B,C，点击HOME,再在桌面点击图标。启动的是A，而B，C将都被移除当前任务栈。也就是说，当Activity的属性clearTaskOnLaunch为true时将被优先启动，其余的Activity(B、C)都被移除任务栈并销毁，除非前面A已经finish销毁，后面的已注册clearTaskOnLaunch为true的activity(B)才会生效。<br>  特别地，如果我们的应用中引用到了其他应用的Activity，这些Activity设置了android:allowTaskReparenting属性为“true”，则它们会被重新宿主到有共同affinity的task中。
+  
+  </p>
+<h3 id="android-finishOnTaskLaunch"><a href="#android-finishOnTaskLaunch" class="headerlink" title="android:finishOnTaskLaunch"></a>android:finishOnTaskLaunch</h3><p>如果将finishOnTaskLauch属性值设置为true，离开这个Activity所依赖的任务栈后，重新返回时，该Activity会被finish掉，其他的Activity不受影响。</p>
+<h3 id="android-alwaysRetainTaskState"><a href="#android-alwaysRetainTaskState" class="headerlink" title="android:alwaysRetainTaskState"></a>android:alwaysRetainTaskState</h3><p>当该属性设置为true时，该Activity不受到任何清理命令的影响，一直保持当前任务栈状态。</p>
+<h2 id="各启动模式下的生命周期"><a href="#各启动模式下的生命周期" class="headerlink" title="各启动模式下的生命周期"></a>各启动模式下的生命周期</h2><h3 id="standard"><a href="#standard" class="headerlink" title="standard"></a>standard</h3><p>这个最好理解，A -&gt; B，当A跳转到B时，先是B的onCreate-&gt;onStart-&gt;onResume，再是前一个Activity的onStop。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB20959b72a372085e53aef56b19baebf1?method=download&amp;shareKey=63c3277d4a37fb1e7b64f5b93276c2ee" alt=""></p>
+<h3 id="singletop"><a href="#singletop" class="headerlink" title="singletop"></a>singletop</h3><blockquote>
+<p>栈顶复用模式</p>
+</blockquote>
+<p>当A是standard启动模式，B是singleTop启动模式时，分几种情况：</p>
+<ol>
+<li>A启动B时，当栈中无B实例、B不在栈顶时，和启动一个standard Activity没有区别，流程如上。</li>
+</ol>
+<ol start="2">
+<li>B启动B时，当B在栈顶时，会经过B的onNewIntent -&gt; onResume<br><img src="https://note.youdao.com/yws/api/personal/file/WEBcdb236539ce65adc1728e399e70953d3?method=download&amp;shareKey=f0d0d21d1bd1c1cd76b6c3017f138300" alt=""></li>
+</ol>
+<h3 id="singleTask"><a href="#singleTask" class="headerlink" title="singleTask"></a>singleTask</h3><blockquote>
+<p>栈内复用模式</p>
+</blockquote>
+<p>当A是standard启动模式，B是singleTask启动模式时，分几种情况：</p>
+<ol>
+<li><p>A启动B时，当栈内无B实例时，和启动一个standard Activity没有区别。</p>
+</li>
+<li><p>B启动B时，B在栈顶时，和启动一个在栈顶的singleTop Activity没有区别。<br><img src="https://note.youdao.com/yws/api/personal/file/WEBf6ad1d3646178b89c836e89b3739745c?method=download&amp;shareKey=383b4ebef79dc52c0bfcffb639d9e1c0" alt=""></p>
+</li>
+<li><p>A启动B时，B不在栈顶时，在之前的singleTask Activity之上的所有Activity按顺序出栈（这个顺序是添加到栈的顺序），如B是singleTask，A、C都是Standard，栈内从底到顶的顺序依次为BACAC，这时C再跳转B时，那么会相继调用A,C,A的onDestroy,再调用B的onNewIntent，onStart，onResume，最后再是C的onStop，onDestroy。<br><img src="https://note.youdao.com/yws/api/personal/file/WEB0bb677117c966cabfdf858e1b6dc0f9d?method=download&amp;shareKey=cce28872e6dc7bfa3b65de5ab1da9c23" alt=""></p>
+</li>
+</ol>
+<h3 id="singleInstance"><a href="#singleInstance" class="headerlink" title="singleInstance"></a>singleInstance</h3><blockquote>
+<p> 全局单例模式</p>
+</blockquote>
+<p>当A是standard启动模式，B是singleInstance启动模式</p>
+<ol>
+<li><p>A启动B时，当全局无该实例时，与启动一个standard Activity在生命周期上没区别，但是在所属任务栈上有区别，任务栈id是不同的。<br><img src="https://note.youdao.com/yws/api/personal/file/WEB7879305c7d40119a00361b3270673ae0?method=download&amp;shareKey=2b135ddf86850d71cd51694c582400bc" alt=""></p>
+</li>
+<li><p>B启动B时，和singleTop/singleTask在顶部时没有区别</p>
+</li>
+<li><p>B启动A时，和启动一个standard Activity在生命周期上没有区别，任务栈id也是不同的，同1的情况。且id等同于A启动B时，A的任务栈id。<br><img src="https://note.youdao.com/yws/api/personal/file/WEB93ca494527a8d6259135e38840a9a0a6?method=download&amp;shareKey=4404474784701cb16d67753b9849556f" alt=""></p>
+</li>
+<li><p>singleInstance实例会独占一个任务栈，该任务栈仅存在该一个实例。</p>
+</li>
+<li>当A启动B时，在B中回退，会先把该任务栈清空，也就是B的实例清空，再切换到A的任务栈中。当B启动A时，如果A有多个实例，则回退时会一直清空到A的任务栈无任何实例时，最后才会转到B的任务栈清空该singleInstance实例。</li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/08/10/Chrome调试javascript方法/" itemprop="url">
                   Chrome调试javascript方法
                 </a>
@@ -866,162 +1073,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2018/06/09/Android窗口管理分析（二）—— WindowManagerService图层管理之窗口的添加/" itemprop="url">
-                  Android窗口管理分析（二）——WindowManagerService图层管理之窗口的添加
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-06-09T18:54:07+08:00" content="2018-06-09">
-              2018-06-09
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/framework/" itemprop="url" rel="index">
-                    <span itemprop="name">framework</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Android窗口管理分析（二）——WindowManagerService图层管理之窗口的添加"><a href="#Android窗口管理分析（二）——WindowManagerService图层管理之窗口的添加" class="headerlink" title="Android窗口管理分析（二）——WindowManagerService图层管理之窗口的添加"></a>Android窗口管理分析（二）——WindowManagerService图层管理之窗口的添加</h1><blockquote>
-<p>本文主要从以下几点分析：</p>
-<ul>
-<li>窗口的分类：Activity、Dialog、PopupWindow、Toast等对应窗口的区别</li>
-<li>窗口的添加和删除</li>
-<li>窗口的分组与窗口Z的顺序</li>
-<li>Window、IWindow、WindowState、WindowToken、AppToken等之间的关系</li>
-</ul>
-</blockquote>
-<h2 id="Android窗口大概分为几种？"><a href="#Android窗口大概分为几种？" class="headerlink" title="Android窗口大概分为几种？"></a>Android窗口大概分为几种？</h2><p>Android将窗口大致分为三类：</p>
-<ol>
-<li>应用窗口（拥有自己的WindowToken） 例如：Activity与Dialog</li>
-<li>子窗口（必须依附到其他非子窗口才能存在，比如Activity等） 例如：PopupWindow</li>
-<li>系统窗口 例如：Toast</li>
-</ol>
-<p>这里Dialog比较特殊，从表现上来说偏向于子窗口，必须依附到Activity才能存在，而从性质上来说，仍然是应用窗口，有自己的WindowToken。</p>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB057109037ca9e125198e2eead8d18b6c?method=download&amp;shareKey=9a0a33be9b12833c4e858b57b8a85175" alt=""></p>
-<h2 id="窗口是怎么添加的？"><a href="#窗口是怎么添加的？" class="headerlink" title="窗口是怎么添加的？"></a>窗口是怎么添加的？</h2><p>以悬浮窗为例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">private void addTextViewWindow(Context context)&#123;</span><br><span class="line"></span><br><span class="line">    TextView mview=new TextView(context);</span><br><span class="line">	...&lt;!--设置颜色 样式--&gt;</span><br><span class="line">	&lt;!--关键点1--&gt;</span><br><span class="line">    WindowManager mWindowManager = (WindowManager) context.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);</span><br><span class="line">    WindowManager.LayoutParams wmParams = new WindowManager.LayoutParams();</span><br><span class="line">    &lt;!--关键点2--&gt;</span><br><span class="line">    wmParams.type = WindowManager.LayoutParams.TYPE_TOAST;</span><br><span class="line">    wmParams.format = PixelFormat.RGBA_8888;</span><br><span class="line">    wmParams.width = 800;</span><br><span class="line">    wmParams.height = 800;</span><br><span class="line">    &lt;!--关键点3--&gt;</span><br><span class="line">    mWindowManager.addView(mview, wmParams);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB9f0d62cfec2b9b86ad69ce5a2c1d5d5f?method=download&amp;shareKey=141858c3f2650257f1d92749d015eb66" alt="流程图"></p>
-<h2 id="WindowToken是什么样的？"><a href="#WindowToken是什么样的？" class="headerlink" title="WindowToken是什么样的？"></a>WindowToken是什么样的？</h2><p>首先需要知道下面一些概念：</p>
-<ul>
-<li>IWindow： APP端窗口暴露给WMS的抽象实例，同时也是WMS向APP端发送消息的Binder通道。</li>
-<li>WindowState：WMS端窗口的令牌，与IWindow窗口一一对应，是WMS管理窗口的重要依据。</li>
-<li>WindowToken：是窗口的令牌，也是窗口分组的依据，在WMS端，和分组对应的数据结构是WindowToken</li>
-<li>AppToken：是ActivityRecord里面的IApplicationToken.Stub appToken代理。</li>
-</ul>
-<p><img src="https://note.youdao.com/yws/api/personal/file/WEB48b062a332232b68f2f86836f1d854dc?method=download&amp;shareKey=694d04d38e9b2467955b50a465d38a4d" alt=""></p>
-<p>Activity与Dialog对应的是AppWindowToken，PopupWindow对应的是普通的WindowToken。</p>
-<h2 id="Session和App进程对应关系是什么样的？"><a href="#Session和App进程对应关系是什么样的？" class="headerlink" title="Session和App进程对应关系是什么样的？"></a>Session和App进程对应关系是什么样的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBa1d0149bfa323db501e5a50e9943f40d?method=download&amp;shareKey=702e142fb9d4e9a4de6d6fc0dfc945cd" alt=""></p>
-<ol>
-<li>Session与App进程一一对应，进一步为当前进程建立SurfaceSession会话。</li>
-<li>Session是App同WMS通信的通道，SurfaceSession是WMS为SurfaceFlinger申请的通信通道，SurfaceSession与APP也是一一对应的。</li>
-<li>SurfaceSession的SurfaceFlinger代理就是SurfaceComposerClient里的ISurfaceComposerClient mClient对象，它是SurfaceFlinger为每个APP封装的一个代理。</li>
-</ol>
-<h2 id="ISurfaceComposerClient是怎么一步步创建的？"><a href="#ISurfaceComposerClient是怎么一步步创建的？" class="headerlink" title="ISurfaceComposerClient是怎么一步步创建的？"></a>ISurfaceComposerClient是怎么一步步创建的？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEB83a988108f7640d3f3da543ac13c9d6e?method=download&amp;shareKey=8cf63d1649205192dbb11c052d9c06e0" alt=""></p>
-<p>利用ComposerService这样的单例对象为每个App在WMS申请一个ISurfaceComposerClient对象。在WMS端表现为BPSurfaceComposerClient，在SurfaceFlinger端表现为BnSurfaceComposerClient。</p>
-<h2 id="postSyncBarrier-有什么用？在ViewRootImpl的setView中的应用是什么样的？"><a href="#postSyncBarrier-有什么用？在ViewRootImpl的setView中的应用是什么样的？" class="headerlink" title="postSyncBarrier()有什么用？在ViewRootImpl的setView中的应用是什么样的？"></a>postSyncBarrier()有什么用？在ViewRootImpl的setView中的应用是什么样的？</h2><p>这个挡板是用来阻塞同步消息的，在挡板撤销之前，只会执行异步消息。在ViewRootImpl的setView中，目的是保证在mTraversalRunnable的所有同步Message之前被执行，保证View绘制的最高优先级。</p>
-<h2 id="performTraversals函数主要作用是什么？"><a href="#performTraversals函数主要作用是什么？" class="headerlink" title="performTraversals函数主要作用是什么？"></a>performTraversals函数主要作用是什么？</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">private void performTraversals() &#123;</span><br><span class="line">    		final View host = mView;</span><br><span class="line">  			 ...</span><br><span class="line">    if (mFirst || windowShouldResize || insetsChanged ||</span><br><span class="line">            viewVisibilityChanged || params != null) &#123;</span><br><span class="line">            &lt;!--关键点1 申请Surface或者重新设置参数--&gt;</span><br><span class="line">            relayoutResult = relayoutWindow(params, viewVisibility, insetsPending);</span><br><span class="line">          &lt;!--关键点2 测量--&gt;</span><br><span class="line">                performMeasure(childWidthMeasureSpec, childHeightMeasureSpec);</span><br><span class="line">            &#125;        </span><br><span class="line">          &lt;!--关键点3 布局--&gt;</span><br><span class="line">                performLayout(lp, desiredWindowWidth, desiredWindowHeight);</span><br><span class="line">           &lt;!--关键点4 更新window--&gt;</span><br><span class="line">              try &#123;</span><br><span class="line">                mWindowSession.setInsets(mWindow, insets.mTouchableInsets,</span><br><span class="line">                        contentInsets, visibleInsets, touchableRegion);</span><br><span class="line">            ...</span><br><span class="line">          &lt;!--关键点5 绘制--&gt;</span><br><span class="line">           performDraw();</span><br><span class="line">           ...  </span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="relayout是如何向SurfaceFlinger申请Surface？"><a href="#relayout是如何向SurfaceFlinger申请Surface？" class="headerlink" title="relayout是如何向SurfaceFlinger申请Surface？"></a>relayout是如何向SurfaceFlinger申请Surface？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBe71e95c3cd0470eda95fccfcbe38a3d3?method=download&amp;shareKey=21aebce9d3d76fef32cb15afb840bc30" alt=""></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBc3fddfc737f1b81cba23081ac3605d40?method=download&amp;shareKey=be9e6a33752602f050ac7e185c641b5f" alt="Add View整体流程"></p>
-<ul>
-<li>APP去WMS登记窗口</li>
-<li>APP新建Surface壳子，请求WMS填充Surface</li>
-<li>WMS请求SurfaceFlinger分配窗口图层</li>
-<li>SurfaceFlinger分配Layer，将结果回传给WMS</li>
-<li>WMS将窗口信息填充到Surface传输到APP</li>
-<li>APP端获得填充信息，获取与SurfaceFlinger通信的能力</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1067,7 +1118,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-count">45</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1084,7 +1135,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-count">26</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

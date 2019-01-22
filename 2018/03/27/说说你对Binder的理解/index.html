@@ -73,7 +73,7 @@
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB00286158fda80010a20e60615ed275e7?method=download&shareKey=01403e81380671ec011ece3384769ce8">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB935c967a2d790a6a56eb2b6eed2c2e0f?method=download&shareKey=78cb0aaa730052688ce763416944da14">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB9857c297fb55614b277b57404f052513?method=download&shareKey=041e392cf9cee0bdb9b5d12591d0b952">
-<meta property="og:updated_time" content="2018-03-30T07:52:35.000Z">
+<meta property="og:updated_time" content="2019-01-22T08:43:52.303Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="说说你对Binder的理解">
 <meta name="twitter:description" content="说说你对Binder的理解 在Android开发中，涉及到多进程的通信底层都是依赖Binder IPC机制，所以Binder是Android开发绕不过去的一个知识点。这里我们具体来看一下Binder的实现原理。  为什么要使用Binder？ 性能方面 安全方面  性能方面Binder相对于传统的Socket方式，更加高效。Binder数据拷贝只需要一次，相对于传统的管道、消息队列、Socket都需">
@@ -293,7 +293,7 @@
 <h2 id="Socket拷贝两次是哪两次？"><a href="#Socket拷贝两次是哪两次？" class="headerlink" title="Socket拷贝两次是哪两次？"></a>Socket拷贝两次是哪两次？</h2><p>当应用程序向一个socket传输数据之后，该socket将创建相应的套接字缓存，并将用户数据拷贝到缓存中。当报文在各协议层传达输的过程中，每一导的报文头将插入到用户数据之前。skb为报文头申请了足够的空间，所以避免了由于插入报文头而对报文进行多次拷贝。用户数据只拷贝了两次：一是从用户空间拷贝到内核；二是报文数据从内核拷贝到网络适配器。</p>
 <h2 id="Android里的IPC原理是什么？"><a href="#Android里的IPC原理是什么？" class="headerlink" title="Android里的IPC原理是什么？"></a>Android里的IPC原理是什么？</h2><p><img src="https://note.youdao.com/yws/api/personal/file/WEBd52e4b3cc4142e562801a0dd2b7da289?method=download&amp;shareKey=049460ad939a62f133f58a26abed2003" alt="Android IPC"></p>
 <ol>
-<li>每个Android进程，只能运行在自己进程所拥有的虚拟地址空间。对应一个4GB（这个可以配置）的虚拟地址控件，3GB为用户空间，1GB是内核空间。</li>
+<li>每个Android进程，只能运行在自己进程所拥有的虚拟地址空间。对应一个4GB（这个可以配置）的虚拟地址空间，3GB为用户空间，1GB是内核空间。</li>
 <li>用户空间不可共享，内核空间可共享。</li>
 <li>通信时恰恰是利用可共享的内核内存空间完成底层通信的。</li>
 </ol>
@@ -302,7 +302,7 @@
 <li><strong>Client进程</strong>：使用服务的进程</li>
 <li><strong>Server进程</strong>：提供服务的进程</li>
 <li><strong>ServiceManager进程</strong>：ServiceManager的作用是将字符串形式的Binder名字转化为对该Binder的引用，使得Client能够通过Binder名字获得对Server中Binder实体的引用。</li>
-<li><strong>Binder驱动</strong>：驱动负责进程之间Binder通信的简历，Binder在进程之间的传递，Binder引用计数管理，数据包在进程之间传递和交互等一系列底层支持。</li>
+<li><strong>Binder驱动</strong>：驱动负责进程之间Binder通信的建立，Binder在进程之间的传递，Binder引用计数管理，数据包在进程之间传递和交互等一系列底层支持。</li>
 </ul>
 <ol>
 <li>注册服务（addService）：Server进程要先注册Service到ServiceManager。该过程：Server是客户端，ServiceManager是服务端。</li>
